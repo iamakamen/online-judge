@@ -1,9 +1,18 @@
 from pydantic import BaseModel, EmailStr, model_validator
 
 
-class RegisterRequest(BaseModel):
-    username: str
+class RegisterStartRequest(BaseModel):
     email: EmailStr
+
+
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+
+class RegisterCompleteRequest(BaseModel):
+    email: EmailStr
+    username: str
     password: str
     confirm_password: str
 

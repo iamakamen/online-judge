@@ -1,11 +1,25 @@
 from fastapi import APIRouter
 
-from backend.app.schemas.auth import RegisterRequest
+from backend.app.schemas.auth import (
+    RegisterCompleteRequest,
+    RegisterStartRequest,
+    VerifyOTPRequest,
+)
 
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
-@router.post("/register")
-def register(request: RegisterRequest):
-    return {"status": "registration_request_valid"}
+@router.post("/register/start")
+def register_start(request: RegisterStartRequest):
+    return {"status": "registration_start_received"}
+
+
+@router.post("/register/verify-otp")
+def register_verify_otp(request: VerifyOTPRequest):
+    return {"status": "registration_otp_received"}
+
+
+@router.post("/register/complete")
+def register_complete(request: RegisterCompleteRequest):
+    return {"status": "registration_complete_received"}
