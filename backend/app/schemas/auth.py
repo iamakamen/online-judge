@@ -2,6 +2,8 @@ from pydantic import BaseModel, EmailStr, model_validator
 
 
 class RegisterStartRequest(BaseModel):
+    first_name: str
+    last_name: str
     email: EmailStr
 
 
@@ -21,3 +23,24 @@ class RegisterCompleteRequest(BaseModel):
         if self.password != self.confirm_password:
             raise ValueError("Passwords do not match")
         return self
+
+
+class LoginRequest(BaseModel):
+    identifier: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+
+class RefreshResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"

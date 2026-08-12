@@ -6,3 +6,5 @@ alembic
 
 pwdlib[argon2]
 email-validator
+httpx
+PyJWT

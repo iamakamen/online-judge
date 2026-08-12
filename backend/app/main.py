@@ -1,6 +1,14 @@
+import logging
+
 from fastapi import FastAPI
 
 from backend.app.api.routes.auth import router as auth_router
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
 
 
 app = FastAPI(

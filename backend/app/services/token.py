@@ -1,0 +1,135 @@
+import hashlib
+import os
+import secrets
+from datetime import datetime, timedelta, timezone
+
+import jwt
+from pwdlib import PasswordHash
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+JWT_ALGORITHM = "HS256"
+
+password_hash = PasswordHash.recommended()
+
+
+def _get_jwt_secret() -> str:
+    secret = os.getenv("JWT_SECRET_KEY")
+
+    if not secret:
+        raise RuntimeError("JWT_SECRET_KEY is not configured")
+
+    return secret
+
+
+def _get_access_token_expiry_minutes() -> int:
+    value = os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "15")
+
+    try:
+        minutes = int(value)
+    except ValueError as exc:
+        raise RuntimeError(
+            "JWT_ACCESS_TOKEN_EXPIRE_MINUTES must be an integer"
+        ) from exc
+
+    if minutes <= 0:
+        raise RuntimeError(
+            "JWT_ACCESS_TOKEN_EXPIRE_MINUTES must be positive"
+        )
+
+    return minutes
+
+
+def _get_refresh_token_expiry_days() -> int:
+    value = os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "30")
+
+    try:
+        days = int(value)
+    except ValueError as exc:
+        raise RuntimeError(
+            "JWT_REFRESH_TOKEN_EXPIRE_DAYS must be an integer"
+        ) from exc
+
+    if days <= 0:
+        raise RuntimeError(
+            "JWT_REFRESH_TOKEN_EXPIRE_DAYS must be positive"
+        )
+
+    return days
+
+
+def create_access_token(user_id: int) -> str:
+    now = datetime.now(timezone.utc)
+    expires_at = now + timedelta(
+        minutes=_get_access_token_expiry_minutes()
+    )
+
+    payload = {
+        "sub": str(user_id),
+        "type": "access",
+        "iat": now,
+        "exp": expires_at,
+    }
+
+    return jwt.encode(
+        payload,
+        _get_jwt_secret(),
+        algorithm=JWT_ALGORITHM,
+    )
+
+
+def decode_access_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(
+            token,
+            _get_jwt_secret(),
+            algorithms=[JWT_ALGORITHM],
+        )
+    except jwt.PyJWTError as exc:
+        raise ValueError("Invalid access token") from exc
+
+    if payload.get("type") != "access":
+        raise ValueError("Invalid access token")
+
+    subject = payload.get("sub")
+
+    if not subject:
+        raise ValueError("Invalid access token")
+
+    try:
+        user_id = int(subject)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Invalid access token") from exc
+
+    payload["sub"] = user_id
+
+    return payload
+
+
+def create_refresh_token() -> str:
+    return secrets.token_urlsafe(64)
+
+
+def hash_refresh_token(token: str) -> str:
+    return password_hash.hash(token)
+
+
+def fingerprint_refresh_token(token: str) -> str:
+    return hashlib.sha256(
+        token.encode("utf-8")
+    ).hexdigest()
+
+
+def verify_refresh_token(
+    token: str,
+    hashed_token: str,
+) -> bool:
+    return password_hash.verify(token, hashed_token)
+
+
+def get_refresh_token_expiry() -> datetime:
+    return datetime.now(timezone.utc) + timedelta(
+        days=_get_refresh_token_expiry_days()
+    )
