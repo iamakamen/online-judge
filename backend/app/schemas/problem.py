@@ -35,6 +35,7 @@ class ProblemListResponse(BaseModel):
 
     id: int
     topic_id: int
+    created_by_user_id: int | None
     title: str
     slug: str
     difficulty: Difficulty
@@ -46,6 +47,7 @@ class ProblemDetailResponse(BaseModel):
 
     id: int
     topic_id: int
+    created_by_user_id: int | None
     title: str
     slug: str
     statement: str

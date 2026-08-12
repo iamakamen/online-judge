@@ -50,6 +50,7 @@ def create_problem(
     starter_code: dict[str, str],
     time_limit_ms: int,
     memory_limit_mb: int,
+    created_by_user_id: int | None = None,
 ) -> Problem:
     _require_topic(db, topic_id)
     _validate_limits(time_limit_ms, memory_limit_mb)
@@ -59,6 +60,7 @@ def create_problem(
 
     problem = Problem(
         topic_id=topic_id,
+        created_by_user_id=created_by_user_id,
         title=title,
         slug=slug,
         statement=statement,
@@ -116,7 +118,6 @@ def list_problems(
     topic_id: int | None = None,
     difficulty: Difficulty | None = None,
     tag: str | None = None,
-    search: str | None = None,
     page: int = 1,
     page_size: int = 20,
 ) -> ProblemListResult:
@@ -132,8 +133,6 @@ def list_problems(
         filters.append(Problem.difficulty == difficulty)
     if tag is not None:
         filters.append(Problem.tags.contains([tag]))
-    if search is not None:
-        filters.append(Problem.title.ilike(f"%{search}%"))
 
     filtered_query = select(Problem).where(*filters)
     total = db.scalar(

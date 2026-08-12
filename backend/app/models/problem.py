@@ -35,6 +35,15 @@ class Problem(Base):
         nullable=False,
         index=True,
     )
+    created_by_user_id: Mapped[int | None] = mapped_column(
+        ForeignKey(
+            "users.id",
+            name="fk_problems_created_by_user_id_users",
+            ondelete="RESTRICT",
+        ),
+        nullable=True,
+        index=True,
+    )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     slug: Mapped[str] = mapped_column(
         String(200), unique=True, index=True, nullable=False
