@@ -13,6 +13,9 @@ from backend.app.models.user import User
 from backend.app.models.otp_code import OTPCode
 from backend.app.models.registration_session import RegistrationSession
 from backend.app.models.refresh_session import RefreshSession
+from backend.app.models.topic import Topic
+from backend.app.models.problem import Problem
+from backend.app.models.test_case import TestCase
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
