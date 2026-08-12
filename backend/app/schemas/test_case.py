@@ -50,3 +50,15 @@ class PublicTestCaseResponse(BaseModel):
     expected_output: str
     is_sample: bool
     display_order: int
+
+
+class AdminTestCaseResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    input: str
+    expected_output: str
+    run_enabled: bool
+    submit_enabled: bool
+    is_sample: bool
+    display_order: int

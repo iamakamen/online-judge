@@ -3,6 +3,9 @@ import logging
 from fastapi import FastAPI
 
 from backend.app.api.routes.auth import router as auth_router
+from backend.app.api.routes.problems import router as problems_router
+from backend.app.api.routes.test_cases import router as test_cases_router
+from backend.app.api.routes.topics import router as topics_router
 
 
 logging.basicConfig(
@@ -17,6 +20,9 @@ app = FastAPI(
 )
 
 app.include_router(auth_router)
+app.include_router(topics_router)
+app.include_router(problems_router)
+app.include_router(test_cases_router)
 
 
 @app.get("/health")

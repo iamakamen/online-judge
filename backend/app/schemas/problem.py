@@ -42,6 +42,14 @@ class ProblemListResponse(BaseModel):
     tags: list[str]
 
 
+class ProblemListPage(BaseModel):
+    items: list[ProblemListResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
 class ProblemDetailResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
