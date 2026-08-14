@@ -69,12 +69,13 @@ function usePathname() {
   }, [])
 
   useEffect(() => {
+    const previousScrollRestoration = window.history.scrollRestoration
     window.history.scrollRestoration = 'manual'
 
     const entryId = ensureHistoryEntryId()
     currentEntryIdRef.current = entryId
     positionsRef.current.set(entryId, { x: 0, y: 0 })
-    window.scrollTo(0, 0)
+    if (!window.location.hash) window.scrollTo(0, 0)
 
     const onScroll = () => {
       const currentEntryId = currentEntryIdRef.current
@@ -99,6 +100,7 @@ function usePathname() {
     window.addEventListener('popstate', onPopState)
 
     return () => {
+      window.history.scrollRestoration = previousScrollRestoration
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('popstate', onPopState)
     }
@@ -265,8 +267,12 @@ function RegisterPage({ navigate }) {
       <section className="auth-card" aria-labelledby="register-title">
         <p className="eyebrow">Online Judge</p>
         <h1 id="register-title">Create an account</h1>
-        <p className="muted">Registration is handled by the existing email verification flow.</p>
-        <p className="muted">The Dashboard module does not change that backend flow.</p>
+        <p className="muted">
+          Registration is handled by the existing email verification flow.
+        </p>
+        <p className="muted">
+          The Dashboard module does not change that backend flow.
+        </p>
         <LinkButton href="/login" navigate={navigate} className="primary-button">Back to sign in</LinkButton>
       </section>
     </main>
