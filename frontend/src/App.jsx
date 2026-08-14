@@ -141,7 +141,12 @@ function usePathname() {
 
     if (hasHash) {
       const restoreAnchor = () => {
-        if (restoreHash() || attempts >= 60) {
+        if (restoreHash()) {
+          if (resizeObserver) resizeObserver.disconnect()
+          return
+        }
+        if (attempts >= 60) {
+          transitionRef.current = 'idle'
           if (resizeObserver) resizeObserver.disconnect()
           return
         }
