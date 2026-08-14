@@ -1,24 +1,186 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { AuthProvider } from './auth/AuthContext'
 import { useAuth } from './auth/useAuth'
 import { Dashboard } from './pages/Dashboard'
 
+const HISTORY_STATE_KEY = '__onlineJudge'
+
+function createEntryId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
+function getHistoryEntryId() {
+  return window.history.state?.[HISTORY_STATE_KEY]?.entryId ?? null
+}
+
+function ensureHistoryEntryId() {
+  const entryId = getHistoryEntryId()
+  if (entryId) return entryId
+
+  const nextEntryId = createEntryId()
+  const currentState = window.history.state
+  const nextState = currentState && typeof currentState === 'object'
+    ? { ...currentState, [HISTORY_STATE_KEY]: { entryId: nextEntryId } }
+    : { [HISTORY_STATE_KEY]: { entryId: nextEntryId } }
+
+  window.history.replaceState(nextState, '', window.location.href)
+  return nextEntryId
+}
+
+function getLocation() {
+  return {
+    pathname: window.location.pathname,
+    search: window.location.search,
+    hash: window.location.hash,
+  }
+}
+
 function usePathname() {
-  const [pathname, setPathname] = useState(window.location.pathname)
+  const [location, setLocation] = useState(getLocation)
+  const currentEntryIdRef = useRef(null)
+  const positionsRef = useRef(new Map())
+  const transitionRef = useRef('initial')
 
   const navigate = useCallback((path) => {
-    window.history.pushState({}, '', path)
-    setPathname(path)
+    const nextEntryId = createEntryId()
+    const currentEntryId = currentEntryIdRef.current
+
+    if (currentEntryId) {
+      positionsRef.current.set(currentEntryId, {
+        x: window.scrollX,
+        y: window.scrollY,
+      })
+    }
+
+    const currentState = window.history.state
+    const nextState = currentState && typeof currentState === 'object'
+      ? { ...currentState, [HISTORY_STATE_KEY]: { entryId: nextEntryId } }
+      : { [HISTORY_STATE_KEY]: { entryId: nextEntryId } }
+
+    window.history.pushState(nextState, '', path)
+    currentEntryIdRef.current = nextEntryId
+    positionsRef.current.set(nextEntryId, { x: 0, y: 0 })
+    transitionRef.current = 'push'
+    setLocation(getLocation())
   }, [])
 
   useEffect(() => {
-    const onPopState = () => setPathname(window.location.pathname)
+    window.history.scrollRestoration = 'manual'
+
+    const entryId = ensureHistoryEntryId()
+    currentEntryIdRef.current = entryId
+    positionsRef.current.set(entryId, { x: 0, y: 0 })
+    window.scrollTo(0, 0)
+
+    const onScroll = () => {
+      const currentEntryId = currentEntryIdRef.current
+      if (!currentEntryId || transitionRef.current === 'pop') return
+      positionsRef.current.set(currentEntryId, {
+        x: window.scrollX,
+        y: window.scrollY,
+      })
+    }
+
+    const onPopState = (event) => {
+      const targetEntryId = event.state?.[HISTORY_STATE_KEY]?.entryId ?? ensureHistoryEntryId()
+      currentEntryIdRef.current = targetEntryId
+      if (!positionsRef.current.has(targetEntryId)) {
+        positionsRef.current.set(targetEntryId, { x: 0, y: 0 })
+      }
+      transitionRef.current = 'pop'
+      setLocation(getLocation())
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('popstate', onPopState)
+    }
   }, [])
 
-  return { pathname, navigate }
+  useEffect(() => {
+    const transition = transitionRef.current
+    const targetEntryId = currentEntryIdRef.current
+    const target = positionsRef.current.get(targetEntryId) ?? { x: 0, y: 0 }
+    const hasHash = Boolean(location.hash)
+
+    let frameId = 0
+    let resizeObserver
+    let attempts = 0
+
+    const restoreHash = () => {
+      const targetElement = document.getElementById(decodeURIComponent(location.hash.slice(1)))
+      if (targetElement) {
+        targetElement.scrollIntoView()
+        transitionRef.current = 'idle'
+        return true
+      }
+      return false
+    }
+
+    const restoreScroll = () => {
+      attempts += 1
+      window.scrollTo(target.x, target.y)
+      if (window.scrollY === target.y || attempts >= 60) {
+        transitionRef.current = 'idle'
+        if (resizeObserver) resizeObserver.disconnect()
+        return
+      }
+      frameId = requestAnimationFrame(restoreScroll)
+    }
+
+    if (transition === 'initial') return undefined
+
+    if (hasHash) {
+      const restoreAnchor = () => {
+        if (restoreHash() || attempts >= 60) {
+          if (resizeObserver) resizeObserver.disconnect()
+          return
+        }
+        attempts += 1
+        frameId = requestAnimationFrame(restoreAnchor)
+      }
+
+      frameId = requestAnimationFrame(restoreAnchor)
+      if (typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver(restoreAnchor)
+        resizeObserver.observe(document.documentElement)
+      }
+      return () => {
+        cancelAnimationFrame(frameId)
+        if (resizeObserver) resizeObserver.disconnect()
+      }
+    }
+
+    if (transition === 'push') {
+      frameId = requestAnimationFrame(() => {
+        window.scrollTo(0, 0)
+        transitionRef.current = 'idle'
+      })
+      return () => cancelAnimationFrame(frameId)
+    }
+
+    frameId = requestAnimationFrame(restoreScroll)
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        if (transitionRef.current === 'pop') window.scrollTo(target.x, target.y)
+      })
+      resizeObserver.observe(document.documentElement)
+    }
+
+    return () => {
+      cancelAnimationFrame(frameId)
+      if (resizeObserver) resizeObserver.disconnect()
+    }
+  }, [location])
+
+  return { pathname: location.pathname, navigate }
 }
 
 function LinkButton({ children, href, navigate, className = '' }) {
@@ -103,12 +265,8 @@ function RegisterPage({ navigate }) {
       <section className="auth-card" aria-labelledby="register-title">
         <p className="eyebrow">Online Judge</p>
         <h1 id="register-title">Create an account</h1>
-        <p className="muted">
-          Registration is handled by the existing email verification flow.
-        </p>
-        <p className="muted">
-          The Dashboard module does not change that backend flow.
-        </p>
+        <p className="muted">Registration is handled by the existing email verification flow.</p>
+        <p className="muted">The Dashboard module does not change that backend flow.</p>
         <LinkButton href="/login" navigate={navigate} className="primary-button">Back to sign in</LinkButton>
       </section>
     </main>
