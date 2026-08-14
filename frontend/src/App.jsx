@@ -1,121 +1,165 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useCallback, useEffect, useState } from 'react'
 import './App.css'
+import { AuthProvider } from './auth/AuthContext'
+import { useAuth } from './auth/useAuth'
+import { Dashboard } from './pages/Dashboard'
 
-function App() {
-  const [count, setCount] = useState(0)
+function usePathname() {
+  const [pathname, setPathname] = useState(window.location.pathname)
+
+  const navigate = useCallback((path) => {
+    window.history.pushState({}, '', path)
+    setPathname(path)
+  }, [])
+
+  useEffect(() => {
+    const onPopState = () => setPathname(window.location.pathname)
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  return { pathname, navigate }
+}
+
+function LinkButton({ children, href, navigate, className = '' }) {
+  return (
+    <button
+      type="button"
+      className={`link-button ${className}`}
+      onClick={() => navigate(href)}
+    >
+      {children}
+    </button>
+  )
+}
+
+function LoginPage({ navigate }) {
+  const { login, isAuthenticated } = useAuth()
+  const [identifier, setIdentifier] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (isAuthenticated) navigate('/dashboard')
+  }, [isAuthenticated, navigate])
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setError('')
+    setSubmitting(true)
+    try {
+      await login(identifier, password)
+      navigate('/dashboard')
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+    <main className="auth-page">
+      <section className="auth-card" aria-labelledby="login-title">
+        <p className="eyebrow">Online Judge</p>
+        <h1 id="login-title">Welcome back</h1>
+        <p className="muted">Sign in to continue to your dashboard.</p>
+        <form onSubmit={handleSubmit}>
+          <label>
+            Username or email
+            <input
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
+              autoComplete="username"
+              required
+            />
+          </label>
+          <label>
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </label>
+          {error && <p className="error-message" role="alert">{error}</p>}
+          <button className="primary-button" type="submit" disabled={submitting}>
+            {submitting ? 'Signing in…' : 'Sign in'}
+          </button>
+        </form>
+        <p className="auth-footer">
+          Need an account? <LinkButton href="/register" navigate={navigate}>Register</LinkButton>
+        </p>
       </section>
+    </main>
+  )
+}
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
+function RegisterPage({ navigate }) {
+  return (
+    <main className="auth-page">
+      <section className="auth-card" aria-labelledby="register-title">
+        <p className="eyebrow">Online Judge</p>
+        <h1 id="register-title">Create an account</h1>
+        <p className="muted">
+          Registration is handled by the existing email verification flow.
+        </p>
+        <p className="muted">
+          The Dashboard module does not change that backend flow.
+        </p>
+        <LinkButton href="/login" navigate={navigate} className="primary-button">Back to sign in</LinkButton>
       </section>
+    </main>
+  )
+}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+function PracticePlaceholder({ navigate }) {
+  return (
+    <main className="placeholder-page">
+      <p className="eyebrow">Practice</p>
+      <h1>Practice is coming next</h1>
+      <p className="muted">This route exists so Dashboard navigation has a destination.</p>
+      <LinkButton href="/dashboard" navigate={navigate} className="primary-button">Back to Dashboard</LinkButton>
+    </main>
+  )
+}
+
+function ProtectedRoute({ children, navigate }) {
+  const { isAuthenticated, isLoading } = useAuth()
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) navigate('/login')
+  }, [isAuthenticated, isLoading, navigate])
+
+  if (isLoading || !isAuthenticated) {
+    return <main className="loading-page">Checking authentication…</main>
+  }
+
+  return children
+}
+
+function AppRoutes() {
+  const { pathname, navigate } = usePathname()
+
+  if (pathname === '/login' || pathname === '/') return <LoginPage navigate={navigate} />
+  if (pathname === '/register') return <RegisterPage navigate={navigate} />
+  if (pathname === '/practice') {
+    return <ProtectedRoute navigate={navigate}><PracticePlaceholder navigate={navigate} /></ProtectedRoute>
+  }
+  if (pathname === '/dashboard') {
+    return <ProtectedRoute navigate={navigate}><Dashboard navigate={navigate} /></ProtectedRoute>
+  }
+
+  return <LoginPage navigate={navigate} />
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   )
 }
 

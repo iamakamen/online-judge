@@ -87,6 +87,7 @@ PY
         echo "auth: login returned malformed JSON" >&2
         return 1
     fi
+    export ACCESS_TOKEN REFRESH_TOKEN
 
     rm -f "$request_file" "$response_file"
 }
@@ -154,6 +155,7 @@ PY
         echo "auth: refresh returned malformed JSON" >&2
         return 1
     fi
+    export ACCESS_TOKEN REFRESH_TOKEN
 
     rm -f "$request_file" "$response_file"
 }
@@ -220,6 +222,6 @@ auth() {
     esac
 }
 
-if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+if [[ "${BASH_SOURCE[0]}" == "$0" || $# -gt 0 ]]; then
     auth "$@"
 fi
