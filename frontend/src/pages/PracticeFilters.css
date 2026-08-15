@@ -1,0 +1,75 @@
+.practice-filters {
+  align-items: flex-end;
+}
+
+.practice-difficulty-filter {
+  flex: 0 0 180px;
+}
+
+.practice-tag-filter {
+  min-width: 220px;
+  flex: 0 0 220px;
+}
+
+.practice-filter-trigger,
+.practice-tag-trigger {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.practice-filter-menu.practice-difficulty-menu {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 8px;
+}
+
+.practice-difficulty-option {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 10px;
+  border-radius: 7px;
+  padding: 0 9px;
+  color: #c2c6cf;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.practice-difficulty-option:hover,
+.practice-difficulty-option.is-selected {
+  background: #20232c;
+  color: #f4f5f7;
+}
+
+.practice-difficulty-option input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: #a9f15a;
+}
+
+.practice-tag-menu {
+  width: 300px;
+  max-width: min(420px, calc(100vw - 80px));
+}
+
+.practice-tag-options {
+  max-height: 280px;
+}
+
+.practice-filter-clear {
+  margin-left: auto;
+}
+
+@media (max-width: 700px) {
+  .practice-difficulty-filter,
+  .practice-tag-filter {
+    flex: 1 1 180px;
+    min-width: 0;
+  }
+
+  .practice-filter-clear {
+    margin-left: 0;
+  }
+}
