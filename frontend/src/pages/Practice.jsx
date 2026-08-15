@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getProblems, getTopics } from '../api/client'
 import { useAuth } from '../auth/useAuth'
 
@@ -96,19 +96,71 @@ function PracticeSidebar({ isExpanded, onExpand, onCollapse, navigate }) {
   )
 }
 
-function TopicSection({ topic }) {
+function ProblemRow({ problem, number, navigate }) {
   return (
-    <section className="practice-topic-section" aria-labelledby={`practice-topic-${topic.id}`}>
-      <div className="practice-topic-heading">
+    <button
+      type="button"
+      className="practice-problem-row"
+      onClick={() => navigate(`/problem/${problem.slug}`)}
+    >
+      <span className="practice-problem-number">#{number}</span>
+      <span className="practice-problem-title">{problem.title}</span>
+      <span
+        className={`practice-problem-status${problem.solved ? ' is-solved' : ''}`}
+        aria-label={problem.solved ? 'Solved' : 'Not solved'}
+      >
+        {problem.solved ? '✓' : '○'}
+      </span>
+      <span className={`practice-problem-difficulty difficulty-${problem.difficulty.toLowerCase()}`}>
+        {problem.difficulty}
+      </span>
+      <span className="practice-problem-tags">
+        {problem.tags.map((tag) => <span key={tag} className="practice-problem-tag">{tag}</span>)}
+      </span>
+    </button>
+  )
+}
+
+function TopicSection({ topic, problems, isExpanded, onToggle, navigate }) {
+  const solvedCount = problems.filter((problem) => problem.solved).length
+  const isComplete = problems.length > 0 && solvedCount === problems.length
+
+  return (
+    <section
+      className={`practice-topic-section${isComplete ? ' is-complete' : ''}`}
+      aria-labelledby={`practice-topic-${topic.id}`}
+    >
+      <button
+        type="button"
+        className="practice-topic-heading"
+        aria-expanded={isExpanded}
+        aria-controls={`practice-topic-body-${topic.id}`}
+        onClick={onToggle}
+      >
         <div>
           <p className="practice-section-kicker">Topic</p>
           <h2 id={`practice-topic-${topic.id}`}>{topic.name}</h2>
         </div>
-        <span className="practice-topic-chevron" aria-hidden="true">⌄</span>
-      </div>
-      <div className="practice-topic-body">
-        <span>Problem catalog</span>
-      </div>
+        <div className="practice-topic-summary">
+          <span>{solvedCount} / {problems.length}</span>
+          <span className="practice-topic-chevron" aria-hidden="true">⌄</span>
+        </div>
+      </button>
+
+      {isExpanded && (
+        <div id={`practice-topic-body-${topic.id}`} className="practice-topic-body">
+          <div className="practice-problem-list" role="list" aria-label={`${topic.name} problems`}>
+            {problems.map((problem, index) => (
+              <ProblemRow
+                key={problem.id}
+                problem={problem}
+                number={index + 1}
+                navigate={navigate}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   )
 }
@@ -116,8 +168,10 @@ function TopicSection({ topic }) {
 export function Practice({ navigate }) {
   const { requestAuthenticated } = useAuth()
   const [topics, setTopics] = useState([])
+  const [problems, setProblems] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [expandedTopics, setExpandedTopics] = useState({})
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
 
   useEffect(() => {
@@ -128,13 +182,15 @@ export function Practice({ navigate }) {
       setError('')
 
       try {
-        const [topicResponse] = await Promise.all([
+        const [topicResponse, problemResponse] = await Promise.all([
           requestAuthenticated(getTopics),
           requestAuthenticated((accessToken) => getProblems(accessToken)),
         ])
 
         if (cancelled) return
         setTopics(topicResponse)
+        setProblems(problemResponse.items)
+        setExpandedTopics(Object.fromEntries(topicResponse.map((topic) => [topic.id, true])))
       } catch (requestError) {
         if (cancelled) return
         setError(requestError.message)
@@ -149,6 +205,15 @@ export function Practice({ navigate }) {
       cancelled = true
     }
   }, [requestAuthenticated])
+
+  const problemsByTopic = useMemo(() => {
+    const grouped = new Map(topics.map((topic) => [topic.id, []]))
+    for (const problem of problems) {
+      if (!grouped.has(problem.topic_id)) grouped.set(problem.topic_id, [])
+      grouped.get(problem.topic_id).push(problem)
+    }
+    return grouped
+  }, [topics, problems])
 
   if (isLoading) {
     return <main className="loading-page">Loading Practice…</main>
@@ -182,7 +247,27 @@ export function Practice({ navigate }) {
         </header>
 
         <section className="practice-catalog" aria-label="Practice topics">
-          {topics.map((topic) => <TopicSection key={topic.id} topic={topic} />)}
+          {topics.map((topic) => {
+            const topicProblems = problemsByTopic.get(topic.id) || []
+            if (topicProblems.length === 0) return null
+
+            return (
+              <TopicSection
+                key={topic.id}
+                topic={topic}
+                problems={topicProblems}
+                isExpanded={expandedTopics[topic.id] ?? true}
+                onToggle={() => setExpandedTopics((current) => ({
+                  ...current,
+                  [topic.id]: !(current[topic.id] ?? true),
+                }))}
+                navigate={navigate}
+              />
+            )
+          })}
+          {topics.every((topic) => (problemsByTopic.get(topic.id) || []).length === 0) && (
+            <div className="practice-empty-state">No problems are available.</div>
+          )}
         </section>
       </main>
     </div>
