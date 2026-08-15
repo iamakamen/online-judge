@@ -188,31 +188,31 @@ PROBLEMS = (
     problem(
         "linked-list", "reverse-linked-list", "Reverse Linked List",
         "Reverse a singly linked list and return its new head.",
-        Difficulty.EASY, ("linked-list", "iteration", "pointers"), "reverse_list",
+        Difficulty.EASY, ("iteration", "pointers"), "reverse_list",
         "head", "head", cases(
             "1 2 3 4 5", "5 4 3 2 1", "1 2", "2 1", "", "")),
     problem(
         "linked-list", "merge-two-sorted-lists", "Merge Two Sorted Lists",
         "Merge two sorted singly linked lists into one sorted list.",
-        Difficulty.EASY, ("linked-list", "two-pointers", "sentinel"), "merge_two_lists",
+        Difficulty.EASY, ("two-pointers", "sentinel"), "merge_two_lists",
         "list1, list2", "list1, list2", cases(
             "1 2 4\n1 3 4", "1 1 2 3 4 4", "\n0", "0", "-5 -2\n-6 -3 -1", "-6 -5 -3 -2 -1")),
     problem(
         "linked-list", "linked-list-cycle", "Linked List Cycle",
         "Return whether a singly linked list contains a cycle.",
-        Difficulty.EASY, ("linked-list", "fast-slow-pointers", "cycle-detection"), "has_cycle",
+        Difficulty.EASY, ("fast-slow-pointers", "cycle-detection"), "has_cycle",
         "head", "head", cases(
             "3 2 0 -4\nindex=1", "true", "1\nindex=-1", "false", "1 2\nindex=0", "true")),
     problem(
         "linked-list", "remove-nth-node", "Remove Nth Node From End of List",
         "Remove the nth node from the end of a linked list and return the resulting list.",
-        Difficulty.MEDIUM, ("linked-list", "two-pointers", "sentinel"), "remove_nth_from_end",
+        Difficulty.MEDIUM, ("two-pointers", "sentinel"), "remove_nth_from_end",
         "head, n", "head, n", cases(
             "1 2 3 4 5\n2", "1 2 3 5", "1\n1", "", "1 2\n2", "2")),
     problem(
         "linked-list", "copy-list-with-random-pointer", "Copy List with Random Pointer",
         "Deep-copy a linked list whose nodes have both next and arbitrary random pointers.",
-        Difficulty.HARD, ("linked-list", "hash-map", "deep-copy"), "copy_random_list",
+        Difficulty.HARD, ("hash-map", "deep-copy"), "copy_random_list",
         "head", "head", cases(
             "7,null;13,0;11,4;10,2;1,0", "7,null;13,0;11,4;10,2;1,0", "1,null", "1,null", "", "")),
     problem(
@@ -248,31 +248,31 @@ PROBLEMS = (
     problem(
         "dynamic-programming", "climbing-stairs", "Climbing Stairs",
         "Count the distinct ways to reach the nth step when each move advances one or two steps.",
-        Difficulty.EASY, ("dynamic-programming", "fibonacci", "counting"), "climb_stairs",
+        Difficulty.EASY, ("fibonacci", "counting"), "climb_stairs",
         "n: int", "n", cases(
             "2", "2", "3", "3", "10", "89")),
     problem(
         "dynamic-programming", "house-robber", "House Robber",
         "Maximize the amount robbed from non-adjacent houses without triggering the alarm.",
-        Difficulty.MEDIUM, ("dynamic-programming", "one-dimensional-dp", "optimization"), "rob",
+        Difficulty.MEDIUM, ("one-dimensional-dp", "optimization"), "rob",
         "nums: list[int]", "nums", cases(
             "1 2 3 1", "4", "2 7 9 3 1", "12", "2 1 1 2", "4")),
     problem(
         "dynamic-programming", "coin-change", "Coin Change",
         "Return the fewest coins needed to make the target amount, or -1 if it is impossible.",
-        Difficulty.MEDIUM, ("dynamic-programming", "unbounded-knapsack", "bottom-up"), "coin_change",
+        Difficulty.MEDIUM, ("unbounded-knapsack", "bottom-up"), "coin_change",
         "coins: list[int], amount: int", "coins, amount", cases(
             "1 2 5\n11", "3", "2\n3", "-1", "1 3 4\n6", "2")),
     problem(
         "dynamic-programming", "longest-increasing-subsequence", "Longest Increasing Subsequence",
         "Return the length of the longest strictly increasing subsequence.",
-        Difficulty.MEDIUM, ("dynamic-programming", "binary-search", "subsequence"), "length_of_lis",
+        Difficulty.MEDIUM, ("binary-search", "subsequence"), "length_of_lis",
         "nums: list[int]", "nums", cases(
             "10 9 2 5 3 7 101 18", "4", "0 1 0 3 2 3", "4", "7 7 7 7", "1")),
     problem(
         "dynamic-programming", "edit-distance", "Edit Distance",
         "Return the minimum number of insertions, deletions, and substitutions needed to transform one word into another.",
-        Difficulty.HARD, ("dynamic-programming", "two-dimensional-dp", "levenshtein"), "min_distance",
+        Difficulty.HARD, ("two-dimensional-dp", "levenshtein"), "min_distance",
         "word1: str, word2: str", "word1, word2", cases(
             "horse\nros", "3", "intention\nexecution", "5", "abc\nabc", "0")),
 )
