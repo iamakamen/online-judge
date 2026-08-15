@@ -45,8 +45,39 @@ button { cursor: pointer; }
 .modal h2 { margin: 8px 0; color: #f4f5f7; }
 .modal .primary-button { margin-top: 20px; }
 
+.practice-shell { min-height: 100svh; background: #0c0d12; color: #f4f5f7; }
+.practice-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 10; display: flex; width: 72px; flex-direction: column; padding: 20px 12px; border-right: 1px solid #252832; background: #101219; transition: width 160ms ease; overflow: hidden; }
+.practice-sidebar:hover, .practice-sidebar:focus-within { width: 220px; }
+.practice-sidebar-brand { display: grid; width: 48px; height: 40px; flex: 0 0 auto; place-items: center; border: 0; border-radius: 10px; background: transparent; color: #a9f15a; font-size: 1.05rem; font-weight: 900; letter-spacing: .08em; }
+.practice-sidebar-brand:hover, .practice-sidebar-brand:focus-visible { background: #20232c; }
+.practice-sidebar-nav, .practice-sidebar-future { display: grid; gap: 6px; }
+.practice-sidebar-nav { margin-top: 28px; }
+.practice-sidebar-future { margin-top: auto; }
+.practice-sidebar-item { display: flex; width: 196px; min-height: 44px; align-items: center; gap: 14px; border: 0; border-radius: 10px; padding: 0 12px; background: transparent; color: #9ba1ae; text-align: left; white-space: nowrap; }
+.practice-sidebar-item:hover, .practice-sidebar-item:focus-visible { background: #20232c; color: #f4f5f7; }
+.practice-sidebar-item.is-active { background: #181b23; color: #a9f15a; }
+.practice-sidebar-item:disabled { cursor: default; opacity: .48; }
+.practice-sidebar-icon { width: 22px; height: 22px; flex: 0 0 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.practice-sidebar-placeholder { display: inline-grid; width: 22px; height: 22px; flex: 0 0 22px; place-items: center; border: 1px solid currentColor; border-radius: 6px; font-size: .7rem; font-weight: 800; }
+.practice-main { min-height: 100svh; margin-left: 72px; padding: 72px clamp(28px, 6vw, 88px) 96px; }
+.practice-header { max-width: 980px; margin: 0 auto; padding-bottom: 44px; border-bottom: 1px solid #252832; }
+.practice-header h1 { margin: 8px 0 12px; font-size: clamp(2.4rem, 5vw, 4.4rem); letter-spacing: -.06em; }
+.practice-catalog { max-width: 980px; margin: 32px auto 0; display: grid; gap: 18px; }
+.practice-topic-section { overflow: hidden; border: 1px solid #292d38; border-radius: 14px; background: #14161d; }
+.practice-topic-heading { display: flex; min-height: 84px; align-items: center; justify-content: space-between; padding: 18px 24px; }
+.practice-section-kicker { margin: 0 0 5px; color: #707786; font-size: .7rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.practice-topic-heading h2 { margin: 0; font-size: 1.2rem; letter-spacing: -.02em; }
+.practice-topic-chevron { color: #9ba1ae; font-size: 1.4rem; line-height: 1; }
+.practice-topic-body { min-height: 68px; display: flex; align-items: center; border-top: 1px solid #252832; padding: 0 24px; color: #707786; font-size: .9rem; }
+
 @media (max-width: 720px) {
   .stat-grid, .dashboard-actions { grid-template-columns: 1fr; }
   .dashboard-page { padding-top: 48px; }
   .topbar { padding-inline: 24px; }
+  .practice-sidebar { width: 64px; padding-inline: 8px; }
+  .practice-sidebar:hover, .practice-sidebar:focus-within { width: 200px; }
+  .practice-main { margin-left: 64px; padding: 48px 20px 72px; }
+  .practice-header h1 { font-size: 2.5rem; }
+  .practice-topic-heading { padding-inline: 18px; }
+  .practice-topic-body { padding-inline: 18px; }
 }
