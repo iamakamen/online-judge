@@ -96,7 +96,7 @@ function PracticeSidebar({ isExpanded, onExpand, onCollapse, navigate }) {
   )
 }
 
-function ProblemRow({ problem, navigate }) {
+function ProblemRow({ problem, navigate, visibleTags }) {
   return (
     <button
       type="button"
@@ -114,16 +114,16 @@ function ProblemRow({ problem, navigate }) {
         {problem.difficulty}
       </span>
       <span className="practice-problem-tags">
-        {problem.tags.map((tag) => <span key={tag} className="practice-problem-tag">{tag}</span>)}
+        {visibleTags.map((tag) => <span key={tag} className="practice-problem-tag">{tag}</span>)}
       </span>
     </button>
   )
 }
 
-function TopicSection({ topic, problems, actualProblems, isFiltered, isExpanded, onToggle, navigate }) {
+function TopicSection({ topic, problems, actualProblems, isFiltered, isExpanded, onToggle, navigate, topicTagNames }) {
   const solvedCount = actualProblems.filter((problem) => problem.solved).length
   const isComplete = actualProblems.length > 0 && solvedCount === actualProblems.length
-  const summary = isFiltered ? `${problems.length} matching` : `${solvedCount} / ${actualProblems.length}`
+  const summary = isFiltered ? `${problems.length}` : `${solvedCount} / ${actualProblems.length}`
 
   return (
     <section
@@ -148,7 +148,12 @@ function TopicSection({ topic, problems, actualProblems, isFiltered, isExpanded,
         <div id={`practice-topic-body-${topic.id}`} className="practice-topic-body">
           <div className="practice-problem-list" role="list" aria-label={`${topic.name} problems`}>
             {problems.map((problem) => (
-              <ProblemRow key={problem.id} problem={problem} navigate={navigate} />
+              <ProblemRow
+                key={problem.id}
+                problem={problem}
+                navigate={navigate}
+                visibleTags={problem.tags.filter((tag) => !topicTagNames.has(tag.trim().toLowerCase()))}
+              />
             ))}
           </div>
         </div>
@@ -158,36 +163,67 @@ function TopicSection({ topic, problems, actualProblems, isFiltered, isExpanded,
 }
 
 function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags, onDifficultyChange, onTagToggle, onClear }) {
+  const [isDifficultyMenuOpen, setIsDifficultyMenuOpen] = useState(false)
   const [isTagMenuOpen, setIsTagMenuOpen] = useState(false)
   const [tagSearch, setTagSearch] = useState('')
+  const difficultyMenuRef = useRef(null)
   const tagMenuRef = useRef(null)
   const hasFilters = Boolean(selectedDifficulty) || selectedTags.length > 0
   const filteredTags = tags.filter((tag) => tag.toLowerCase().includes(tagSearch.trim().toLowerCase()))
 
   useEffect(() => {
-    if (!isTagMenuOpen) return undefined
+    if (!isDifficultyMenuOpen && !isTagMenuOpen) return undefined
 
     const handlePointerDown = (event) => {
-      if (!tagMenuRef.current?.contains(event.target)) setIsTagMenuOpen(false)
+      if (isDifficultyMenuOpen && !difficultyMenuRef.current?.contains(event.target)) {
+        setIsDifficultyMenuOpen(false)
+      }
+      if (isTagMenuOpen && !tagMenuRef.current?.contains(event.target)) {
+        setIsTagMenuOpen(false)
+      }
     }
 
     document.addEventListener('mousedown', handlePointerDown)
     return () => document.removeEventListener('mousedown', handlePointerDown)
-  }, [isTagMenuOpen])
+  }, [isDifficultyMenuOpen, isTagMenuOpen])
+
+  const handleDifficultyChange = (difficulty) => {
+    onDifficultyChange(difficulty)
+    setIsDifficultyMenuOpen(false)
+  }
 
   return (
     <section className="practice-filters" aria-label="Practice filters">
-      <div className="practice-filter-group">
-        <label htmlFor="practice-difficulty-filter">Difficulty</label>
-        <select
-          id="practice-difficulty-filter"
-          value={selectedDifficulty}
-          onChange={(event) => onDifficultyChange(event.target.value)}
+      <div className="practice-filter-group practice-difficulty-filter" ref={difficultyMenuRef}>
+        <span className="practice-filter-label">Difficulty</span>
+        <button
+          type="button"
+          className={`practice-filter-trigger${isDifficultyMenuOpen ? ' is-open' : ''}`}
+          aria-expanded={isDifficultyMenuOpen}
+          aria-haspopup="listbox"
+          onClick={() => {
+            setIsDifficultyMenuOpen((open) => !open)
+            setIsTagMenuOpen(false)
+          }}
         >
-          {difficulties.map((difficulty) => (
-            <option key={difficulty} value={difficulty}>{difficulty}</option>
-          ))}
-        </select>
+          <span>{selectedDifficulty}</span>
+          <span className={`practice-filter-chevron${isDifficultyMenuOpen ? ' is-open' : ''}`} aria-hidden="true" />
+        </button>
+
+        {isDifficultyMenuOpen && (
+          <div className="practice-filter-menu" role="listbox" aria-label="Difficulty">
+            {difficulties.map((difficulty) => (
+              <button
+                key={difficulty}
+                type="button"
+                className={`practice-filter-menu-option${selectedDifficulty === difficulty ? ' is-selected' : ''}`}
+                onClick={() => handleDifficultyChange(difficulty)}
+              >
+                {difficulty}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="practice-filter-group practice-tag-filter" ref={tagMenuRef}>
@@ -197,9 +233,12 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
           className={`practice-tag-trigger${isTagMenuOpen ? ' is-open' : ''}`}
           aria-expanded={isTagMenuOpen}
           aria-haspopup="listbox"
-          onClick={() => setIsTagMenuOpen((open) => !open)}
+          onClick={() => {
+            setIsTagMenuOpen((open) => !open)
+            setIsDifficultyMenuOpen(false)
+          }}
         >
-          <span>{selectedTags.length ? `${selectedTags.length} selected` : 'Tags'}</span>
+          <span>{selectedTags.join(', ')}</span>
           <span className={`practice-filter-chevron${isTagMenuOpen ? ' is-open' : ''}`} aria-hidden="true" />
         </button>
 
@@ -300,6 +339,10 @@ export function Practice({ navigate }) {
     }
   }, [requestAuthenticated])
 
+  const topicTagNames = useMemo(() => (
+    new Set(topics.map((topic) => topic.name.trim().toLowerCase()))
+  ), [topics])
+
   const difficulties = useMemo(() => (
     [...new Set(problems.map((problem) => problem.difficulty))]
       .sort((a, b) => a.localeCompare(b))
@@ -307,8 +350,9 @@ export function Practice({ navigate }) {
 
   const tags = useMemo(() => (
     [...new Set(problems.flatMap((problem) => problem.tags))]
+      .filter((tag) => !topicTagNames.has(tag.trim().toLowerCase()))
       .sort((a, b) => a.localeCompare(b))
-  ), [problems])
+  ), [problems, topicTagNames])
 
   const isFiltered = Boolean(selectedDifficulty) || selectedTags.length > 0
 
@@ -403,6 +447,7 @@ export function Practice({ navigate }) {
                 [topic.id]: !(current[topic.id] ?? true),
               }))}
               navigate={navigate}
+              topicTagNames={topicTagNames}
             />
           ))}
           {visibleTopics.length === 0 && (
