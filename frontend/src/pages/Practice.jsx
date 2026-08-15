@@ -213,18 +213,18 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
         </button>
 
         {isDifficultyMenuOpen && (
-          <div className="practice-filter-menu practice-difficulty-menu" role="radiogroup" aria-label="Difficulty">
+          <div className="practice-filter-menu practice-difficulty-menu" role="listbox" aria-label="Difficulty">
             {difficulties.map((difficulty) => (
-              <label key={difficulty} className={`practice-difficulty-option${selectedDifficulty === difficulty ? ' is-selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="practice-difficulty"
-                  value={difficulty}
-                  checked={selectedDifficulty === difficulty}
-                  onChange={() => handleDifficultyChange(difficulty)}
-                />
-                <span>{difficulty}</span>
-              </label>
+              <button
+                key={difficulty}
+                type="button"
+                className={`practice-difficulty-option${selectedDifficulty === difficulty ? ' is-selected' : ''}`}
+                role="option"
+                aria-selected={selectedDifficulty === difficulty}
+                onClick={() => handleDifficultyChange(difficulty)}
+              >
+                {difficulty}
+              </button>
             ))}
           </div>
         )}
