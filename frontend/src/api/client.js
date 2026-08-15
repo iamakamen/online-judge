@@ -54,3 +54,26 @@ export function logout(refreshToken) {
 export function getDashboard(accessToken) {
   return request('/api/v1/dashboard', { accessToken })
 }
+
+export function getTopics(accessToken) {
+  return request('/api/v1/topics', { accessToken })
+}
+
+export function getProblems(accessToken, {
+  topicId,
+  difficulty,
+  tag,
+  tags = [],
+  page = 1,
+  pageSize = 100,
+} = {}) {
+  const params = new URLSearchParams()
+  if (topicId !== undefined && topicId !== null) params.set('topic_id', topicId)
+  if (difficulty) params.set('difficulty', difficulty)
+  if (tag) params.set('tag', tag)
+  for (const selectedTag of tags) params.append('tags', selectedTag)
+  params.set('page', page)
+  params.set('page_size', pageSize)
+
+  return request(`/api/v1/problems?${params.toString()}`, { accessToken })
+}
