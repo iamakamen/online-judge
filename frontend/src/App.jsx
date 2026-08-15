@@ -130,6 +130,16 @@ function ProtectedRoute({ children, navigate }) {
   return children
 }
 
+function ProblemPlaceholder() {
+  return (
+    <main className="placeholder-page">
+      <p className="eyebrow">Problem</p>
+      <h1>Problem flow coming next</h1>
+      <p className="muted">The Practice catalog navigation contract is established.</p>
+    </main>
+  )
+}
+
 function AppRoutes() {
   const { pathname, navigate } = usePathname()
 
@@ -140,6 +150,9 @@ function AppRoutes() {
   }
   if (pathname === '/dashboard') {
     return <ProtectedRoute navigate={navigate}><Dashboard navigate={navigate} /></ProtectedRoute>
+  }
+  if (/^\/problem\/[^/]+$/.test(pathname)) {
+    return <ProtectedRoute navigate={navigate}><ProblemPlaceholder /></ProtectedRoute>
   }
 
   return <LoginPage navigate={navigate} />
