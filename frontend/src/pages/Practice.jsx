@@ -37,27 +37,43 @@ function SidebarItem({ label, icon, active = false, disabled = false, onClick })
 }
 
 function PracticeSidebar({ navigate }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const handleNavigate = (path) => {
+    setIsExpanded(false)
+    navigate(path)
+  }
+
   return (
-    <aside className="practice-sidebar" aria-label="Primary navigation">
+    <aside
+      className={`practice-sidebar${isExpanded ? ' is-expanded' : ''}`}
+      aria-label="Primary navigation"
+      onMouseEnter={() => setIsExpanded(true)}
+      onMouseLeave={() => setIsExpanded(false)}
+      onFocus={() => setIsExpanded(true)}
+    >
       <button
         type="button"
         className="practice-sidebar-brand"
         aria-label="Go to Dashboard"
         title="Dashboard"
-        onClick={() => navigate('/dashboard')}
+        onClick={() => handleNavigate('/dashboard')}
       >
         OJ
       </button>
 
       <nav className="practice-sidebar-nav">
-        <SidebarItem label="Dashboard" icon={<DashboardIcon />} onClick={() => navigate('/dashboard')} />
-        <SidebarItem label="Practice" icon={<PracticeIcon />} active />
+        <SidebarItem label="Dashboard" icon={<DashboardIcon />} onClick={() => handleNavigate('/dashboard')} />
+        <SidebarItem label="Practice" icon={<PracticeIcon />} active onClick={() => setIsExpanded(false)} />
       </nav>
 
       <div className="practice-sidebar-future" aria-label="Future navigation">
         <SidebarItem label="Learn" icon={<span className="practice-sidebar-placeholder">L</span>} disabled />
         <SidebarItem label="Contest" icon={<span className="practice-sidebar-placeholder">C</span>} disabled />
         <SidebarItem label="Forum" icon={<span className="practice-sidebar-placeholder">F</span>} disabled />
+      </div>
+
+      <div className="practice-sidebar-profile">
         <SidebarItem label="Profile" icon={<span className="practice-sidebar-placeholder">P</span>} disabled />
       </div>
     </aside>
