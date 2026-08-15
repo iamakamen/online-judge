@@ -29,28 +29,25 @@
 }
 
 .practice-difficulty-option {
-  display: flex;
+  display: block;
+  width: 100%;
   min-height: 38px;
-  align-items: center;
-  gap: 10px;
+  box-sizing: border-box;
+  border: 0;
   border-radius: 7px;
+  background: transparent;
   padding: 0 9px;
   color: #c2c6cf;
   cursor: pointer;
+  font: inherit;
   font-weight: 700;
+  text-align: left;
 }
 
 .practice-difficulty-option:hover,
 .practice-difficulty-option.is-selected {
   background: #20232c;
   color: #f4f5f7;
-}
-
-.practice-difficulty-option input {
-  width: 14px;
-  height: 14px;
-  margin: 0;
-  accent-color: #a9f15a;
 }
 
 .practice-tag-control {
