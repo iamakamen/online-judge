@@ -170,6 +170,8 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
   const tagMenuRef = useRef(null)
   const hasFilters = Boolean(selectedDifficulty) || selectedTags.length > 0
   const filteredTags = tags.filter((tag) => tag.toLowerCase().includes(tagSearch.trim().toLowerCase()))
+  const visibleSelectedTags = selectedTags.slice(0, 3)
+  const hiddenSelectedTagCount = Math.max(selectedTags.length - visibleSelectedTags.length, 0)
 
   useEffect(() => {
     if (!isDifficultyMenuOpen && !isTagMenuOpen) return undefined
@@ -192,12 +194,6 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
     setIsDifficultyMenuOpen(false)
   }
 
-  const tagTriggerLabel = selectedTags.length === 0
-    ? 'Select tags'
-    : selectedTags.length === 1
-      ? selectedTags[0]
-      : `${selectedTags.length} tags selected`
-
   return (
     <section className="practice-filters" aria-label="Practice filters">
       <div className="practice-filter-group practice-difficulty-filter" ref={difficultyMenuRef}>
@@ -212,7 +208,7 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
             setIsTagMenuOpen(false)
           }}
         >
-          <span>{selectedDifficulty || 'Select difficulty'}</span>
+          <span>{selectedDifficulty}</span>
           <span className={`practice-filter-chevron${isDifficultyMenuOpen ? ' is-open' : ''}`} aria-hidden="true" />
         </button>
 
@@ -236,19 +232,50 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
 
       <div className="practice-filter-group practice-tag-filter" ref={tagMenuRef}>
         <span className="practice-filter-label">Tags</span>
-        <button
-          type="button"
-          className={`practice-tag-trigger${isTagMenuOpen ? ' is-open' : ''}`}
-          aria-expanded={isTagMenuOpen}
-          aria-haspopup="listbox"
-          onClick={() => {
-            setIsTagMenuOpen((open) => !open)
-            setIsDifficultyMenuOpen(false)
-          }}
-        >
-          <span>{tagTriggerLabel}</span>
-          <span className={`practice-filter-chevron${isTagMenuOpen ? ' is-open' : ''}`} aria-hidden="true" />
-        </button>
+        <div className={`practice-tag-control${isTagMenuOpen ? ' is-open' : ''}`}>
+          <div className="practice-tag-pills" aria-label="Selected tags">
+            {visibleSelectedTags.map((tag) => (
+              <span key={tag} className="practice-selected-tag">
+                <span>{tag.toLowerCase()}</span>
+                <button
+                  type="button"
+                  className="practice-selected-tag-remove"
+                  aria-label={`Remove ${tag} filter`}
+                  onClick={() => onTagToggle(tag)}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            {hiddenSelectedTagCount > 0 && (
+              <span className="practice-selected-tag-more">+{hiddenSelectedTagCount} more</span>
+            )}
+          </div>
+          <button
+            type="button"
+            className="practice-add-tag"
+            aria-expanded={isTagMenuOpen}
+            aria-haspopup="listbox"
+            onClick={() => {
+              setIsTagMenuOpen((open) => !open)
+              setIsDifficultyMenuOpen(false)
+            }}
+          >
+            + Add tag
+          </button>
+          {selectedTags.length === 0 && (
+            <button
+              type="button"
+              className="practice-tag-open-area"
+              aria-label="Open tag filters"
+              aria-expanded={isTagMenuOpen}
+              onClick={() => {
+                setIsTagMenuOpen((open) => !open)
+                setIsDifficultyMenuOpen(false)
+              }}
+            />
+          )}
+        </div>
 
         {isTagMenuOpen && (
           <div className="practice-tag-menu">
@@ -257,7 +284,6 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
               type="search"
               value={tagSearch}
               onChange={(event) => setTagSearch(event.target.value)}
-              placeholder="Search tags"
               aria-label="Search tags"
               autoFocus
             />
