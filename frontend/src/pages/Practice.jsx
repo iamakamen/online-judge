@@ -139,7 +139,7 @@ function TopicSection({ topic, problems, isExpanded, onToggle, navigate }) {
         <h2 id={`practice-topic-${topic.id}`}>{topic.name}</h2>
         <div className="practice-topic-summary">
           <span>{solvedCount} / {problems.length}</span>
-          <span className={`practice-topic-chevron${isExpanded ? ' is-expanded' : ''}`} aria-hidden="true">⌄</span>
+          <span className={`practice-topic-chevron${isExpanded ? ' is-expanded' : ''}`} aria-hidden="true" />
         </div>
       </button>
 
