@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import './PracticeFilters.css'
 import { getProblems, getTopics } from '../api/client'
 import { useAuth } from '../auth/useAuth'
 
@@ -191,6 +192,12 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
     setIsDifficultyMenuOpen(false)
   }
 
+  const tagTriggerLabel = selectedTags.length === 0
+    ? 'Select tags'
+    : selectedTags.length === 1
+      ? selectedTags[0]
+      : `${selectedTags.length} tags selected`
+
   return (
     <section className="practice-filters" aria-label="Practice filters">
       <div className="practice-filter-group practice-difficulty-filter" ref={difficultyMenuRef}>
@@ -205,21 +212,23 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
             setIsTagMenuOpen(false)
           }}
         >
-          <span>{selectedDifficulty}</span>
+          <span>{selectedDifficulty || 'Select difficulty'}</span>
           <span className={`practice-filter-chevron${isDifficultyMenuOpen ? ' is-open' : ''}`} aria-hidden="true" />
         </button>
 
         {isDifficultyMenuOpen && (
-          <div className="practice-filter-menu" role="listbox" aria-label="Difficulty">
+          <div className="practice-filter-menu practice-difficulty-menu" role="radiogroup" aria-label="Difficulty">
             {difficulties.map((difficulty) => (
-              <button
-                key={difficulty}
-                type="button"
-                className={`practice-filter-menu-option${selectedDifficulty === difficulty ? ' is-selected' : ''}`}
-                onClick={() => handleDifficultyChange(difficulty)}
-              >
-                {difficulty}
-              </button>
+              <label key={difficulty} className={`practice-difficulty-option${selectedDifficulty === difficulty ? ' is-selected' : ''}`}>
+                <input
+                  type="radio"
+                  name="practice-difficulty"
+                  value={difficulty}
+                  checked={selectedDifficulty === difficulty}
+                  onChange={() => handleDifficultyChange(difficulty)}
+                />
+                <span>{difficulty}</span>
+              </label>
             ))}
           </div>
         )}
@@ -237,7 +246,7 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
             setIsDifficultyMenuOpen(false)
           }}
         >
-          <span>{selectedTags.join(', ')}</span>
+          <span>{tagTriggerLabel}</span>
           <span className={`practice-filter-chevron${isTagMenuOpen ? ' is-open' : ''}`} aria-hidden="true" />
         </button>
 
@@ -437,18 +446,10 @@ export function Practice({ navigate }) {
               actualProblems={actualProblemsByTopic.get(topic.id) || []}
               isFiltered={isFiltered}
               isExpanded={expandedTopics[topic.id] ?? true}
-              onToggle={() => setExpandedTopics((current) => ({
-                ...current,
-                [topic.id]: !(current[topic.id] ?? true),
-              }))}
+              onToggle={() => setExpandedTopics((current) => ({ ...current, [topic.id]: !current[topic.id] }))}
               navigate={navigate}
             />
           ))}
-          {visibleTopics.length === 0 && (
-            <div className="practice-empty-state">
-              {isFiltered ? 'No problems match the selected filters.' : 'No problems are available.'}
-            </div>
-          )}
         </section>
       </main>
     </div>
