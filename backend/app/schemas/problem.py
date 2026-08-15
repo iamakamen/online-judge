@@ -40,6 +40,7 @@ class ProblemListResponse(BaseModel):
     slug: str
     difficulty: Difficulty
     tags: list[str]
+    solved: bool
 
 
 class ProblemListPage(BaseModel):

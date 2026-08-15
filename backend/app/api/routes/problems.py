@@ -70,17 +70,20 @@ def list_problem_route(
     topic_id: int | None = None,
     difficulty: Difficulty | None = None,
     tag: str | None = None,
+    tags: list[str] | None = Query(default=None),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     try:
         result: ProblemListResult = list_problems(
             db=db,
+            user_id=current_user.id,
             topic_id=topic_id,
             difficulty=difficulty,
             tag=tag,
+            tags=tags,
             page=page,
             page_size=page_size,
         )
@@ -88,7 +91,19 @@ def list_problem_route(
         raise _problem_error(exc) from exc
 
     return ProblemListPage(
-        items=[ProblemListResponse.model_validate(item) for item in result.items],
+        items=[
+            ProblemListResponse(
+                id=item.problem.id,
+                topic_id=item.problem.topic_id,
+                created_by_user_id=item.problem.created_by_user_id,
+                title=item.problem.title,
+                slug=item.problem.slug,
+                difficulty=item.problem.difficulty,
+                tags=item.problem.tags,
+                solved=item.solved,
+            )
+            for item in result.items
+        ],
         total=result.total,
         page=page,
         page_size=page_size,

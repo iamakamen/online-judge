@@ -16,6 +16,7 @@ from backend.app.models.refresh_session import RefreshSession
 from backend.app.models.topic import Topic
 from backend.app.models.problem import Problem
 from backend.app.models.test_case import TestCase
+from backend.app.models.user_problem_progress import UserProblemProgress
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -40,7 +41,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 
-# other values from the config, defined by the needs of env.py,
+# other values for env.py, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.

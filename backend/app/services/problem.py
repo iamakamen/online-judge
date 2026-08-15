@@ -1,18 +1,25 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from backend.app.models.problem import Difficulty, Problem
 from backend.app.models.test_case import TestCase
 from backend.app.models.topic import Topic
+from backend.app.models.user_problem_progress import UserProblemProgress
+
+
+@dataclass
+class ProblemListItem:
+    problem: Problem
+    solved: bool
 
 
 @dataclass
 class ProblemListResult:
-    items: list[Problem]
+    items: list[ProblemListItem]
     total: int
 
 
@@ -115,9 +122,11 @@ def get_problem_detail(
 def list_problems(
     db: Session,
     *,
+    user_id: int,
     topic_id: int | None = None,
     difficulty: Difficulty | None = None,
     tag: str | None = None,
+    tags: list[str] | None = None,
     page: int = 1,
     page_size: int = 20,
 ) -> ProblemListResult:
@@ -131,21 +140,39 @@ def list_problems(
         filters.append(Problem.topic_id == topic_id)
     if difficulty is not None:
         filters.append(Problem.difficulty == difficulty)
-    if tag is not None:
-        filters.append(Problem.tags.contains([tag]))
 
-    filtered_query = select(Problem).where(*filters)
-    total = db.scalar(
-        select(func.count()).select_from(filtered_query.subquery())
+    selected_tags = list(tags or [])
+    if tag is not None:
+        selected_tags.append(tag)
+
+    for selected_tag in dict.fromkeys(selected_tags):
+        filters.append(Problem.tags.contains([selected_tag]))
+
+    progress_join = and_(
+        UserProblemProgress.problem_id == Problem.id,
+        UserProblemProgress.user_id == user_id,
     )
-    items = list(
-        db.scalars(
-            filtered_query
-            .order_by(Problem.id.asc())
-            .offset((page - 1) * page_size)
-            .limit(page_size)
-        ).all()
+
+    filtered_query = (
+        select(Problem, func.coalesce(UserProblemProgress.solved, False).label("solved"))
+        .outerjoin(UserProblemProgress, progress_join)
+        .where(*filters)
     )
+    count_query = select(func.count()).select_from(
+        select(Problem).where(*filters).subquery()
+    )
+    total = db.scalar(count_query)
+    rows = db.execute(
+        filtered_query
+        .order_by(Problem.id.asc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+
+    items = [
+        ProblemListItem(problem=problem, solved=bool(solved))
+        for problem, solved in rows
+    ]
     return ProblemListResult(items=items, total=total or 0)
 
 

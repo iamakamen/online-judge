@@ -22,6 +22,7 @@ from backend.app.models.refresh_session import RefreshSession
 from backend.app.models.test_case import TestCase
 from backend.app.models.topic import Topic
 from backend.app.models.user import User, UserRole
+from backend.app.models.user_problem_progress import UserProblemProgress
 from backend.app.services.password import hash_password
 from backend.app.services.token import create_access_token
 
@@ -46,6 +47,7 @@ def db() -> Generator[Session, None, None]:
 
 @pytest.fixture(autouse=True)
 def clean_database(db: Session) -> Generator[None, None, None]:
+    db.execute(delete(UserProblemProgress))
     db.execute(delete(TestCase))
     db.execute(delete(Problem))
     db.execute(delete(Topic))
@@ -56,6 +58,7 @@ def clean_database(db: Session) -> Generator[None, None, None]:
     yield
 
     db.rollback()
+    db.execute(delete(UserProblemProgress))
     db.execute(delete(TestCase))
     db.execute(delete(Problem))
     db.execute(delete(Topic))
