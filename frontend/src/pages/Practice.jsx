@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { getProblems, getTopics } from '../api/client'
 import { useAuth } from '../auth/useAuth'
 
@@ -148,11 +148,7 @@ function TopicSection({ topic, problems, actualProblems, isFiltered, isExpanded,
         <div id={`practice-topic-body-${topic.id}`} className="practice-topic-body">
           <div className="practice-problem-list" role="list" aria-label={`${topic.name} problems`}>
             {problems.map((problem) => (
-              <ProblemRow
-                key={problem.id}
-                problem={problem}
-                navigate={navigate}
-              />
+              <ProblemRow key={problem.id} problem={problem} navigate={navigate} />
             ))}
           </div>
         </div>
@@ -162,7 +158,22 @@ function TopicSection({ topic, problems, actualProblems, isFiltered, isExpanded,
 }
 
 function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags, onDifficultyChange, onTagToggle, onClear }) {
+  const [isTagMenuOpen, setIsTagMenuOpen] = useState(false)
+  const [tagSearch, setTagSearch] = useState('')
+  const tagMenuRef = useRef(null)
   const hasFilters = Boolean(selectedDifficulty) || selectedTags.length > 0
+  const filteredTags = tags.filter((tag) => tag.toLowerCase().includes(tagSearch.trim().toLowerCase()))
+
+  useEffect(() => {
+    if (!isTagMenuOpen) return undefined
+
+    const handlePointerDown = (event) => {
+      if (!tagMenuRef.current?.contains(event.target)) setIsTagMenuOpen(false)
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+  }, [isTagMenuOpen])
 
   return (
     <section className="practice-filters" aria-label="Practice filters">
@@ -173,31 +184,55 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
           value={selectedDifficulty}
           onChange={(event) => onDifficultyChange(event.target.value)}
         >
-          <option value="">All difficulties</option>
           {difficulties.map((difficulty) => (
             <option key={difficulty} value={difficulty}>{difficulty}</option>
           ))}
         </select>
       </div>
 
-      <fieldset className="practice-filter-group practice-tag-filter">
-        <legend>Tags</legend>
-        <div className="practice-filter-options">
-          {tags.map((tag) => {
-            const checked = selectedTags.includes(tag)
-            return (
-              <label key={tag} className={`practice-filter-option${checked ? ' is-selected' : ''}`}>
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => onTagToggle(tag)}
-                />
-                <span>{tag}</span>
-              </label>
-            )
-          })}
-        </div>
-      </fieldset>
+      <div className="practice-filter-group practice-tag-filter" ref={tagMenuRef}>
+        <span className="practice-filter-label">Tags</span>
+        <button
+          type="button"
+          className={`practice-tag-trigger${isTagMenuOpen ? ' is-open' : ''}`}
+          aria-expanded={isTagMenuOpen}
+          aria-haspopup="listbox"
+          onClick={() => setIsTagMenuOpen((open) => !open)}
+        >
+          <span>{selectedTags.length ? `${selectedTags.length} selected` : 'Tags'}</span>
+          <span className={`practice-filter-chevron${isTagMenuOpen ? ' is-open' : ''}`} aria-hidden="true" />
+        </button>
+
+        {isTagMenuOpen && (
+          <div className="practice-tag-menu">
+            <input
+              className="practice-tag-search"
+              type="search"
+              value={tagSearch}
+              onChange={(event) => setTagSearch(event.target.value)}
+              placeholder="Search tags"
+              aria-label="Search tags"
+              autoFocus
+            />
+            <div className="practice-tag-options" role="listbox" aria-multiselectable="true" aria-label="Tags">
+              {filteredTags.map((tag) => {
+                const checked = selectedTags.includes(tag)
+                return (
+                  <label key={tag} className={`practice-tag-option${checked ? ' is-selected' : ''}`}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => onTagToggle(tag)}
+                    />
+                    <span>{tag.toLowerCase()}</span>
+                  </label>
+                )
+              })}
+              {filteredTags.length === 0 && <span className="practice-tag-no-results">No matching tags</span>}
+            </div>
+          </div>
+        )}
+      </div>
 
       {hasFilters && (
         <button type="button" className="practice-filter-clear" onClick={onClear}>
@@ -312,9 +347,7 @@ export function Practice({ navigate }) {
     ))
   }
 
-  if (isLoading) {
-    return <main className="loading-page">Loading Practice…</main>
-  }
+  if (isLoading) return <main className="loading-page">Loading Practice…</main>
 
   if (error) {
     return (
