@@ -73,8 +73,8 @@ button { cursor: pointer; }
 .practice-topic-heading:hover, .practice-topic-heading:focus-visible { background: #181b23; }
 .practice-topic-heading h2 { margin: 0; font-size: 1.2rem; letter-spacing: -.02em; }
 .practice-topic-summary { display: flex; align-items: center; gap: 16px; color: #9ba1ae; font-size: .85rem; }
-.practice-topic-chevron { display: inline-block; color: #9ba1ae; font-size: 1.4rem; line-height: 1; transform: rotate(0deg); transition: transform 140ms ease; }
-.practice-topic-chevron.is-expanded { transform: rotate(180deg); }
+.practice-topic-chevron { position: relative; display: inline-block; width: 10px; height: 10px; flex: 0 0 10px; box-sizing: border-box; border-right: 2px solid #9ba1ae; border-bottom: 2px solid #9ba1ae; transform: rotate(-45deg); transition: transform 140ms ease; }
+.practice-topic-chevron.is-expanded { transform: rotate(45deg); }
 .practice-topic-body { border-top: 1px solid #252832; }
 .practice-problem-list { display: grid; }
 .practice-problem-row { display: grid; grid-template-columns: minmax(180px, 1.5fr) 36px 90px minmax(180px, 1fr); width: 100%; min-height: 64px; box-sizing: border-box; align-items: center; gap: 12px; border: 0; border-bottom: 1px solid #252832; padding: 10px 24px; background: transparent; color: #f4f5f7; text-align: left; }
