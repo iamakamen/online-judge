@@ -67,15 +67,22 @@ button { cursor: pointer; }
 .practice-header { max-width: 980px; margin: 0 auto; padding-bottom: 44px; border-bottom: 1px solid #252832; }
 .practice-header h1 { margin: 8px 0 12px; font-size: clamp(2.4rem, 5vw, 4.4rem); letter-spacing: -.06em; }
 .practice-filters { display: flex; max-width: 980px; margin: 24px auto 0; align-items: flex-end; gap: 14px; flex-wrap: wrap; padding: 18px 20px; border: 1px solid #292d38; border-radius: 14px; background: #14161d; }
-.practice-filter-group { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; color: #9ba1ae; font-size: .78rem; }
-.practice-filter-group label, .practice-filter-group legend { padding: 0; color: #9ba1ae; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-.practice-filter-group select { min-width: 150px; border: 1px solid #383d4a; border-radius: 8px; padding: 9px 32px 9px 11px; background: #0c0d12; color: #f4f5f7; }
-.practice-filter-group select:focus, .practice-filter-option:focus-within { outline: 2px solid #a9f15a; outline-offset: 1px; }
-.practice-tag-filter { min-width: 0; flex: 1 1 420px; }
-.practice-filter-options { display: flex; min-width: 0; flex-wrap: wrap; gap: 7px; }
-.practice-filter-option { display: inline-flex; min-height: 32px; align-items: center; gap: 7px; border: 1px solid #303541; border-radius: 999px; padding: 0 10px; background: #0c0d12; color: #9ba1ae; cursor: pointer; }
-.practice-filter-option input { width: 13px; height: 13px; margin: 0; accent-color: #a9f15a; }
-.practice-filter-option.is-selected { border-color: #a9f15a; color: #f4f5f7; }
+.practice-filter-group { position: relative; display: grid; gap: 8px; margin: 0; padding: 0; border: 0; color: #9ba1ae; font-size: .78rem; }
+.practice-filter-group label, .practice-filter-group legend, .practice-filter-label { padding: 0; color: #9ba1ae; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.practice-filter-group select { min-width: 150px; border: 1px solid #383d4a; border-radius: 8px; padding: 9px 32px 9px 11px; background: #0c0d12; color: #f4f5f7; font-weight: 700; text-transform: uppercase; }
+.practice-filter-group select:focus, .practice-tag-trigger:focus-visible, .practice-tag-search:focus { outline: 2px solid #a9f15a; outline-offset: 1px; }
+.practice-tag-filter { min-width: 220px; flex: 1 1 420px; }
+.practice-tag-trigger { display: flex; min-width: 220px; min-height: 38px; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid #383d4a; border-radius: 8px; padding: 0 11px; background: #0c0d12; color: #f4f5f7; text-align: left; }
+.practice-tag-trigger.is-open { border-color: #a9f15a; }
+.practice-filter-chevron { width: 8px; height: 8px; flex: 0 0 8px; border-right: 1.5px solid #9ba1ae; border-bottom: 1.5px solid #9ba1ae; transform: rotate(45deg); transition: transform 140ms ease; }
+.practice-filter-chevron.is-open { transform: rotate(-135deg); }
+.practice-tag-menu { position: absolute; top: calc(100% + 8px); left: 0; z-index: 30; width: min(420px, calc(100vw - 80px)); padding: 10px; border: 1px solid #383d4a; border-radius: 10px; background: #14161d; box-shadow: 0 16px 40px rgb(0 0 0 / 40%); }
+.practice-tag-search { width: 100%; box-sizing: border-box; border: 1px solid #383d4a; border-radius: 7px; padding: 8px 10px; background: #0c0d12; color: #f4f5f7; }
+.practice-tag-options { display: grid; max-height: 280px; margin-top: 8px; overflow-y: auto; }
+.practice-tag-option { display: flex; min-height: 34px; align-items: center; gap: 9px; border-radius: 6px; padding: 0 8px; color: #c2c6cf; cursor: pointer; text-transform: lowercase; }
+.practice-tag-option:hover, .practice-tag-option.is-selected { background: #20232c; color: #f4f5f7; }
+.practice-tag-option input { width: 13px; height: 13px; margin: 0; accent-color: #a9f15a; }
+.practice-tag-no-results { padding: 10px 8px; color: #707786; }
 .practice-filter-clear { border: 1px solid #383d4a; border-radius: 8px; padding: 9px 12px; background: transparent; color: #9ba1ae; }
 .practice-filter-clear:hover, .practice-filter-clear:focus-visible { border-color: #a9f15a; color: #f4f5f7; }
 .practice-catalog { max-width: 980px; margin: 32px auto 0; display: grid; gap: 18px; }
@@ -120,7 +127,7 @@ button { cursor: pointer; }
   .practice-header h1 { font-size: 2.5rem; }
   .practice-filters { align-items: stretch; flex-direction: column; }
   .practice-tag-filter { flex-basis: auto; }
-  .practice-filter-group select { width: 100%; }
+  .practice-filter-group select, .practice-tag-trigger { width: 100%; }
   .practice-filter-clear { width: fit-content; }
   .practice-topic-heading { padding-inline: 18px; }
   .practice-problem-row { grid-template-columns: minmax(0, 1fr) 30px; padding-inline: 18px; }
