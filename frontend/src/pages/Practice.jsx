@@ -120,9 +120,10 @@ function ProblemRow({ problem, navigate }) {
   )
 }
 
-function TopicSection({ topic, problems, isExpanded, onToggle, navigate }) {
-  const solvedCount = problems.filter((problem) => problem.solved).length
-  const isComplete = problems.length > 0 && solvedCount === problems.length
+function TopicSection({ topic, problems, actualProblems, isFiltered, isExpanded, onToggle, navigate }) {
+  const solvedCount = actualProblems.filter((problem) => problem.solved).length
+  const isComplete = actualProblems.length > 0 && solvedCount === actualProblems.length
+  const summary = isFiltered ? `${problems.length} matching` : `${solvedCount} / ${actualProblems.length}`
 
   return (
     <section
@@ -138,7 +139,7 @@ function TopicSection({ topic, problems, isExpanded, onToggle, navigate }) {
       >
         <h2 id={`practice-topic-${topic.id}`}>{topic.name}</h2>
         <div className="practice-topic-summary">
-          <span>{solvedCount} / {problems.length}</span>
+          <span>{summary}</span>
           <span className={`practice-topic-chevron${isExpanded ? ' is-expanded' : ''}`} aria-hidden="true" />
         </div>
       </button>
@@ -160,6 +161,53 @@ function TopicSection({ topic, problems, isExpanded, onToggle, navigate }) {
   )
 }
 
+function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags, onDifficultyChange, onTagToggle, onClear }) {
+  const hasFilters = Boolean(selectedDifficulty) || selectedTags.length > 0
+
+  return (
+    <section className="practice-filters" aria-label="Practice filters">
+      <div className="practice-filter-group">
+        <label htmlFor="practice-difficulty-filter">Difficulty</label>
+        <select
+          id="practice-difficulty-filter"
+          value={selectedDifficulty}
+          onChange={(event) => onDifficultyChange(event.target.value)}
+        >
+          <option value="">All difficulties</option>
+          {difficulties.map((difficulty) => (
+            <option key={difficulty} value={difficulty}>{difficulty}</option>
+          ))}
+        </select>
+      </div>
+
+      <fieldset className="practice-filter-group practice-tag-filter">
+        <legend>Tags</legend>
+        <div className="practice-filter-options">
+          {tags.map((tag) => {
+            const checked = selectedTags.includes(tag)
+            return (
+              <label key={tag} className={`practice-filter-option${checked ? ' is-selected' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => onTagToggle(tag)}
+                />
+                <span>{tag}</span>
+              </label>
+            )
+          })}
+        </div>
+      </fieldset>
+
+      {hasFilters && (
+        <button type="button" className="practice-filter-clear" onClick={onClear}>
+          Clear filters
+        </button>
+      )}
+    </section>
+  )
+}
+
 export function Practice({ navigate }) {
   const { requestAuthenticated } = useAuth()
   const [topics, setTopics] = useState([])
@@ -168,6 +216,8 @@ export function Practice({ navigate }) {
   const [error, setError] = useState('')
   const [expandedTopics, setExpandedTopics] = useState({})
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
+  const [selectedDifficulty, setSelectedDifficulty] = useState('')
+  const [selectedTags, setSelectedTags] = useState([])
 
   useEffect(() => {
     let cancelled = false
@@ -215,7 +265,24 @@ export function Practice({ navigate }) {
     }
   }, [requestAuthenticated])
 
-  const problemsByTopic = useMemo(() => {
+  const difficulties = useMemo(() => (
+    [...new Set(problems.map((problem) => problem.difficulty))]
+      .sort((a, b) => a.localeCompare(b))
+  ), [problems])
+
+  const tags = useMemo(() => (
+    [...new Set(problems.flatMap((problem) => problem.tags))]
+      .sort((a, b) => a.localeCompare(b))
+  ), [problems])
+
+  const isFiltered = Boolean(selectedDifficulty) || selectedTags.length > 0
+
+  const filteredProblems = useMemo(() => problems.filter((problem) => {
+    if (selectedDifficulty && problem.difficulty !== selectedDifficulty) return false
+    return selectedTags.every((tag) => problem.tags.includes(tag))
+  }), [problems, selectedDifficulty, selectedTags])
+
+  const actualProblemsByTopic = useMemo(() => {
     const grouped = new Map(topics.map((topic) => [topic.id, []]))
     for (const problem of problems) {
       if (!grouped.has(problem.topic_id)) grouped.set(problem.topic_id, [])
@@ -223,6 +290,27 @@ export function Practice({ navigate }) {
     }
     return grouped
   }, [topics, problems])
+
+  const filteredProblemsByTopic = useMemo(() => {
+    const grouped = new Map(topics.map((topic) => [topic.id, []]))
+    for (const problem of filteredProblems) {
+      if (!grouped.has(problem.topic_id)) grouped.set(problem.topic_id, [])
+      grouped.get(problem.topic_id).push(problem)
+    }
+    return grouped
+  }, [topics, filteredProblems])
+
+  const visibleTopics = useMemo(() => (
+    topics.filter((topic) => (filteredProblemsByTopic.get(topic.id) || []).length > 0)
+  ), [topics, filteredProblemsByTopic])
+
+  const toggleTag = (tag) => {
+    setSelectedTags((current) => (
+      current.includes(tag)
+        ? current.filter((selectedTag) => selectedTag !== tag)
+        : [...current, tag]
+    ))
+  }
 
   if (isLoading) {
     return <main className="loading-page">Loading Practice…</main>
@@ -255,27 +343,39 @@ export function Practice({ navigate }) {
           </div>
         </header>
 
-        <section className="practice-catalog" aria-label="Practice topics">
-          {topics.map((topic) => {
-            const topicProblems = problemsByTopic.get(topic.id) || []
-            if (topicProblems.length === 0) return null
+        <PracticeFilters
+          difficulties={difficulties}
+          tags={tags}
+          selectedDifficulty={selectedDifficulty}
+          selectedTags={selectedTags}
+          onDifficultyChange={setSelectedDifficulty}
+          onTagToggle={toggleTag}
+          onClear={() => {
+            setSelectedDifficulty('')
+            setSelectedTags([])
+          }}
+        />
 
-            return (
-              <TopicSection
-                key={topic.id}
-                topic={topic}
-                problems={topicProblems}
-                isExpanded={expandedTopics[topic.id] ?? true}
-                onToggle={() => setExpandedTopics((current) => ({
-                  ...current,
-                  [topic.id]: !(current[topic.id] ?? true),
-                }))}
-                navigate={navigate}
-              />
-            )
-          })}
-          {topics.every((topic) => (problemsByTopic.get(topic.id) || []).length === 0) && (
-            <div className="practice-empty-state">No problems are available.</div>
+        <section className="practice-catalog" aria-label="Practice topics">
+          {visibleTopics.map((topic) => (
+            <TopicSection
+              key={topic.id}
+              topic={topic}
+              problems={filteredProblemsByTopic.get(topic.id) || []}
+              actualProblems={actualProblemsByTopic.get(topic.id) || []}
+              isFiltered={isFiltered}
+              isExpanded={expandedTopics[topic.id] ?? true}
+              onToggle={() => setExpandedTopics((current) => ({
+                ...current,
+                [topic.id]: !(current[topic.id] ?? true),
+              }))}
+              navigate={navigate}
+            />
+          ))}
+          {visibleTopics.length === 0 && (
+            <div className="practice-empty-state">
+              {isFiltered ? 'No problems match the selected filters.' : 'No problems are available.'}
+            </div>
           )}
         </section>
       </main>
