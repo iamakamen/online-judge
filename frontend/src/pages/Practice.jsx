@@ -36,21 +36,37 @@ function SidebarItem({ label, icon, active = false, disabled = false, onClick })
   )
 }
 
-function PracticeSidebar({ navigate }) {
-  const [isExpanded, setIsExpanded] = useState(false)
+function PracticeSidebar({ isExpanded, onExpand, onCollapse, navigate }) {
+  const [hoverSuppressed, setHoverSuppressed] = useState(false)
 
   const handleNavigate = (path) => {
-    setIsExpanded(false)
+    onCollapse()
     navigate(path)
+  }
+
+  const handleMouseEnter = () => {
+    if (!hoverSuppressed) onExpand()
+  }
+
+  const handleMouseLeave = () => {
+    setHoverSuppressed(false)
+    onCollapse()
+  }
+
+  const handleCollapse = () => {
+    setHoverSuppressed(true)
+    onCollapse()
   }
 
   return (
     <aside
       className={`practice-sidebar${isExpanded ? ' is-expanded' : ''}`}
       aria-label="Primary navigation"
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
-      onFocus={() => setIsExpanded(true)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onFocus={() => {
+        if (!hoverSuppressed) onExpand()
+      }}
     >
       <button
         type="button"
@@ -64,7 +80,7 @@ function PracticeSidebar({ navigate }) {
 
       <nav className="practice-sidebar-nav">
         <SidebarItem label="Dashboard" icon={<DashboardIcon />} onClick={() => handleNavigate('/dashboard')} />
-        <SidebarItem label="Practice" icon={<PracticeIcon />} active onClick={() => setIsExpanded(false)} />
+        <SidebarItem label="Practice" icon={<PracticeIcon />} active onClick={handleCollapse} />
       </nav>
 
       <div className="practice-sidebar-future" aria-label="Future navigation">
@@ -102,6 +118,7 @@ export function Practice({ navigate }) {
   const [topics, setTopics] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -148,8 +165,13 @@ export function Practice({ navigate }) {
   }
 
   return (
-    <div className="practice-shell">
-      <PracticeSidebar navigate={navigate} />
+    <div className={`practice-shell${isSidebarExpanded ? ' sidebar-expanded' : ''}`}>
+      <PracticeSidebar
+        isExpanded={isSidebarExpanded}
+        onExpand={() => setIsSidebarExpanded(true)}
+        onCollapse={() => setIsSidebarExpanded(false)}
+        navigate={navigate}
+      />
       <main className="practice-main">
         <header className="practice-header">
           <div>
