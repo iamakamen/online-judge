@@ -3,6 +3,7 @@ import './App.css'
 import { AuthProvider } from './auth/AuthContext'
 import { useAuth } from './auth/useAuth'
 import { Dashboard } from './pages/Dashboard'
+import { Practice } from './pages/Practice'
 
 function usePathname() {
   const [pathname, setPathname] = useState(window.location.pathname)
@@ -115,17 +116,6 @@ function RegisterPage({ navigate }) {
   )
 }
 
-function PracticePlaceholder({ navigate }) {
-  return (
-    <main className="placeholder-page">
-      <p className="eyebrow">Practice</p>
-      <h1>Practice is coming next</h1>
-      <p className="muted">This route exists so Dashboard navigation has a destination.</p>
-      <LinkButton href="/dashboard" navigate={navigate} className="primary-button">Back to Dashboard</LinkButton>
-    </main>
-  )
-}
-
 function ProtectedRoute({ children, navigate }) {
   const { isAuthenticated, isLoading } = useAuth()
 
@@ -146,7 +136,7 @@ function AppRoutes() {
   if (pathname === '/login' || pathname === '/') return <LoginPage navigate={navigate} />
   if (pathname === '/register') return <RegisterPage navigate={navigate} />
   if (pathname === '/practice') {
-    return <ProtectedRoute navigate={navigate}><PracticePlaceholder navigate={navigate} /></ProtectedRoute>
+    return <ProtectedRoute navigate={navigate}><Practice /></ProtectedRoute>
   }
   if (pathname === '/dashboard') {
     return <ProtectedRoute navigate={navigate}><Dashboard navigate={navigate} /></ProtectedRoute>
