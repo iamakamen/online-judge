@@ -343,10 +343,11 @@ export function Practice({ navigate }) {
     new Set(topics.map((topic) => topic.name.trim().toLowerCase()))
   ), [topics])
 
-  const difficulties = useMemo(() => (
-    [...new Set(problems.map((problem) => problem.difficulty))]
-      .sort((a, b) => a.localeCompare(b))
-  ), [problems])
+  const difficulties = useMemo(() => {
+    const difficultyOrder = { EASY: 0, MEDIUM: 1, HARD: 2 }
+    return [...new Set(problems.map((problem) => problem.difficulty))]
+      .sort((a, b) => (difficultyOrder[a] ?? Number.MAX_SAFE_INTEGER) - (difficultyOrder[b] ?? Number.MAX_SAFE_INTEGER))
+  }, [problems])
 
   const tags = useMemo(() => (
     [...new Set(problems.flatMap((problem) => problem.tags))]
