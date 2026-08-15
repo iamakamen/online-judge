@@ -96,14 +96,13 @@ function PracticeSidebar({ isExpanded, onExpand, onCollapse, navigate }) {
   )
 }
 
-function ProblemRow({ problem, number, navigate }) {
+function ProblemRow({ problem, navigate }) {
   return (
     <button
       type="button"
       className="practice-problem-row"
       onClick={() => navigate(`/problem/${problem.slug}`)}
     >
-      <span className="practice-problem-number">#{number}</span>
       <span className="practice-problem-title">{problem.title}</span>
       <span
         className={`practice-problem-status${problem.solved ? ' is-solved' : ''}`}
@@ -137,24 +136,20 @@ function TopicSection({ topic, problems, isExpanded, onToggle, navigate }) {
         aria-controls={`practice-topic-body-${topic.id}`}
         onClick={onToggle}
       >
-        <div>
-          <p className="practice-section-kicker">Topic</p>
-          <h2 id={`practice-topic-${topic.id}`}>{topic.name}</h2>
-        </div>
+        <h2 id={`practice-topic-${topic.id}`}>{topic.name}</h2>
         <div className="practice-topic-summary">
           <span>{solvedCount} / {problems.length}</span>
-          <span className="practice-topic-chevron" aria-hidden="true">⌄</span>
+          <span className={`practice-topic-chevron${isExpanded ? ' is-expanded' : ''}`} aria-hidden="true">⌄</span>
         </div>
       </button>
 
       {isExpanded && (
         <div id={`practice-topic-body-${topic.id}`} className="practice-topic-body">
           <div className="practice-problem-list" role="list" aria-label={`${topic.name} problems`}>
-            {problems.map((problem, index) => (
+            {problems.map((problem) => (
               <ProblemRow
                 key={problem.id}
                 problem={problem}
-                number={index + 1}
                 navigate={navigate}
               />
             ))}
@@ -188,9 +183,23 @@ export function Practice({ navigate }) {
         ])
 
         if (cancelled) return
+        const nextProblems = problemResponse.items
+        const problemsByTopic = new Map()
+
+        for (const problem of nextProblems) {
+          const topicProblems = problemsByTopic.get(problem.topic_id) || []
+          topicProblems.push(problem)
+          problemsByTopic.set(problem.topic_id, topicProblems)
+        }
+
         setTopics(topicResponse)
-        setProblems(problemResponse.items)
-        setExpandedTopics(Object.fromEntries(topicResponse.map((topic) => [topic.id, true])))
+        setProblems(nextProblems)
+        setExpandedTopics(Object.fromEntries(topicResponse.map((topic) => {
+          const topicProblems = problemsByTopic.get(topic.id) || []
+          const solvedCount = topicProblems.filter((problem) => problem.solved).length
+          const isComplete = topicProblems.length > 0 && solvedCount === topicProblems.length
+          return [topic.id, !isComplete]
+        })))
       } catch (requestError) {
         if (cancelled) return
         setError(requestError.message)
