@@ -69,13 +69,17 @@ button { cursor: pointer; }
 .practice-filters { display: flex; max-width: 980px; margin: 24px auto 0; align-items: flex-end; gap: 14px; flex-wrap: wrap; padding: 18px 20px; border: 1px solid #292d38; border-radius: 14px; background: #14161d; }
 .practice-filter-group { position: relative; display: grid; gap: 8px; margin: 0; padding: 0; border: 0; color: #9ba1ae; font-size: .78rem; }
 .practice-filter-group label, .practice-filter-group legend, .practice-filter-label { padding: 0; color: #9ba1ae; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-.practice-filter-group select { min-width: 150px; border: 1px solid #383d4a; border-radius: 8px; padding: 9px 32px 9px 11px; background: #0c0d12; color: #f4f5f7; font-weight: 700; text-transform: uppercase; }
-.practice-filter-group select:focus, .practice-tag-trigger:focus-visible, .practice-tag-search:focus { outline: 2px solid #a9f15a; outline-offset: 1px; }
-.practice-tag-filter { min-width: 220px; flex: 1 1 420px; }
-.practice-tag-trigger { display: flex; min-width: 220px; min-height: 38px; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid #383d4a; border-radius: 8px; padding: 0 11px; background: #0c0d12; color: #f4f5f7; text-align: left; }
-.practice-tag-trigger.is-open { border-color: #a9f15a; }
+.practice-filter-trigger, .practice-tag-trigger { display: flex; min-width: 150px; min-height: 38px; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid #383d4a; border-radius: 8px; padding: 0 11px; background: #0c0d12; color: #f4f5f7; text-align: left; }
+.practice-filter-trigger.is-open, .practice-tag-trigger.is-open { border-color: #a9f15a; }
+.practice-filter-trigger:focus-visible, .practice-tag-trigger:focus-visible, .practice-tag-search:focus { outline: 2px solid #a9f15a; outline-offset: 1px; }
+.practice-filter-trigger > span:first-child, .practice-tag-trigger > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .practice-filter-chevron { width: 8px; height: 8px; flex: 0 0 8px; border-right: 1.5px solid #9ba1ae; border-bottom: 1.5px solid #9ba1ae; transform: rotate(45deg); transition: transform 140ms ease; }
 .practice-filter-chevron.is-open { transform: rotate(-135deg); }
+.practice-filter-menu { position: absolute; top: calc(100% + 8px); left: 0; z-index: 30; min-width: 150px; max-height: 280px; overflow-y: auto; padding: 6px; border: 1px solid #383d4a; border-radius: 10px; background: #14161d; box-shadow: 0 16px 40px rgb(0 0 0 / 40%); }
+.practice-filter-menu-option { display: flex; width: 100%; min-height: 34px; align-items: center; border: 0; border-radius: 6px; padding: 0 10px; background: transparent; color: #f4f5f7; text-align: left; font-weight: 700; text-transform: uppercase; }
+.practice-filter-menu-option:hover, .practice-filter-menu-option.is-selected { background: #20232c; color: #a9f15a; }
+.practice-tag-filter { min-width: 220px; flex: 1 1 420px; }
+.practice-tag-trigger { min-width: 220px; }
 .practice-tag-menu { position: absolute; top: calc(100% + 8px); left: 0; z-index: 30; width: min(420px, calc(100vw - 80px)); padding: 10px; border: 1px solid #383d4a; border-radius: 10px; background: #14161d; box-shadow: 0 16px 40px rgb(0 0 0 / 40%); }
 .practice-tag-search { width: 100%; box-sizing: border-box; border: 1px solid #383d4a; border-radius: 7px; padding: 8px 10px; background: #0c0d12; color: #f4f5f7; }
 .practice-tag-options { display: grid; max-height: 280px; margin-top: 8px; overflow-y: auto; }
@@ -127,7 +131,8 @@ button { cursor: pointer; }
   .practice-header h1 { font-size: 2.5rem; }
   .practice-filters { align-items: stretch; flex-direction: column; }
   .practice-tag-filter { flex-basis: auto; }
-  .practice-filter-group select, .practice-tag-trigger { width: 100%; }
+  .practice-filter-trigger, .practice-tag-trigger { width: 100%; }
+  .practice-filter-menu { width: 100%; box-sizing: border-box; }
   .practice-filter-clear { width: fit-content; }
   .practice-topic-heading { padding-inline: 18px; }
   .practice-problem-row { grid-template-columns: minmax(0, 1fr) 30px; padding-inline: 18px; }
