@@ -96,7 +96,7 @@ function PracticeSidebar({ isExpanded, onExpand, onCollapse, navigate }) {
   )
 }
 
-function ProblemRow({ problem, navigate, visibleTags }) {
+function ProblemRow({ problem, navigate }) {
   return (
     <button
       type="button"
@@ -114,13 +114,13 @@ function ProblemRow({ problem, navigate, visibleTags }) {
         {problem.difficulty}
       </span>
       <span className="practice-problem-tags">
-        {visibleTags.map((tag) => <span key={tag} className="practice-problem-tag">{tag}</span>)}
+        {problem.tags.map((tag) => <span key={tag} className="practice-problem-tag">{tag}</span>)}
       </span>
     </button>
   )
 }
 
-function TopicSection({ topic, problems, actualProblems, isFiltered, isExpanded, onToggle, navigate, topicTagNames }) {
+function TopicSection({ topic, problems, actualProblems, isFiltered, isExpanded, onToggle, navigate }) {
   const solvedCount = actualProblems.filter((problem) => problem.solved).length
   const isComplete = actualProblems.length > 0 && solvedCount === actualProblems.length
   const summary = isFiltered ? `${problems.length}` : `${solvedCount} / ${actualProblems.length}`
@@ -152,7 +152,6 @@ function TopicSection({ topic, problems, actualProblems, isFiltered, isExpanded,
                 key={problem.id}
                 problem={problem}
                 navigate={navigate}
-                visibleTags={problem.tags.filter((tag) => !topicTagNames.has(tag.trim().toLowerCase()))}
               />
             ))}
           </div>
@@ -339,10 +338,6 @@ export function Practice({ navigate }) {
     }
   }, [requestAuthenticated])
 
-  const topicTagNames = useMemo(() => (
-    new Set(topics.map((topic) => topic.name.trim().toLowerCase()))
-  ), [topics])
-
   const difficulties = useMemo(() => {
     const difficultyOrder = { EASY: 0, MEDIUM: 1, HARD: 2 }
     return [...new Set(problems.map((problem) => problem.difficulty))]
@@ -351,9 +346,8 @@ export function Practice({ navigate }) {
 
   const tags = useMemo(() => (
     [...new Set(problems.flatMap((problem) => problem.tags))]
-      .filter((tag) => !topicTagNames.has(tag.trim().toLowerCase()))
       .sort((a, b) => a.localeCompare(b))
-  ), [problems, topicTagNames])
+  ), [problems])
 
   const isFiltered = Boolean(selectedDifficulty) || selectedTags.length > 0
 
@@ -448,7 +442,6 @@ export function Practice({ navigate }) {
                 [topic.id]: !(current[topic.id] ?? true),
               }))}
               navigate={navigate}
-              topicTagNames={topicTagNames}
             />
           ))}
           {visibleTopics.length === 0 && (
