@@ -136,7 +136,7 @@ function AppRoutes() {
   if (pathname === '/login' || pathname === '/') return <LoginPage navigate={navigate} />
   if (pathname === '/register') return <RegisterPage navigate={navigate} />
   if (pathname === '/practice') {
-    return <ProtectedRoute navigate={navigate}><Practice /></ProtectedRoute>
+    return <ProtectedRoute navigate={navigate}><Practice navigate={navigate} /></ProtectedRoute>
   }
   if (pathname === '/dashboard') {
     return <ProtectedRoute navigate={navigate}><Dashboard navigate={navigate} /></ProtectedRoute>
