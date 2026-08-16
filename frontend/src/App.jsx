@@ -4,6 +4,7 @@ import { AuthProvider } from './auth/AuthContext'
 import { useAuth } from './auth/useAuth'
 import { Dashboard } from './pages/Dashboard'
 import { Practice } from './pages/Practice'
+import { ProblemPage } from './pages/ProblemPage'
 
 function usePathname() {
   const [pathname, setPathname] = useState(window.location.pathname)
@@ -130,18 +131,9 @@ function ProtectedRoute({ children, navigate }) {
   return children
 }
 
-function ProblemPlaceholder() {
-  return (
-    <main className="placeholder-page">
-      <p className="eyebrow">Problem</p>
-      <h1>Problem flow coming next</h1>
-      <p className="muted">The Practice catalog navigation contract is established.</p>
-    </main>
-  )
-}
-
 function AppRoutes() {
   const { pathname, navigate } = usePathname()
+  const problemMatch = pathname.match(/^\/problem\/([^/]+)$/)
 
   if (pathname === '/login' || pathname === '/') return <LoginPage navigate={navigate} />
   if (pathname === '/register') return <RegisterPage navigate={navigate} />
@@ -151,8 +143,8 @@ function AppRoutes() {
   if (pathname === '/dashboard') {
     return <ProtectedRoute navigate={navigate}><Dashboard navigate={navigate} /></ProtectedRoute>
   }
-  if (/^\/problem\/[^/]+$/.test(pathname)) {
-    return <ProtectedRoute navigate={navigate}><ProblemPlaceholder /></ProtectedRoute>
+  if (problemMatch) {
+    return <ProtectedRoute navigate={navigate}><ProblemPage slug={decodeURIComponent(problemMatch[1])} /></ProtectedRoute>
   }
 
   return <LoginPage navigate={navigate} />

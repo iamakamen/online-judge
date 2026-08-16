@@ -114,6 +114,51 @@ button { cursor: pointer; }
 .practice-problem-tag { max-width: 130px; overflow: hidden; border: 1px solid #303541; border-radius: 999px; padding: 3px 8px; color: #9ba1ae; font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
 .practice-empty-state { border: 1px dashed #383d4a; border-radius: 14px; padding: 32px 24px; color: #9ba1ae; text-align: center; }
 
+.problem-page { width: min(100%, 980px); min-height: 100svh; box-sizing: border-box; margin: 0 auto; padding: 64px 32px 96px; color: #f4f5f7; }
+.problem-header { padding-bottom: 32px; border-bottom: 1px solid #252832; }
+.problem-header h1 { margin: 8px 0 20px; font-size: clamp(2.3rem, 5vw, 4.2rem); letter-spacing: -.06em; }
+.problem-meta { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.problem-difficulty { font-size: .78rem; font-weight: 800; letter-spacing: .08em; }
+.problem-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.problem-tag { border: 1px solid #303541; border-radius: 999px; padding: 5px 10px; color: #9ba1ae; font-size: .75rem; }
+.problem-section { margin-top: 36px; }
+.problem-section h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+.problem-section > p { max-width: 780px; color: #d3d7df; line-height: 1.7; }
+.problem-examples { display: grid; gap: 16px; }
+.problem-example { border: 1px solid #292d38; border-radius: 14px; padding: 20px; background: #14161d; }
+.problem-example h3 { margin: 0 0 16px; font-size: 1rem; }
+.problem-example-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.problem-example h4 { margin: 0 0 8px; color: #9ba1ae; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+.problem-example pre, .problem-constraints { margin: 0; overflow-x: auto; border: 1px solid #252832; border-radius: 8px; padding: 14px; background: #0c0d12; color: #d3d7df; font: .88rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; white-space: pre-wrap; }
+.problem-constraints { max-width: 780px; }
+.code-editor { margin-top: 48px; border: 1px solid #292d38; border-radius: 14px; background: #14161d; overflow: hidden; }
+.code-editor.is-expanded { min-height: 640px; }
+.code-editor-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px; border-bottom: 1px solid #252832; }
+.code-editor-header h2 { margin: 6px 0 0; font-size: 1.35rem; }
+.code-editor-language { display: grid; gap: 7px; color: #9ba1ae; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.code-editor-language select { min-width: 120px; border: 1px solid #383d4a; border-radius: 8px; padding: 9px 10px; background: #0c0d12; color: #f4f5f7; font: inherit; letter-spacing: normal; text-transform: none; }
+.code-editor-language select:focus-visible, .code-editor-button:focus-visible { outline: 2px solid #a9f15a; outline-offset: 1px; }
+.code-editor-toolbar { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-bottom: 1px solid #252832; }
+.code-editor-button { border: 1px solid #383d4a; border-radius: 8px; padding: 8px 11px; background: transparent; color: #d3d7df; }
+.code-editor-button:hover, .code-editor-button:focus-visible { border-color: #a9f15a; color: #f4f5f7; }
+.code-editor-expand { margin-left: auto; }
+.code-editor-surface { min-height: 360px; overflow: hidden; }
+.code-editor.is-expanded .code-editor-surface { min-height: 580px; }
+.code-editor-surface .cm-editor { height: 100%; min-height: 360px; background: #0c0d12; color: #f4f5f7; font: .9rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.code-editor.is-expanded .code-editor-surface .cm-editor { min-height: 580px; }
+.code-editor-surface .cm-scroller { overflow: auto; }
+.code-editor-surface .cm-gutters { border-right: 1px solid #252832; background: #101219; color: #707786; }
+.code-editor-surface .cm-activeLine, .code-editor-surface .cm-activeLineGutter { background: #181b23; }
+
+@media (max-width: 720px) {
+  .problem-page { padding: 48px 20px 72px; }
+  .problem-example-grid { grid-template-columns: 1fr; }
+  .code-editor-header { align-items: flex-start; flex-direction: column; }
+  .code-editor-language, .code-editor-language select { width: 100%; box-sizing: border-box; }
+  .code-editor-toolbar { flex-wrap: wrap; }
+  .code-editor-expand { margin-left: 0; }
+}
+
 @media (max-width: 900px) {
   .practice-problem-row { grid-template-columns: minmax(160px, 1fr) 32px 80px; }
   .practice-problem-tags { grid-column: 1 / -1; }

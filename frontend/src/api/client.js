@@ -77,3 +77,10 @@ export function getProblems(accessToken, {
 
   return request(`/api/v1/problems?${params.toString()}`, { accessToken })
 }
+
+export function getProblemBySlug(accessToken, slug) {
+  return request(
+    `/api/v1/problems/by-slug/${encodeURIComponent(slug)}`,
+    { accessToken },
+  )
+}
