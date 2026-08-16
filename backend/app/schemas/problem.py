@@ -11,6 +11,7 @@ class ProblemCreate(BaseModel):
     title: str
     slug: str
     statement: str
+    constraints: str
     difficulty: Difficulty
     tags: list[str]
     starter_code: dict[str, str]
@@ -23,6 +24,7 @@ class ProblemUpdate(BaseModel):
     title: str | None = None
     slug: str | None = None
     statement: str | None = None
+    constraints: str | None = None
     difficulty: Difficulty | None = None
     tags: list[str] | None = None
     starter_code: dict[str, str] | None = None
@@ -60,6 +62,7 @@ class ProblemDetailResponse(BaseModel):
     title: str
     slug: str
     statement: str
+    constraints: str
     difficulty: Difficulty
     tags: list[str]
     starter_code: dict[str, str]

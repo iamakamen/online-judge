@@ -36,6 +36,7 @@ def create_problem(
             "title": slug.replace("-", " ").title(),
             "slug": slug,
             "statement": "Test problem statement.",
+            "constraints": "Test problem constraints.",
             "difficulty": difficulty,
             "tags": tags or ["array"],
             "starter_code": {

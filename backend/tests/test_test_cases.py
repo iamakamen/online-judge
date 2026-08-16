@@ -21,6 +21,7 @@ def _create_problem(client, admin_headers, **overrides):
         "title": "Test Problem",
         "slug": problem_slug,
         "statement": "Test problem statement.",
+        "constraints": "Test problem constraints.",
         "difficulty": "EASY",
         "tags": ["test"],
         "starter_code": {

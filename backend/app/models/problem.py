@@ -6,9 +6,11 @@ from sqlalchemy import (
     DateTime,
     Enum as SQLAlchemyEnum,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -27,6 +29,8 @@ class Problem(Base):
     __table_args__ = (
         CheckConstraint("time_limit_ms > 0", name="ck_problems_time_limit_positive"),
         CheckConstraint("memory_limit_mb > 0", name="ck_problems_memory_limit_positive"),
+        UniqueConstraint("slug", name="problems_slug_key"),
+        Index("ix_problems_slug", "slug", unique=True),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -45,10 +49,9 @@ class Problem(Base):
         index=True,
     )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
-    slug: Mapped[str] = mapped_column(
-        String(200), unique=True, index=True, nullable=False
-    )
+    slug: Mapped[str] = mapped_column(String(200), nullable=False)
     statement: Mapped[str] = mapped_column(Text, nullable=False)
+    constraints: Mapped[str] = mapped_column(Text, nullable=False)
     difficulty: Mapped[Difficulty] = mapped_column(
         SQLAlchemyEnum(Difficulty, name="difficulty_enum"),
         nullable=False,

@@ -19,6 +19,7 @@ from backend.app.services.problem import (
     create_problem,
     delete_problem,
     get_problem_detail,
+    get_problem_by_slug,
     list_problems,
     update_problem,
 )
@@ -49,6 +50,7 @@ def _problem_detail_response(
         title=problem.title,
         slug=problem.slug,
         statement=problem.statement,
+        constraints=problem.constraints,
         difficulty=problem.difficulty,
         tags=problem.tags,
         starter_code=problem.starter_code,
@@ -111,6 +113,20 @@ def list_problem_route(
     )
 
 
+@router.get("/by-slug/{slug}", response_model=ProblemDetailResponse)
+def get_problem_by_slug_route(
+    slug: str,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    try:
+        problem = get_problem_by_slug(db, slug)
+        _, test_cases = get_problem_detail(db, problem.id)
+    except ValueError as exc:
+        raise _problem_error(exc) from exc
+    return _problem_detail_response(problem, test_cases)
+
+
 @router.get("/{problem_id}", response_model=ProblemDetailResponse)
 def get_problem_route(
     problem_id: int,
@@ -141,6 +157,7 @@ def create_problem_route(
             title=request.title,
             slug=request.slug,
             statement=request.statement,
+            constraints=request.constraints,
             difficulty=request.difficulty,
             tags=request.tags,
             starter_code=request.starter_code,
@@ -168,6 +185,7 @@ def update_problem_route(
             title=request.title,
             slug=request.slug,
             statement=request.statement,
+            constraints=request.constraints,
             difficulty=request.difficulty,
             tags=request.tags,
             starter_code=request.starter_code,

@@ -47,6 +47,7 @@ class SeedProblem:
     slug: str
     title: str
     statement: str
+    constraints: str
     difficulty: Difficulty
     tags: tuple[str, ...]
     python_starter: str
@@ -99,6 +100,7 @@ def problem(
     slug: str,
     title: str,
     statement: str,
+    constraints: str,
     difficulty: Difficulty,
     tags: tuple[str, ...],
     function: str,
@@ -114,6 +116,7 @@ def problem(
         slug=slug,
         title=title,
         statement=statement,
+        constraints=constraints,
         difficulty=difficulty,
         tags=tags,
         python_starter=python_starter,
@@ -128,150 +131,204 @@ PROBLEMS = (
     problem(
         "arrays", "two-sum", "Two Sum",
         "Given an array of integers and a target, return the indices of two distinct values that add to the target.",
+        """2 <= nums.length <= 10^5
+-10^9 <= nums[i], target <= 10^9""",
         Difficulty.EASY, ("hash-map", "complement", "lookup"), "two_sum",
         "nums: list[int], target: int", "nums, target", cases(
             "4\n2 7 11 15\n9", "0 1", "4\n3 2 4 7\n6", "1 2", "5\n1 5 3 7 9\n10", "1 2")),
     problem(
         "arrays", "maximum-subarray", "Maximum Subarray",
         "Find the contiguous subarray with the largest sum and return that sum.",
+        """1 <= nums.length <= 10^5
+-10^4 <= nums[i] <= 10^4""",
         Difficulty.MEDIUM, ("kadane", "greedy", "subarray"), "max_sub_array",
         "nums: list[int]", "nums", cases(
             "-2 1 -3 4 -1 2 1 -5 4", "6", "1", "1", "-8 -3 -6 -2 -5 -4", "-2")),
     problem(
         "arrays", "merge-intervals", "Merge Intervals",
         "Merge every pair of overlapping intervals and return the resulting sorted intervals.",
+        """1 <= intervals.length <= 10^4
+intervals[i].length == 2
+-10^4 <= start <= end <= 10^4""",
         Difficulty.MEDIUM, ("sorting", "intervals", "sweep"), "merge",
         "intervals: list[list[int]]", "intervals", cases(
             "1 3;2 6;8 10;15 18", "1 6;8 10;15 18", "1 4;4 5", "1 5", "1 10;2 3;4 8", "1 10")),
     problem(
         "arrays", "product-except-self", "Product of Array Except Self",
         "Return an array where each position contains the product of every input value except the value at that position.",
+        """2 <= nums.length <= 10^5
+-30 <= nums[i] <= 30""",
         Difficulty.MEDIUM, ("prefix-product", "suffix-product", "no-division"), "product_except_self",
         "nums: list[int]", "nums", cases(
             "1 2 3 4", "24 12 8 6", "-1 1 0 -3 3", "0 0 9 0 0", "2 3 4 5", "60 40 30 24")),
     problem(
         "arrays", "rotate-array", "Rotate Array",
         "Rotate an array to the right by k positions in place and return the resulting array.",
+        """1 <= nums.length <= 10^5
+-10^9 <= nums[i] <= 10^9
+0 <= k <= 10^9""",
         Difficulty.MEDIUM, ("in-place", "reversal", "cyclic"), "rotate",
         "nums: list[int], k: int", "nums, k", cases(
             "1 2 3 4 5 6 7\n3", "5 6 7 1 2 3 4", "-1 -100 3\n2", "-100 3 -1", "0 1 2 3 4 5\n8", "4 5 0 1 2 3")),
     problem(
         "strings", "valid-anagram", "Valid Anagram",
         "Return whether two strings contain the same letters with the same frequencies.",
+        """1 <= s.length, t.length <= 5 * 10^4
+s and t contain lowercase English letters""",
         Difficulty.EASY, ("frequency-count", "hash-map", "sorting"), "is_anagram",
         "s: str, t: str", "s, t", cases(
             "anagram\nnagaram", "true", "rat\ncar", "false", "conversation\nvoicesranton", "true")),
     problem(
         "strings", "longest-substring-without-repeat", "Longest Substring Without Repeating Characters",
         "Return the length of the longest substring containing no repeated characters.",
+        """0 <= s.length <= 5 * 10^4
+s contains printable ASCII characters""",
         Difficulty.MEDIUM, ("sliding-window", "hash-set", "two-pointers"), "length_of_longest_substring",
         "s: str", "s", cases(
             "abcabcbb", "3", "bbbbb", "1", "pwwkew", "3")),
     problem(
         "strings", "group-anagrams", "Group Anagrams",
         "Group words that are anagrams of one another. The order of groups is unrestricted.",
+        """1 <= strs.length <= 10^4
+0 <= strs[i].length <= 100
+strs[i] contains lowercase English letters""",
         Difficulty.MEDIUM, ("hash-map", "canonical-form", "sorting"), "group_anagrams",
         "strs: list[str]", "strs", cases(
             "eat tea tan ate nat bat", "aet ate eat;ant nat tan;abt bat", "", "", "abc bca cab xyz", "abc bca cab;xyz")),
     problem(
         "strings", "valid-palindrome", "Valid Palindrome",
         "Return whether the input is a palindrome after removing non-alphanumeric characters and ignoring case.",
+        """1 <= s.length <= 2 * 10^5
+s contains printable ASCII characters""",
         Difficulty.EASY, ("two-pointers", "string-normalization"), "is_palindrome",
         "s: str", "s", cases(
             "A man, a plan, a canal: Panama", "true", "race a car", "false", "0P", "false")),
     problem(
         "strings", "minimum-window-substring", "Minimum Window Substring",
         "Return the smallest substring of s containing every character of t with the required multiplicity.",
+        """1 <= s.length, t.length <= 10^5
+s and t contain English letters""",
         Difficulty.HARD, ("sliding-window", "frequency-count", "two-pointers"), "min_window",
         "s: str, t: str", "s, t", cases(
             "ADOBECODEBANC\nABC", "BANC", "a\naa", "aa", "a\na", "")),
     problem(
         "linked-list", "reverse-linked-list", "Reverse Linked List",
         "Reverse a singly linked list and return its new head.",
+        """0 <= number of nodes <= 10^5
+-10^4 <= node value <= 10^4""",
         Difficulty.EASY, ("iteration", "pointers"), "reverse_list",
         "head", "head", cases(
             "1 2 3 4 5", "5 4 3 2 1", "1 2", "2 1", "", "")),
     problem(
         "linked-list", "merge-two-sorted-lists", "Merge Two Sorted Lists",
         "Merge two sorted singly linked lists into one sorted list.",
+        """0 <= list1.length, list2.length <= 10^5
+-10^4 <= node value <= 10^4""",
         Difficulty.EASY, ("two-pointers", "sentinel"), "merge_two_lists",
         "list1, list2", "list1, list2", cases(
             "1 2 4\n1 3 4", "1 1 2 3 4 4", "\n0", "0", "-5 -2\n-6 -3 -1", "-6 -5 -3 -2 -1")),
     problem(
         "linked-list", "linked-list-cycle", "Linked List Cycle",
         "Return whether a singly linked list contains a cycle.",
+        """0 <= number of nodes <= 10^5
+-10^4 <= node value <= 10^4""",
         Difficulty.EASY, ("fast-slow-pointers", "cycle-detection"), "has_cycle",
         "head", "head", cases(
             "3 2 0 -4\nindex=1", "true", "1\nindex=-1", "false", "1 2\nindex=0", "true")),
     problem(
         "linked-list", "remove-nth-node", "Remove Nth Node From End of List",
         "Remove the nth node from the end of a linked list and return the resulting list.",
+        """1 <= number of nodes <= 10^5
+1 <= n <= number of nodes""",
         Difficulty.MEDIUM, ("two-pointers", "sentinel"), "remove_nth_from_end",
         "head, n", "head, n", cases(
             "1 2 3 4 5\n2", "1 2 3 5", "1\n1", "", "1 2\n2", "2")),
     problem(
         "linked-list", "copy-list-with-random-pointer", "Copy List with Random Pointer",
         "Deep-copy a linked list whose nodes have both next and arbitrary random pointers.",
+        """0 <= number of nodes <= 10^5
+-10^4 <= node value <= 10^4""",
         Difficulty.HARD, ("hash-map", "deep-copy"), "copy_random_list",
         "head", "head", cases(
             "7,null;13,0;11,4;10,2;1,0", "7,null;13,0;11,4;10,2;1,0", "1,null", "1,null", "", "")),
     problem(
         "stack-queue", "valid-parentheses", "Valid Parentheses",
         "Return whether every opening bracket is closed by the correct bracket in the correct order.",
+        """1 <= s.length <= 10^5
+s contains only ()[]{}""",
         Difficulty.EASY, ("stack", "parsing", "matching"), "is_valid",
         "s: str", "s", cases(
             "()[]{}", "true", "(]", "false", "([)]", "false")),
     problem(
         "stack-queue", "min-stack", "Min Stack",
         "Design a stack supporting push, pop, top, and retrieving the minimum value in constant time.",
+        """1 <= number of operations <= 10^5
+-10^9 <= value <= 10^9""",
         Difficulty.MEDIUM, ("stack", "design", "constant-time"), "min_stack_operations",
         "operations: list[str]", "operations", cases(
             "push -2;push 0;push -3;getMin;pop;top;getMin", "-3 -2 -2", "push 2;push 1;getMin", "1", "push 5;push 4;pop;getMin", "5")),
     problem(
         "stack-queue", "daily-temperatures", "Daily Temperatures",
         "For each day, return how many days must pass before a warmer temperature occurs.",
+        """1 <= temperatures.length <= 10^5
+30 <= temperatures[i] <= 100""",
         Difficulty.MEDIUM, ("monotonic-stack", "stack", "next-greater"), "daily_temperatures",
         "temperatures: list[int]", "temperatures", cases(
             "73 74 75 71 69 72 76 73", "1 1 4 2 1 1 0 0", "30 40 50 60", "1 1 1 0", "90 80 70", "0 0 0")),
     problem(
         "stack-queue", "evaluate-reverse-polish-notation", "Evaluate Reverse Polish Notation",
         "Evaluate an arithmetic expression written in postfix notation using integer division toward zero.",
+        """1 <= tokens.length <= 10^4
+tokens form a valid RPN expression""",
         Difficulty.MEDIUM, ("stack", "expression-evaluation", "division"), "eval_rpn",
         "tokens: list[str]", "tokens", cases(
             "2 1 + 3 *", "9", "4 13 5 / +", "6", "10 6 9 3 + -11 * / * 17 + 5 +", "22")),
     problem(
         "stack-queue", "sliding-window-maximum", "Sliding Window Maximum",
         "Return the maximum value in every contiguous window of size k.",
+        """1 <= nums.length <= 10^5
+-10^4 <= nums[i] <= 10^4
+1 <= k <= nums.length""",
         Difficulty.HARD, ("deque", "monotonic-queue", "sliding-window"), "max_sliding_window",
         "nums: list[int], k: int", "nums, k", cases(
             "1 3 -1 -3 5 3 6 7\n3", "3 3 5 5 6 7", "1\n1", "1", "9 8 7 6 5\n2", "9 8 7 6")),
     problem(
         "dynamic-programming", "climbing-stairs", "Climbing Stairs",
         "Count the distinct ways to reach the nth step when each move advances one or two steps.",
+        """1 <= n <= 45""",
         Difficulty.EASY, ("fibonacci", "counting"), "climb_stairs",
         "n: int", "n", cases(
             "2", "2", "3", "3", "10", "89")),
     problem(
         "dynamic-programming", "house-robber", "House Robber",
         "Maximize the amount robbed from non-adjacent houses without triggering the alarm.",
+        """1 <= nums.length <= 10^5
+0 <= nums[i] <= 10^4""",
         Difficulty.MEDIUM, ("one-dimensional-dp", "optimization"), "rob",
         "nums: list[int]", "nums", cases(
             "1 2 3 1", "4", "2 7 9 3 1", "12", "2 1 1 2", "4")),
     problem(
         "dynamic-programming", "coin-change", "Coin Change",
         "Return the fewest coins needed to make the target amount, or -1 if it is impossible.",
+        """1 <= coins.length <= 100
+1 <= coins[i] <= 10^4
+1 <= amount <= 10^4""",
         Difficulty.MEDIUM, ("unbounded-knapsack", "bottom-up"), "coin_change",
         "coins: list[int], amount: int", "coins, amount", cases(
             "1 2 5\n11", "3", "2\n3", "-1", "1 3 4\n6", "2")),
     problem(
         "dynamic-programming", "longest-increasing-subsequence", "Longest Increasing Subsequence",
         "Return the length of the longest strictly increasing subsequence.",
+        """1 <= nums.length <= 2500
+-10^4 <= nums[i] <= 10^4""",
         Difficulty.MEDIUM, ("binary-search", "subsequence"), "length_of_lis",
         "nums: list[int]", "nums", cases(
             "10 9 2 5 3 7 101 18", "4", "0 1 0 3 2 3", "4", "7 7 7 7", "1")),
     problem(
         "dynamic-programming", "edit-distance", "Edit Distance",
         "Return the minimum number of insertions, deletions, and substitutions needed to transform one word into another.",
+        """1 <= word1.length, word2.length <= 500
+word1 and word2 contain lowercase English letters""",
         Difficulty.HARD, ("two-dimensional-dp", "levenshtein"), "min_distance",
         "word1: str, word2: str", "word1, word2", cases(
             "horse\nros", "3", "intention\nexecution", "5", "abc\nabc", "0")),
@@ -380,6 +437,7 @@ def seed(*, dry_run: bool = False) -> None:
                 "topic_id": topic_ids[seed_problem.topic_slug],
                 "title": seed_problem.title,
                 "statement": seed_problem.statement,
+                "constraints": seed_problem.constraints,
                 "difficulty": seed_problem.difficulty,
                 "tags": list(seed_problem.tags),
                 "starter_code": {

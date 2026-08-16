@@ -23,6 +23,7 @@ def problem_payload(topic_id, slug="test-problem"):
         "title": "Test Problem",
         "slug": slug,
         "statement": "Test problem statement.",
+        "constraints": "Test problem constraints.",
         "difficulty": "EASY",
         "tags": ["array", "hash-map"],
         "starter_code": {
@@ -42,6 +43,12 @@ def test_list_problems_requires_authentication(client):
 
 def test_get_problem_requires_authentication(client):
     response = client.get("/api/v1/problems/1")
+
+    assert response.status_code == 401
+
+
+def test_get_problem_by_slug_requires_authentication(client):
+    response = client.get("/api/v1/problems/by-slug/test-problem")
 
     assert response.status_code == 401
 
@@ -156,6 +163,7 @@ def test_admin_can_create_problem(client, admin_headers):
     assert body["topic_id"] == topic["id"]
     assert body["title"] == "Test Problem"
     assert body["slug"] == "test-problem"
+    assert body["constraints"] == "Test problem constraints."
     assert body["difficulty"] == "EASY"
     assert body["tags"] == ["array", "hash-map"]
     assert body["time_limit_ms"] == 1000
@@ -251,6 +259,41 @@ def test_get_missing_problem_returns_404(
     assert response.json()["detail"] == "Problem not found"
 
 
+def test_get_problem_by_slug_as_user(client, admin_headers, user_headers):
+    topic = create_topic(client, admin_headers)
+    payload = problem_payload(topic["id"])
+    payload["constraints"] = "1 <= n <= 1000"
+
+    create_response = client.post(
+        "/api/v1/problems",
+        headers=admin_headers,
+        json=payload,
+    )
+
+    assert create_response.status_code == 201
+
+    response = client.get(
+        "/api/v1/problems/by-slug/test-problem",
+        headers=user_headers,
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["slug"] == "test-problem"
+    assert body["title"] == "Test Problem"
+    assert body["constraints"] == "1 <= n <= 1000"
+
+
+def test_get_missing_problem_by_slug_returns_404(client, user_headers):
+    response = client.get(
+        "/api/v1/problems/by-slug/does-not-exist",
+        headers=user_headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Problem not found"
+
+
 def test_admin_can_update_problem(
     client,
     admin_headers,
@@ -274,6 +317,7 @@ def test_admin_can_update_problem(
             "title": "Updated Problem",
             "difficulty": "MEDIUM",
             "tags": ["array", "updated"],
+            "constraints": "Updated problem constraints.",
         },
     )
 
@@ -288,6 +332,7 @@ def test_admin_can_update_problem(
 
     assert body["slug"] == "test-problem"
     assert body["statement"] == "Test problem statement."
+    assert body["constraints"] == "Updated problem constraints."
     assert body["time_limit_ms"] == 1000
     assert body["memory_limit_mb"] == 128
 
@@ -616,5 +661,59 @@ def test_hidden_test_cases_are_not_exposed(
     assert body["test_cases"][0]["input"] == "visible-input"
     assert body["test_cases"][0]["expected_output"] == "visible-output"
 
+    assert "SECRET-HIDDEN-INPUT" not in response.text
+    assert "SECRET-HIDDEN-OUTPUT" not in response.text
+
+
+def test_slug_endpoint_does_not_expose_hidden_test_cases(
+    client,
+    admin_headers,
+    user_headers,
+):
+    topic = create_topic(client, admin_headers)
+
+    create_response = client.post(
+        "/api/v1/problems",
+        headers=admin_headers,
+        json=problem_payload(topic["id"]),
+    )
+
+    assert create_response.status_code == 201
+    problem_id = create_response.json()["id"]
+
+    for payload in (
+        {
+            "input": "visible-input",
+            "expected_output": "visible-output",
+            "run_enabled": True,
+            "submit_enabled": True,
+            "is_sample": True,
+            "display_order": 1,
+        },
+        {
+            "input": "SECRET-HIDDEN-INPUT",
+            "expected_output": "SECRET-HIDDEN-OUTPUT",
+            "run_enabled": False,
+            "submit_enabled": True,
+            "is_sample": False,
+            "display_order": 2,
+        },
+    ):
+        test_case_response = client.post(
+            f"/api/v1/problems/{problem_id}/test-cases",
+            headers=admin_headers,
+            json=payload,
+        )
+        assert test_case_response.status_code == 201
+
+    response = client.get(
+        "/api/v1/problems/by-slug/test-problem",
+        headers=user_headers,
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["test_cases"]) == 1
+    assert body["test_cases"][0]["input"] == "visible-input"
     assert "SECRET-HIDDEN-INPUT" not in response.text
     assert "SECRET-HIDDEN-OUTPUT" not in response.text

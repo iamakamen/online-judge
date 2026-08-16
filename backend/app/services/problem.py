@@ -52,6 +52,7 @@ def create_problem(
     title: str,
     slug: str,
     statement: str,
+    constraints: str,
     difficulty: Difficulty,
     tags: list[str],
     starter_code: dict[str, str],
@@ -71,6 +72,7 @@ def create_problem(
         title=title,
         slug=slug,
         statement=statement,
+        constraints=constraints,
         difficulty=difficulty,
         tags=tags,
         starter_code=starter_code,
@@ -96,6 +98,13 @@ def create_problem(
 
 def get_problem(db: Session, problem_id: int) -> Problem:
     problem = db.scalar(select(Problem).where(Problem.id == problem_id))
+    if problem is None:
+        raise ValueError("Problem not found")
+    return problem
+
+
+def get_problem_by_slug(db: Session, slug: str) -> Problem:
+    problem = db.scalar(select(Problem).where(Problem.slug == slug))
     if problem is None:
         raise ValueError("Problem not found")
     return problem
@@ -184,6 +193,7 @@ def update_problem(
     title: str | None = None,
     slug: str | None = None,
     statement: str | None = None,
+    constraints: str | None = None,
     difficulty: Difficulty | None = None,
     tags: list[str] | None = None,
     starter_code: dict[str, str] | None = None,
@@ -221,6 +231,8 @@ def update_problem(
         problem.title = title
     if statement is not None:
         problem.statement = statement
+    if constraints is not None:
+        problem.constraints = constraints
     if difficulty is not None:
         problem.difficulty = difficulty
     if tags is not None:
