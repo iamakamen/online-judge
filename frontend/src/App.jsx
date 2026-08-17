@@ -144,7 +144,14 @@ function AppRoutes() {
     return <ProtectedRoute navigate={navigate}><Dashboard navigate={navigate} /></ProtectedRoute>
   }
   if (problemMatch) {
-    return <ProtectedRoute navigate={navigate}><ProblemPage slug={decodeURIComponent(problemMatch[1])} /></ProtectedRoute>
+    return (
+      <ProtectedRoute navigate={navigate}>
+        <ProblemPage
+          slug={decodeURIComponent(problemMatch[1])}
+          navigate={navigate}
+        />
+      </ProtectedRoute>
+    )
   }
 
   return <LoginPage navigate={navigate} />
