@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ApiError, getProblemBySlug } from '../api/client'
 import { useAuth } from '../auth/useAuth'
 import { CodeEditor } from '../components/CodeEditor'
+import { ExecutionWorkspace } from '../components/ExecutionWorkspace'
 
 export function ProblemPage({ slug }) {
   const { requestAuthenticated } = useAuth()
@@ -102,6 +103,7 @@ export function ProblemPage({ slug }) {
       </section>
 
       <CodeEditor starterCode={problem.starter_code} />
+      <ExecutionWorkspace />
     </main>
   )
 }

@@ -149,6 +149,20 @@ button { cursor: pointer; }
 .code-editor-surface .cm-scroller { overflow: auto; }
 .code-editor-surface .cm-gutters { border-right: 1px solid #252832; background: #101219; color: #707786; }
 .code-editor-surface .cm-activeLine, .code-editor-surface .cm-activeLineGutter { background: #181b23; }
+.execution-workspace { margin-top: 24px; border: 1px solid #292d38; border-radius: 14px; background: #14161d; overflow: hidden; }
+.execution-workspace-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px; }
+.execution-workspace-header h2 { margin: 6px 0 0; font-size: 1.35rem; }
+.execution-workspace-tabs { display: flex; gap: 4px; padding: 0 20px; border-bottom: 1px solid #252832; }
+.execution-workspace-tab { border: 0; border-bottom: 2px solid transparent; padding: 11px 12px 10px; background: transparent; color: #9ba1ae; font-weight: 700; }
+.execution-workspace-tab:hover, .execution-workspace-tab:focus-visible { color: #f4f5f7; }
+.execution-workspace-tab.is-active { border-bottom-color: #a9f15a; color: #a9f15a; }
+.execution-workspace-tab:focus-visible, .execution-workspace-input textarea:focus-visible { outline: 2px solid #a9f15a; outline-offset: 1px; }
+.execution-workspace-panel { min-height: 180px; padding: 20px; }
+.execution-workspace-empty { display: grid; min-height: 140px; place-content: center; gap: 8px; color: #9ba1ae; text-align: center; }
+.execution-workspace-empty h3 { margin: 0; color: #f4f5f7; font-size: 1rem; }
+.execution-workspace-empty p { margin: 0; }
+.execution-workspace-input { display: grid; gap: 8px; color: #9ba1ae; font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.execution-workspace-input textarea { width: 100%; box-sizing: border-box; resize: vertical; border: 1px solid #383d4a; border-radius: 8px; padding: 12px; background: #0c0d12; color: #f4f5f7; font: .9rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: normal; text-transform: none; }
 
 @media (max-width: 720px) {
   .problem-page { padding: 48px 20px 72px; }
@@ -157,6 +171,11 @@ button { cursor: pointer; }
   .code-editor-language, .code-editor-language select { width: 100%; box-sizing: border-box; }
   .code-editor-toolbar { flex-wrap: wrap; }
   .code-editor-expand { margin-left: 0; }
+  .execution-workspace-header { align-items: flex-start; flex-direction: column; }
+  .execution-workspace-header .primary-button { width: 100%; }
+  .execution-workspace-tabs { padding-inline: 12px; }
+  .execution-workspace-tab { flex: 1; padding-inline: 8px; }
+  .execution-workspace-panel { padding: 16px; }
 }
 
 @media (max-width: 900px) {
