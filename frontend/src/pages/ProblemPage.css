@@ -10,6 +10,7 @@
   --problem-muted: #7890a9;
   --problem-green: #b9f36b;
   --problem-blue: #61a9ff;
+  --sidebar-expanded: 220px;
   background: var(--problem-bg);
 }
 
@@ -19,18 +20,21 @@
 }
 
 .problem-page-v2 .practice-sidebar-brand {
-  width: 50px;
+  display: flex;
+  width: 196px;
+  height: 52px;
   justify-content: flex-start;
-  gap: 13px;
-  padding: 0 9px;
+  gap: 12px;
+  padding: 0 8px;
   color: var(--problem-green);
 }
 
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-brand {
-  width: 216px;
+  width: 196px;
 }
 
 .problem-page-v2 .practice-sidebar-wordmark {
+  display: block;
   overflow: hidden;
   max-width: 0;
   color: #f4f7fb;
@@ -40,6 +44,7 @@
   line-height: 1;
   opacity: 0;
   visibility: hidden;
+  white-space: nowrap;
   transition: max-width 120ms ease, opacity 120ms ease, visibility 120ms ease;
 }
 
@@ -69,8 +74,8 @@
 }
 
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item {
-  min-height: 68px;
-  width: 216px;
+  min-height: 60px;
+  width: 196px;
   border-color: var(--problem-border-strong);
   padding: 0 17px;
   background: transparent;
@@ -103,6 +108,7 @@
 
 .problem-page-v2 .practice-sidebar-item.is-active .practice-sidebar-icon {
   color: #8ec8ff;
+  background: transparent;
 }
 
 .problem-page-v2 .problem-main {
