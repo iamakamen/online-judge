@@ -1,0 +1,53 @@
+.problem-shell.problem-page-v2 {
+  --sidebar-expanded: 188px;
+}
+
+.problem-page-v2 .practice-sidebar-brand {
+  width: 164px;
+  gap: 10px;
+  padding: 0 6px;
+}
+
+.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-brand {
+  width: 164px;
+}
+
+.problem-page-v2 .practice-sidebar-wordmark,
+.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-wordmark {
+  display: block;
+  max-width: 90px;
+  overflow: visible;
+  opacity: 1;
+  visibility: visible;
+  color: #f4f7fb;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -.055em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item {
+  width: 164px;
+  min-height: 54px;
+  padding: 0 14px;
+}
+
+.problem-page-v2 .practice-sidebar-item.is-active,
+.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item.is-active {
+  border-color: transparent;
+  background: transparent;
+  color: var(--problem-green);
+  box-shadow: none;
+}
+
+.problem-page-v2 .practice-sidebar-item.is-active .practice-sidebar-icon {
+  color: var(--problem-green);
+}
+
+.problem-page-v2 .practice-sidebar-item:hover,
+.problem-page-v2 .practice-sidebar-item:focus-visible {
+  border-color: var(--problem-border-strong);
+  background: #0e1d30;
+  color: var(--problem-text);
+}
