@@ -113,6 +113,7 @@ export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate }) {
         onClick={() => handleNavigate('/dashboard')}
       >
         <LoomMark />
+        <span className="practice-sidebar-wordmark">loom</span>
       </button>
 
       <nav className="practice-sidebar-nav">
