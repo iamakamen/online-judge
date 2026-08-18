@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getDashboard } from '../api/client'
 import { useAuth } from '../auth/useAuth'
+import { LoomMark } from '../components/PrimarySidebar'
 
 function ProfileIcon() {
   return (
@@ -55,7 +56,9 @@ export function Dashboard({ navigate }) {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <button type="button" className="brand" onClick={() => navigate('/dashboard')}>OJ</button>
+        <button type="button" className="brand" aria-label="Go to Dashboard" onClick={() => navigate('/dashboard')}>
+          <LoomMark />
+        </button>
         <nav aria-label="Account navigation" className="account-nav">
           <button type="button" className="icon-button" aria-label="Profile" title="Profile" onClick={() => setModalItem('Profile')}>
             <ProfileIcon />

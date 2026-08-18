@@ -9,7 +9,7 @@ function ProblemRow({ problem, navigate }) {
     <button
       type="button"
       className="practice-problem-row"
-      onClick={() => navigate(`/problem/${problem.slug}`)}
+      onClick={() => navigate(`/problems/${problem.slug}`)}
     >
       <span className="practice-problem-title">{problem.title}</span>
       <span

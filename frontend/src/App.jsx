@@ -133,7 +133,7 @@ function ProtectedRoute({ children, navigate }) {
 
 function AppRoutes() {
   const { pathname, navigate } = usePathname()
-  const problemMatch = pathname.match(/^\/problem\/([^/]+)$/)
+  const problemMatch = pathname.match(/^\/problems\/([^/]+)$/)
 
   if (pathname === '/login' || pathname === '/') return <LoginPage navigate={navigate} />
   if (pathname === '/register') return <RegisterPage navigate={navigate} />

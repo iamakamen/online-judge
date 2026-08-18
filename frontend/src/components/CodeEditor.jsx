@@ -40,18 +40,23 @@ function createEditorState(language, document) {
   })
 }
 
-export function CodeEditor({ starterCode }) {
+export function CodeEditor({
+  starterCode,
+  isExpanded,
+  onToggleExpansion,
+  onCustomInput,
+  onRun,
+  onSubmit,
+}) {
   const editorElement = useRef(null)
   const viewRef = useRef(null)
   const sessionsRef = useRef(null)
   const activeLanguageRef = useRef('python')
   const [selectedLanguage, setSelectedLanguage] = useState('python')
-  const [isExpanded, setIsExpanded] = useState(false)
 
   useEffect(() => {
     activeLanguageRef.current = 'python'
     setSelectedLanguage('python')
-    setIsExpanded(false)
 
     const sessions = {
       python: createEditorState('python', starterCode.python),
@@ -92,14 +97,9 @@ export function CodeEditor({ starterCode }) {
   }
 
   return (
-    <section className={`code-editor${isExpanded ? ' is-expanded' : ''}`} aria-labelledby="code-editor-title">
-      <div className="code-editor-header">
-        <div>
-          <p className="eyebrow">Workspace</p>
-          <h2 id="code-editor-title">Code editor</h2>
-        </div>
+    <section className="code-editor" aria-label="Code editor">
+      <div className="code-editor-toolbar">
         <label className="code-editor-language">
-          <span>Language</span>
           <select
             aria-label="Editor language"
             value={selectedLanguage}
@@ -110,22 +110,56 @@ export function CodeEditor({ starterCode }) {
             ))}
           </select>
         </label>
-      </div>
-
-      <div className="code-editor-toolbar">
-        <button type="button" className="code-editor-button" onClick={resetCurrentLanguage}>Reset</button>
-        <button type="button" className="code-editor-button" onClick={clearCurrentLanguage}>Clear</button>
+        <div className="code-editor-controls">
+          <button type="button" className="code-editor-button" onClick={resetCurrentLanguage}>Reset</button>
+          <button type="button" className="code-editor-button" onClick={clearCurrentLanguage}>Clear</button>
+        </div>
         <button
           type="button"
           className="code-editor-button code-editor-expand"
+          aria-label={isExpanded ? 'Collapse editor' : 'Expand editor'}
           aria-expanded={isExpanded}
-          onClick={() => setIsExpanded((expanded) => !expanded)}
+          onClick={onToggleExpansion}
         >
-          {isExpanded ? 'Collapse editor' : 'Expand editor'}
+          <svg
+            className="editor-expand-icon"
+            viewBox="0 0 20 20"
+            role="img"
+            aria-label={isExpanded ? 'Collapse coding pane' : 'Expand coding pane'}
+          >
+            {isExpanded ? (
+              <path d="M8 3H3v5M12 17h5v-5M3 8l5-5M17 12l-5 5" />
+            ) : (
+              <path d="M8 3H3v5M12 17h5v-5M3 3l5 5M17 17l-5-5" />
+            )}
+          </svg>
         </button>
       </div>
 
-      <div ref={editorElement} className="code-editor-surface" aria-label="Code editor" />
+      <div ref={editorElement} className="code-editor-surface" />
+
+      <div className="code-editor-actions" aria-label="Coding pane actions">
+        <button type="button" className="code-editor-button" onClick={onCustomInput}>
+          <svg className="action-icon" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M4 4h12v9H8l-4 3V4Z" />
+            <path d="m7 7 2 2-2 2M10 11h3" />
+          </svg>
+          Custom Input
+        </button>
+        <button type="button" className="code-editor-button" onClick={onRun}>
+          <svg className="action-icon" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="m7 4 9 6-9 6V4Z" />
+          </svg>
+          Run
+        </button>
+        <button type="button" className="primary-button" onClick={onSubmit}>
+          <svg className="action-icon" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="m3 10 14-6-4 12-3-5-7-1Z" />
+            <path d="m10 11 4-4" />
+          </svg>
+          Submit
+        </button>
+      </div>
     </section>
   )
 }
