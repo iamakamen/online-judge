@@ -4,6 +4,7 @@ import { useAuth } from '../auth/useAuth'
 import { CodeEditor } from '../components/CodeEditor'
 import { ExecutionWorkspace } from '../components/ExecutionWorkspace'
 import { PrimarySidebar } from '../components/PrimarySidebar'
+import './ProblemPage.css'
 
 export function ProblemPage({ slug, navigate }) {
   const { requestAuthenticated } = useAuth()
@@ -62,7 +63,7 @@ export function ProblemPage({ slug, navigate }) {
   if (!problem) return <main className="loading-page">Loading Problem…</main>
 
   return (
-    <div className={`problem-shell${isSidebarExpanded ? ' sidebar-expanded' : ''}${isCodingPaneExpanded ? ' coding-expanded' : ''}`}>
+    <div className={`problem-shell problem-page-v2${isSidebarExpanded ? ' sidebar-expanded' : ''}${isCodingPaneExpanded ? ' coding-expanded' : ''}`}>
       <PrimarySidebar
         isExpanded={isSidebarExpanded}
         onExpand={() => setIsSidebarExpanded(true)}
