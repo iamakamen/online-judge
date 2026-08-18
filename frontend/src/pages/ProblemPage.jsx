@@ -5,12 +5,14 @@ import { CodeEditor } from '../components/CodeEditor'
 import { ExecutionWorkspace } from '../components/ExecutionWorkspace'
 import { PrimarySidebar } from '../components/PrimarySidebar'
 import './ProblemPage.css'
+import './ProblemSidebarFix.css'
 
 export function ProblemPage({ slug, navigate }) {
   const { requestAuthenticated } = useAuth()
   const [problem, setProblem] = useState(null)
   const [error, setError] = useState(null)
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
+  const [v2Feature, setV2Feature] = useState(null)
   const [isSubmissionsOpen, setIsSubmissionsOpen] = useState(false)
   const [executionView, setExecutionView] = useState(null)
   const [isCodingPaneExpanded, setIsCodingPaneExpanded] = useState(false)
@@ -69,6 +71,7 @@ export function ProblemPage({ slug, navigate }) {
         onExpand={() => setIsSidebarExpanded(true)}
         onCollapse={() => setIsSidebarExpanded(false)}
         navigate={navigate}
+        onV2Click={setV2Feature}
       />
 
       <main className="problem-main">
@@ -161,19 +164,35 @@ export function ProblemPage({ slug, navigate }) {
         </section>
       </main>
 
-      {isSubmissionsOpen && (
-        <div className="modal-backdrop" role="presentation" onClick={() => setIsSubmissionsOpen(false)}>
+      {(isSubmissionsOpen || v2Feature) && (
+        <div
+          className="modal-backdrop"
+          role="presentation"
+          onClick={() => {
+            setIsSubmissionsOpen(false)
+            setV2Feature(null)
+          }}
+        >
           <section
             className="modal"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="submissions-v2-title"
+            aria-labelledby="problem-future-feature-title"
             onClick={(event) => event.stopPropagation()}
           >
             <p className="eyebrow">Future feature</p>
-            <h2 id="submissions-v2-title">Submissions</h2>
+            <h2 id="problem-future-feature-title">{v2Feature || 'Submissions'}</h2>
             <p className="muted">Coming in V2</p>
-            <button type="button" className="primary-button" onClick={() => setIsSubmissionsOpen(false)}>Close</button>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={() => {
+                setIsSubmissionsOpen(false)
+                setV2Feature(null)
+              }}
+            >
+              Close
+            </button>
           </section>
         </div>
       )}
