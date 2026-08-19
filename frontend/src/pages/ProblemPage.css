@@ -78,3 +78,5 @@
 .problem-page-v2 .execution-workspace-panel.is-full-height { height: 100%; display: flex; align-items: center; justify-content: center; }
 .problem-page-v2 .execution-workspace-input { display: block; width: 100%; height: 160px; max-height: 160px; }
 .problem-page-v2 .execution-workspace-input textarea { width: 100%; height: 160px; max-height: 160px; box-sizing: border-box; resize: none; overflow: auto; border: 1px solid var(--problem-border-strong); border-radius: 8px; background: var(--problem-surface); color: var(--problem-soft); }
+.problem-page-v2 .modal .primary-button { border-color: var(--problem-blue); background: var(--problem-blue); color: #07111f; }
+.problem-page-v2 .modal .primary-button:hover, .problem-page-v2 .modal .primary-button:focus-visible { border-color: #82b9ff; background: #82b9ff; color: #07111f; }
