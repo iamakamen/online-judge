@@ -126,7 +126,7 @@ function CustomInputIcon() {
 function RunIcon() {
   return (
     <svg className="action-icon" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="m8 5 11 7-11 7V5Z" />
+      <path d="m8 5 11 7-11 7V5Z" />
     </svg>
   )
 }
