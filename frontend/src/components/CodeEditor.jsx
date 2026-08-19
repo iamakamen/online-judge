@@ -8,6 +8,7 @@ import {
   foldGutter,
   foldKeymap,
   indentOnInput,
+  lineNumbers,
   syntaxHighlighting,
 } from '@codemirror/language'
 import { EditorState } from '@codemirror/state'
@@ -24,17 +25,38 @@ const LANGUAGES = {
   },
 }
 
+const editorTheme = EditorView.theme({
+  '.cm-cursor, .cm-dropCursor': {
+    borderLeftColor: '#61a9ff !important',
+  },
+  '.cm-gutters': {
+    backgroundColor: '#07101d',
+    color: '#66788f',
+    borderRight: '1px solid #1d334c',
+  },
+  '.cm-lineNumbers .cm-gutterElement': {
+    minWidth: '34px',
+    padding: '0 8px 0 4px',
+  },
+  '.cm-foldGutter .cm-gutterElement': {
+    width: '16px',
+    padding: '0 2px',
+  },
+})
+
 function createEditorState(language, document) {
   return EditorState.create({
     doc: document,
     extensions: [
       history(),
       keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab, ...foldKeymap]),
+      lineNumbers(),
       LANGUAGES[language].language,
       indentOnInput(),
       syntaxHighlighting(defaultHighlightStyle),
       bracketMatching(),
       foldGutter(),
+      editorTheme,
       EditorView.contentAttributes.of({ 'aria-label': `${LANGUAGES[language].label} code editor` }),
     ],
   })
