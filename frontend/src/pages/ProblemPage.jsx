@@ -17,6 +17,7 @@ export function ProblemPage({ slug, navigate }) {
   const [executionView, setExecutionView] = useState(null)
   const [isCodingPaneExpanded, setIsCodingPaneExpanded] = useState(false)
   const [executionMode, setExecutionMode] = useState(null)
+  const [customInput, setCustomInput] = useState('')
 
   useEffect(() => {
     let active = true
@@ -25,6 +26,7 @@ export function ProblemPage({ slug, navigate }) {
     setError(null)
     setExecutionView(null)
     setExecutionMode(null)
+    setCustomInput('')
     setIsCodingPaneExpanded(false)
 
     requestAuthenticated((accessToken) => getProblemBySlug(accessToken, slug))
@@ -141,6 +143,11 @@ export function ProblemPage({ slug, navigate }) {
             isExpanded={isCodingPaneExpanded}
             onToggleExpansion={() => setIsCodingPaneExpanded((expanded) => !expanded)}
             onCustomInput={() => {
+              if (executionMode === 'custom') {
+                setExecutionMode(null)
+                setExecutionView(null)
+                return
+              }
               setExecutionMode('custom')
               setExecutionView('input')
             }}
@@ -157,7 +164,9 @@ export function ProblemPage({ slug, navigate }) {
             <ExecutionWorkspace
               mode={executionMode}
               activeView={executionView}
+              customInput={customInput}
               runInput={problem.test_cases.find((testCase) => testCase.run_enabled)?.input || ''}
+              onCustomInputChange={setCustomInput}
               onViewChange={setExecutionView}
             />
           )}
