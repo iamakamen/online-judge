@@ -1,6 +1,18 @@
 .problem-shell.problem-page-v2 {
+  --sidebar-collapsed: 78px;
   --sidebar-expanded: 174px;
   --problem-brand-blue: #61a9ff;
+}
+
+/* Keep the Problem Page sidebar visually identical to the canonical Practice sidebar. */
+.problem-page-v2 .practice-sidebar {
+  width: var(--sidebar-collapsed);
+  padding: 22px 14px;
+  overflow: hidden;
+}
+
+.problem-page-v2 .practice-sidebar.is-expanded {
+  width: var(--sidebar-expanded);
 }
 
 /* Brand */
@@ -37,6 +49,14 @@
   outline: none;
 }
 
+.problem-page-v2 .practice-sidebar-logo {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  stroke-width: 1.9;
+  color: var(--problem-brand-blue);
+}
+
 .problem-page-v2 .practice-sidebar-wordmark {
   display: block;
   flex: 0 0 auto;
@@ -60,23 +80,12 @@
   visibility: visible;
 }
 
-.problem-page-v2 .practice-sidebar-logo {
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
-  stroke-width: 1.9;
-  color: var(--problem-brand-blue);
-}
-
-/* Keep the brand at the top, the four primary links centered, and Profile at the bottom. */
+/* Collapsed: icons have no borders and retain the canonical vertical rail. */
 .problem-page-v2 .practice-sidebar-nav {
+  display: grid;
   gap: 12px;
   margin-top: auto;
   margin-bottom: auto;
-}
-
-.problem-page-v2 .practice-sidebar-profile {
-  margin-top: 0;
 }
 
 .problem-page-v2 .practice-sidebar-item {
@@ -91,78 +100,66 @@
   border: 1px solid transparent;
   border-radius: 12px;
   background: transparent;
-  color: var(--problem-text);
+  color: var(--text);
   text-align: left;
+  white-space: nowrap;
 }
 
+/* Expanded: preserve the collapsed icon position and reveal only the text. */
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item {
   width: 146px;
-  min-height: 54px;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  padding: 0 13px;
-  border-color: var(--problem-border-strong);
-  background: transparent;
-  color: var(--problem-text);
-}
-
-.problem-page-v2 .practice-sidebar-item.is-active,
-.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item.is-active {
-  border-color: transparent;
-  background: transparent;
-  color: var(--problem-text);
-  box-shadow: none;
-}
-
-.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item.is-active {
-  border-color: var(--problem-border-strong);
-}
-
-.problem-page-v2 .practice-sidebar-item:hover,
-.problem-page-v2 .practice-sidebar-item:focus-visible,
-.problem-page-v2 .practice-sidebar-item.is-active:hover {
-  border-color: transparent;
-  background: #0e1d30;
-  color: #f5f8fc;
-}
-
-.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item:hover,
-.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item:focus-visible,
-.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item.is-active:hover {
-  border-color: #3b638c;
-}
-
-.problem-page-v2 .practice-sidebar-item.is-active .practice-sidebar-icon,
-.problem-page-v2 .practice-sidebar-item:hover .practice-sidebar-icon,
-.problem-page-v2 .practice-sidebar-item:focus-visible .practice-sidebar-icon {
-  color: inherit;
 }
 
 .problem-page-v2 .practice-sidebar-item > span:last-child {
   display: block;
-  flex: 0 0 auto;
-  overflow: hidden;
   max-width: 0;
-  color: inherit;
-  font-weight: 700;
-  line-height: 1;
+  overflow: hidden;
   opacity: 0;
   visibility: hidden;
-  white-space: nowrap;
-  transition: max-width 120ms ease, opacity 120ms ease, visibility 120ms ease;
+  color: #ffffff;
+  font-weight: 800;
+  line-height: 1;
+  transition: opacity 120ms ease, visibility 120ms ease, max-width 120ms ease;
 }
 
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item > span:last-child {
-  max-width: 82px;
+  max-width: 90px;
   opacity: 1;
   visibility: visible;
 }
 
-.problem-page-v2 .practice-sidebar-item .practice-sidebar-icon {
+.problem-page-v2 .practice-sidebar-item:hover,
+.problem-page-v2 .practice-sidebar-item:focus-visible {
+  border-color: var(--border-strong);
+  background: var(--panel-raised);
+  color: var(--text);
+}
+
+.problem-page-v2 .practice-sidebar-item.is-active {
+  border-color: var(--border-strong);
+  background: transparent;
+  color: #ffffff;
+}
+
+.problem-page-v2 .practice-sidebar-item.is-active:hover,
+.problem-page-v2 .practice-sidebar-item.is-active:focus-visible {
+  border-color: var(--problem-brand-blue);
+  background: var(--panel-raised);
+}
+
+.problem-page-v2 .practice-sidebar-icon {
   width: 24px;
   height: 24px;
   flex: 0 0 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.problem-page-v2 .practice-sidebar-profile {
+  margin-top: auto;
 }
 
 /* Problem navigation accent follows the brand. */
