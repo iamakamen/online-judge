@@ -38,7 +38,6 @@ export function ExecutionWorkspace({ mode, activeView, customInput, runInput, on
       >
         {visibleView === 'result' && (
           <div className="execution-workspace-empty">
-            <h3>Result</h3>
             <p>No result yet.</p>
           </div>
         )}
