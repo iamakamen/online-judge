@@ -27,6 +27,7 @@ const LANGUAGES = {
 const editorTheme = EditorView.theme({
   '.cm-cursor, .cm-dropCursor': {
     borderLeftColor: '#61a9ff !important',
+    borderLeftWidth: '2px',
   },
   '.cm-gutters': {
     backgroundColor: '#07101d',
@@ -64,7 +65,7 @@ function createEditorState(language, document) {
 function ChevronIcon() {
   return (
     <svg className="select-chevron" viewBox="0 0 16 16" aria-hidden="true">
-      <path d="m4 6 4 4 4-4" />
+      <path d="M4 6.5L8 10.5L12 6.5" />
     </svg>
   )
 }
