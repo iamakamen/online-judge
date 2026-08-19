@@ -71,7 +71,7 @@ function SidebarItem({ label, icon, active = false, onClick }) {
   )
 }
 
-export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate, onV2Click }) {
+export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate, onV2Click, activeItem = 'Practice' }) {
   const isPointerInside = useRef(false)
   const sidebarRef = useRef(null)
 
@@ -116,14 +116,14 @@ export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate, onV
       </button>
 
       <nav className="practice-sidebar-nav">
-        <SidebarItem label="Practice" icon={<PracticeIcon />} active onClick={() => handleNavigate('/practice')} />
-        <SidebarItem label="Learn" icon={<LearnIcon />} onClick={() => onV2Click?.('Learn')} />
-        <SidebarItem label="Contest" icon={<ContestIcon />} onClick={() => onV2Click?.('Contest')} />
-        <SidebarItem label="Forum" icon={<ForumIcon />} onClick={() => onV2Click?.('Forum')} />
+        <SidebarItem label="Practice" icon={<PracticeIcon />} active={activeItem === 'Practice'} onClick={() => handleNavigate('/practice')} />
+        <SidebarItem label="Learn" icon={<LearnIcon />} active={activeItem === 'Learn'} onClick={() => onV2Click?.('Learn')} />
+        <SidebarItem label="Contest" icon={<ContestIcon />} active={activeItem === 'Contest'} onClick={() => onV2Click?.('Contest')} />
+        <SidebarItem label="Forum" icon={<ForumIcon />} active={activeItem === 'Forum'} onClick={() => onV2Click?.('Forum')} />
       </nav>
 
       <div className="practice-sidebar-profile">
-        <SidebarItem label="Profile" icon={<ProfileIcon />} onClick={() => onV2Click?.('Profile')} />
+        <SidebarItem label="Profile" icon={<ProfileIcon />} active={activeItem === 'Profile'} onClick={() => onV2Click?.('Profile')} />
       </div>
     </aside>
   )
