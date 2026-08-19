@@ -68,18 +68,19 @@
 
 .problem-page-v2 .practice-sidebar-item {
   min-height: 54px;
-  border: 1px solid transparent;
+  border: 0;
   border-radius: 12px;
-  color: #8ca0b6;
+  color: #ffffff;
+  background: transparent;
 }
 
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item {
   min-height: 60px;
   width: 196px;
-  border-color: var(--problem-border-strong);
+  border: 0;
   padding: 0 17px;
   background: transparent;
-  color: var(--problem-text);
+  color: #ffffff;
 }
 
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item:disabled {
@@ -88,26 +89,27 @@
 
 .problem-page-v2 .practice-sidebar-item:hover,
 .problem-page-v2 .practice-sidebar-item:focus-visible {
-  border-color: var(--problem-border-strong);
-  background: #0e1d30;
-  color: var(--problem-text);
+  border: 0;
+  background: transparent;
+  color: #ffffff;
 }
 
 .problem-page-v2 .practice-sidebar-item.is-active {
-  border-color: #3d7fbd;
-  background: #16466f;
-  color: #f2f8ff;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
   box-shadow: none;
 }
 
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item.is-active {
-  border-color: #3d7fbd;
-  background: #16466f;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
   box-shadow: none;
 }
 
 .problem-page-v2 .practice-sidebar-item.is-active .practice-sidebar-icon {
-  color: #8ec8ff;
+  color: #ffffff;
   background: transparent;
 }
 
