@@ -10,7 +10,7 @@
   --problem-muted: #7890a9;
   --problem-green: #b9f36b;
   --problem-blue: #61a9ff;
-  --green: #61a9ff;
+  --green: var(--problem-blue);
   --green-deep: #132a43;
   --sidebar-expanded: 174px;
   background: var(--problem-bg);
@@ -264,6 +264,8 @@
 
 .problem-page-v2 .code-editor-expand {
   margin-left: auto;
+  min-width: 62px;
+  padding: 0 16px;
 }
 
 .problem-page-v2 .editor-expand-icon {
