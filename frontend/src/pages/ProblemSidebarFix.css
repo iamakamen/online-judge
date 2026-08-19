@@ -88,6 +88,7 @@
   margin-bottom: auto;
 }
 
+/* All Problem Page sidebar items remain borderless, including active and hover states. */
 .problem-page-v2 .practice-sidebar-item {
   display: flex;
   width: 50px;
@@ -97,7 +98,7 @@
   justify-content: flex-start;
   gap: 12px;
   padding: 0 13px;
-  border: 1px solid transparent;
+  border: 0;
   border-radius: 12px;
   background: transparent;
   color: var(--text);
@@ -130,21 +131,17 @@
 
 .problem-page-v2 .practice-sidebar-item:hover,
 .problem-page-v2 .practice-sidebar-item:focus-visible {
-  border-color: var(--border-strong);
-  background: var(--panel-raised);
+  border: 0;
+  background: transparent;
   color: var(--text);
 }
 
-.problem-page-v2 .practice-sidebar-item.is-active {
-  border-color: var(--border-strong);
-  background: transparent;
-  color: #ffffff;
-}
-
+.problem-page-v2 .practice-sidebar-item.is-active,
 .problem-page-v2 .practice-sidebar-item.is-active:hover,
 .problem-page-v2 .practice-sidebar-item.is-active:focus-visible {
-  border-color: var(--problem-brand-blue);
-  background: var(--panel-raised);
+  border: 0;
+  background: transparent;
+  color: #ffffff;
 }
 
 .problem-page-v2 .practice-sidebar-icon {
