@@ -1,21 +1,21 @@
-.practice-shell.practice-page-v2 {
+.practice-shell {
   --sidebar-collapsed: 78px;
   --sidebar-expanded: 174px;
   --problem-brand-blue: #61a9ff;
 }
 
 /* Keep the Practice sidebar visually identical to the finalized Problem Page rail. */
-.practice-page-v2 .practice-sidebar {
+.practice-shell .practice-sidebar {
   width: var(--sidebar-collapsed);
   padding: 22px 14px;
   overflow: hidden;
 }
 
-.practice-page-v2 .practice-sidebar.is-expanded {
+.practice-shell .practice-sidebar.is-expanded {
   width: var(--sidebar-expanded);
 }
 
-.practice-page-v2 .practice-sidebar-brand {
+.practice-shell .practice-sidebar-brand {
   display: flex;
   width: 50px;
   height: 52px;
@@ -33,22 +33,22 @@
   overflow: visible;
 }
 
-.practice-page-v2 .practice-sidebar.is-expanded .practice-sidebar-brand {
+.practice-shell .practice-sidebar.is-expanded .practice-sidebar-brand {
   width: 146px;
   justify-content: flex-start;
   padding: 0 2px;
   overflow: visible;
 }
 
-.practice-page-v2 .practice-sidebar-brand:hover,
-.practice-page-v2 .practice-sidebar-brand:focus-visible {
+.practice-shell .practice-sidebar-brand:hover,
+.practice-shell .practice-sidebar-brand:focus-visible {
   border: 0;
   background: transparent;
   box-shadow: none;
   outline: none;
 }
 
-.practice-page-v2 .practice-sidebar-logo {
+.practice-shell .practice-sidebar-logo {
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
@@ -56,7 +56,7 @@
   color: var(--problem-brand-blue);
 }
 
-.practice-page-v2 .practice-sidebar-wordmark {
+.practice-shell .practice-sidebar-wordmark {
   display: block;
   flex: 0 0 auto;
   width: 88px;
@@ -74,20 +74,20 @@
   transition: opacity 120ms ease, visibility 120ms ease;
 }
 
-.practice-page-v2 .practice-sidebar.is-expanded .practice-sidebar-wordmark {
+.practice-shell .practice-sidebar.is-expanded .practice-sidebar-wordmark {
   opacity: 1;
   visibility: visible;
 }
 
 /* Collapsed: icons stay on the same rail positions with no button borders. */
-.practice-page-v2 .practice-sidebar-nav {
+.practice-shell .practice-sidebar-nav {
   display: grid;
   gap: 12px;
   margin-top: auto;
   margin-bottom: auto;
 }
 
-.practice-page-v2 .practice-sidebar-item {
+.practice-shell .practice-sidebar-item {
   display: flex;
   width: 50px;
   min-height: 54px;
@@ -105,11 +105,11 @@
 }
 
 /* Expanded: preserve the collapsed icon x-position and only reveal text. */
-.practice-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item {
+.practice-shell .practice-sidebar.is-expanded .practice-sidebar-item {
   width: 146px;
 }
 
-.practice-page-v2 .practice-sidebar-item > span:last-child {
+.practice-shell .practice-sidebar-item > span:last-child {
   display: block;
   max-width: 0;
   overflow: hidden;
@@ -121,33 +121,33 @@
   transition: opacity 120ms ease, visibility 120ms ease, max-width 120ms ease;
 }
 
-.practice-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item > span:last-child {
+.practice-shell .practice-sidebar.is-expanded .practice-sidebar-item > span:last-child {
   max-width: 90px;
   opacity: 1;
   visibility: visible;
 }
 
-.practice-page-v2 .practice-sidebar-item:hover,
-.practice-page-v2 .practice-sidebar-item:focus-visible {
+.practice-shell .practice-sidebar-item:hover,
+.practice-shell .practice-sidebar-item:focus-visible {
   border-color: var(--border-strong);
   background: var(--panel-raised);
   color: var(--text);
 }
 
 /* Practice remains visibly active in both collapsed and expanded states. */
-.practice-page-v2 .practice-sidebar-item.is-active {
+.practice-shell .practice-sidebar-item.is-active {
   border-color: var(--border-strong);
   background: transparent;
   color: #ffffff;
 }
 
-.practice-page-v2 .practice-sidebar-item.is-active:hover,
-.practice-page-v2 .practice-sidebar-item.is-active:focus-visible {
+.practice-shell .practice-sidebar-item.is-active:hover,
+.practice-shell .practice-sidebar-item.is-active:focus-visible {
   border-color: var(--problem-brand-blue);
   background: var(--panel-raised);
 }
 
-.practice-page-v2 .practice-sidebar-icon {
+.practice-shell .practice-sidebar-icon {
   width: 24px;
   height: 24px;
   flex: 0 0 24px;
@@ -158,6 +158,6 @@
   stroke-linejoin: round;
 }
 
-.practice-page-v2 .practice-sidebar-profile {
+.practice-shell .practice-sidebar-profile {
   margin-top: auto;
 }
