@@ -60,8 +60,8 @@
   margin: 0;
   color: var(--problem-text);
   font-size: clamp(2.55rem, 4.2vw, 4rem);
-  font-weight: 800;
-  letter-spacing: 1px;
+  font-weight: 700;
+  letter-spacing: normal;
   line-height: .96;
 }
 
@@ -214,6 +214,34 @@
   padding: 0 14px;
   border-bottom: 1px solid var(--problem-border);
   background: #0b1625;
+}
+
+.problem-page-v2 .code-editor-language-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.problem-page-v2 .code-editor-language select {
+  appearance: none;
+  min-width: 130px;
+  padding-right: 34px;
+}
+
+.problem-page-v2 .select-chevron {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  pointer-events: none;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
 }
 
 .problem-page-v2 .code-editor-language select,
