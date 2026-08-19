@@ -1,3 +1,5 @@
+@import '../components/PrimarySidebar.css';
+
 .practice-filters {
   align-items: flex-end;
 }
@@ -8,3 +10,4 @@
 
 .practice-tag-filter {
   min-width: 220px;
+}
