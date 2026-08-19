@@ -188,7 +188,6 @@ export function ProblemPage({ slug, navigate }) {
             aria-labelledby="problem-future-feature-title"
             onClick={(event) => event.stopPropagation()}
           >
-            <p className="eyebrow">Future feature</p>
             <h2 id="problem-future-feature-title">{v2Feature || 'Submissions'}</h2>
             <p className="muted">Coming in V2</p>
             <button
