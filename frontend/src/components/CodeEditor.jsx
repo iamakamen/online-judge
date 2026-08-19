@@ -22,7 +22,7 @@ const editorTheme = EditorView.theme({
   '.cm-content': { caretColor: '#ffffff' },
   '.cm-cursor, .cm-dropCursor': {
     borderLeft: '2px solid #ffffff !important',
-    boxShadow: '0 0 0 1px #61a9ff, 0 0 5px #61a9ff',
+    boxShadow: '0 0 0 1px #07101d, 0 0 0 2px #61a9ff, 0 0 6px #61a9ff',
     opacity: '1 !important',
     visibility: 'visible !important',
   },
@@ -32,7 +32,7 @@ const editorTheme = EditorView.theme({
     borderRight: '1px solid #1d334c',
   },
   '.cm-lineNumbers .cm-gutterElement': { minWidth: '34px', padding: '0 8px 0 4px' },
-  '.cm-foldGutter .cm-gutterElement': { width: '16px', padding: '0 2px' },
+  '.cm-foldGutter .cm-gutterElement': { width: '18px', padding: '0 1px 0 5px' },
   '.cm-custom-fold-marker': {
     display: 'inline-block',
     width: '8px',
@@ -82,14 +82,16 @@ function ChevronIcon() {
 
 function ExpandIcon({ isExpanded }) {
   return (
-    <svg className="editor-expand-icon" viewBox="0 0 32 20" aria-hidden="true">
+    <svg className="editor-expand-icon" viewBox="0 0 40 20" aria-hidden="true">
       {isExpanded ? (
         <>
-          <path d="M4 3v5h5M28 3v5h-5M4 17v-5h5M28 17v-5h-5" />
+          <path d="M3 10h12M3 10l5-5M3 10l5 5" />
+          <path d="M37 10H25M37 10l-5-5M37 10l-5 5" />
         </>
       ) : (
         <>
-          <path d="M4 8V3h5M28 8V3h-5M4 12v5h5M28 12v5h-5" />
+          <path d="M3 10h12M3 10l5-5M3 10l5 5" />
+          <path d="M37 10H25M37 10l-5-5M37 10l-5 5" />
         </>
       )}
     </svg>
