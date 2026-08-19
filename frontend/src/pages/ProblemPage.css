@@ -76,7 +76,7 @@
   font-size: clamp(2.25rem, 3.5vw, 3.5rem);
   font-weight: 500;
   letter-spacing: normal;
-  line-height: .98;
+  line-height: 1.04;
 }
 
 .problem-page-v2 .problem-meta {
@@ -265,7 +265,7 @@
 }
 
 .problem-page-v2 .editor-expand-icon {
-  width: 20px;
+  width: 32px;
   height: 20px;
   fill: none;
   stroke: currentColor;
@@ -284,12 +284,13 @@
 }
 
 .problem-page-v2 .code-editor-surface .cm-content {
-  caret-color: var(--problem-blue);
+  caret-color: #ffffff;
 }
 
 .problem-page-v2 .code-editor-surface .cm-cursor,
 .problem-page-v2 .code-editor-surface .cm-dropCursor {
-  border-left: 2px solid var(--problem-blue) !important;
+  border-left: 2px solid #ffffff !important;
+  box-shadow: 0 0 0 1px var(--problem-blue), 0 0 5px var(--problem-blue);
   opacity: 1 !important;
   visibility: visible !important;
 }
@@ -307,8 +308,8 @@
 }
 
 .problem-page-v2 .code-editor-surface .cm-foldGutter .cm-gutterElement {
-  width: 12px;
-  padding: 0;
+  width: 16px;
+  padding: 0 2px;
   text-align: center;
 }
 
