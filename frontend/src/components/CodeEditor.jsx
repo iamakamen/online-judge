@@ -26,10 +26,11 @@ const LANGUAGES = {
 
 const editorTheme = EditorView.theme({
   '.cm-content': {
-    caretColor: '#61a9ff',
+    caretColor: '#ffffff',
   },
   '.cm-cursor, .cm-dropCursor': {
-    borderLeft: '2px solid #61a9ff !important',
+    borderLeft: '2px solid #ffffff !important',
+    boxShadow: '0 0 0 1px #61a9ff, 0 0 5px #61a9ff',
     opacity: '1 !important',
     visibility: 'visible !important',
   },
@@ -99,16 +100,14 @@ function ChevronIcon() {
 
 function ExpandIcon({ isExpanded }) {
   return (
-    <svg className="editor-expand-icon" viewBox="0 0 20 20" aria-hidden="true">
+    <svg className="editor-expand-icon" viewBox="0 0 32 20" aria-hidden="true">
       {isExpanded ? (
         <>
-          <path d="M4 5l5 5-5 5M16 5l-5 5 5 5" />
-          <path d="M4 10h12" />
+          <path d="M4 3v5h5M28 3v5h-5M4 17v-5h5M28 17v-5h-5" />
         </>
       ) : (
         <>
-          <path d="M8 5l-5 5 5 5M12 5l5 5-5 5" />
-          <path d="M3 10h14" />
+          <path d="M4 8V3h5M28 8V3h-5M4 12v5h5M28 12v5h-5" />
         </>
       )}
     </svg>
@@ -127,7 +126,7 @@ function CustomInputIcon() {
 function RunIcon() {
   return (
     <svg className="action-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m8 5 11 7-11 7V5Z" />
+    <path d="m8 5 11 7-11 7V5Z" />
     </svg>
   )
 }
