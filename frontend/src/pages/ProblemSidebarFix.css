@@ -7,7 +7,7 @@
 .problem-page-v2 .practice-sidebar-brand {
   width: 50px;
   height: 52px;
-  gap: 8px;
+  gap: 9px;
   justify-content: center;
   padding: 0;
   border: 0;
@@ -42,7 +42,7 @@
   opacity: 0;
   visibility: hidden;
   color: #ffffff;
-  font-size: 1.75rem;
+  font-size: 1.65rem;
   font-weight: 800;
   letter-spacing: -.055em;
   line-height: 1;
@@ -51,15 +51,15 @@
 }
 
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-wordmark {
-  max-width: 104px;
+  max-width: 96px;
   opacity: 1;
   visibility: visible;
 }
 
 .problem-page-v2 .practice-sidebar-logo {
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
   stroke-width: 1.9;
   color: var(--problem-brand-blue);
 }
@@ -85,7 +85,8 @@
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item {
   width: 164px;
   min-height: 54px;
-  justify-content: flex-start;
+  justify-content: center;
+  gap: 12px;
   padding: 0 14px;
   border-color: var(--problem-border-strong);
   background: transparent;
