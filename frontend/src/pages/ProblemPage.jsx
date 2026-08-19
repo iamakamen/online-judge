@@ -125,11 +125,11 @@ export function ProblemPage({ slug, navigate }) {
             <pre className="problem-constraints">{problem.constraints}</pre>
             <div className="problem-limits">
               <div className="problem-limit">
-                <h3>Time Constraints</h3>
+                <h3>Time Constraint</h3>
                 <p>{problem.time_limit_ms} ms</p>
               </div>
               <div className="problem-limit">
-                <h3>Memory Constraints</h3>
+                <h3>Memory Constraint</h3>
                 <p>{problem.memory_limit_mb} MB</p>
               </div>
             </div>
