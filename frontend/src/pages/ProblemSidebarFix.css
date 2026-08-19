@@ -68,11 +68,15 @@
   color: var(--problem-brand-blue);
 }
 
-/* Sidebar items: collapsed state is an icon rail; expansion only adds text. */
+/* Keep the brand at the top, the four primary links centered, and Profile at the bottom. */
 .problem-page-v2 .practice-sidebar-nav {
   gap: 12px;
   margin-top: auto;
   margin-bottom: auto;
+}
+
+.problem-page-v2 .practice-sidebar-profile {
+  margin-top: 0;
 }
 
 .problem-page-v2 .practice-sidebar-item {
