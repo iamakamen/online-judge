@@ -10,6 +10,8 @@
   --problem-muted: #7890a9;
   --problem-green: #b9f36b;
   --problem-blue: #61a9ff;
+  --green: #61a9ff;
+  --green-deep: #132a43;
   --sidebar-expanded: 174px;
   background: var(--problem-bg);
 }
