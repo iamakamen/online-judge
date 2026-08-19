@@ -7,6 +7,7 @@ const VIEWS = [
 export function ExecutionWorkspace({ mode, activeView, customInput, runInput, onCustomInputChange, onViewChange }) {
   const showTabs = mode === 'run'
   const visibleView = mode === 'custom' ? 'input' : mode === 'submit' ? 'result' : activeView
+  const panelClassName = `execution-workspace-panel ${showTabs ? 'is-tabbed' : 'is-full-height'}`
 
   return (
     <section className={`execution-workspace${showTabs ? ' has-tabs' : ''}`} aria-label="Result, Input, and Output">
@@ -30,8 +31,7 @@ export function ExecutionWorkspace({ mode, activeView, customInput, runInput, on
       )}
 
       <div
-        className="execution-workspace-panel"
-        style={{ height: showTabs ? 'calc(100% - 48px)' : '100%' }}
+        className={panelClassName}
         role={showTabs ? 'tabpanel' : undefined}
         id={`execution-${visibleView}-panel`}
         aria-labelledby={showTabs ? `execution-${visibleView}-tab` : undefined}
@@ -44,26 +44,26 @@ export function ExecutionWorkspace({ mode, activeView, customInput, runInput, on
         )}
 
         {visibleView === 'input' && (
-          mode === 'custom' ? (
-            <label className="execution-workspace-input">
-              <textarea
-                value={customInput}
-                onChange={(event) => onCustomInputChange(event.target.value)}
-                placeholder="Enter your custom input here"
-                rows="8"
-                aria-label="Custom input"
-              />
-            </label>
-          ) : (
-            <pre className="execution-workspace-public-input">{customInput || runInput}</pre>
-          )
+          <label className="execution-workspace-input">
+            <textarea
+              value={mode === 'custom' ? customInput : customInput || runInput}
+              onChange={mode === 'custom' ? (event) => onCustomInputChange(event.target.value) : undefined}
+              placeholder={mode === 'custom' ? 'Enter your custom input here' : 'No input yet.'}
+              readOnly={mode !== 'custom'}
+              aria-label={mode === 'custom' ? 'Custom input' : 'Run input'}
+            />
+          </label>
         )}
 
         {visibleView === 'output' && (
-          <div className="execution-workspace-empty">
-            <h3>Output</h3>
-            <p>No output yet.</p>
-          </div>
+          <label className="execution-workspace-input">
+            <textarea
+              value=""
+              placeholder="No output yet."
+              readOnly
+              aria-label="Run output"
+            />
+          </label>
         )}
       </div>
     </section>
