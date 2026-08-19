@@ -20,32 +20,32 @@ const LANGUAGES = {
 }
 
 const editorHighlightStyle = HighlightStyle.define([
-  { tag: tags.keyword, color: '#70b8ff' },
-  { tag: tags.controlKeyword, color: '#70b8ff' },
-  { tag: tags.operatorKeyword, color: '#70b8ff' },
+  { tag: tags.keyword, color: '#72b8ff' },
+  { tag: tags.controlKeyword, color: '#72b8ff' },
+  { tag: tags.operatorKeyword, color: '#72b8ff' },
   { tag: tags.definition(tags.variableName), color: '#f5f8fc' },
-  { tag: tags.function(tags.variableName), color: '#f5f8fc' },
-  { tag: tags.variableName, color: '#d9e5f2' },
-  { tag: tags.typeName, color: '#8fd3ff' },
-  { tag: tags.className, color: '#8fd3ff' },
-  { tag: tags.propertyName, color: '#b9d9ff' },
-  { tag: tags.string, color: '#a9d89a' },
-  { tag: tags.number, color: '#d5b1ff' },
-  { tag: tags.bool, color: '#d5b1ff' },
-  { tag: tags.atom, color: '#d5b1ff' },
-  { tag: tags.comment, color: '#7f95ad', fontStyle: 'italic' },
-  { tag: tags.docComment, color: '#8ba5bf', fontStyle: 'italic' },
-  { tag: tags.punctuation, color: '#c6d5e5' },
-  { tag: tags.paren, color: '#c6d5e5' },
-  { tag: tags.operator, color: '#c6d5e5' },
-  { tag: tags.meta, color: '#9fc8f2' },
-  { tag: tags.invalid, color: '#ff9d9d' },
+  { tag: tags.function(tags.variableName), color: '#f2d27b' },
+  { tag: tags.variableName, color: '#dbe8f5' },
+  { tag: tags.typeName, color: '#75d0e8' },
+  { tag: tags.className, color: '#75d0e8' },
+  { tag: tags.propertyName, color: '#a9d5ff' },
+  { tag: tags.string, color: '#9bd39a' },
+  { tag: tags.number, color: '#d2b1ff' },
+  { tag: tags.bool, color: '#d2b1ff' },
+  { tag: tags.atom, color: '#d2b1ff' },
+  { tag: tags.comment, color: '#8298b0', fontStyle: 'italic' },
+  { tag: tags.docComment, color: '#90a9c0', fontStyle: 'italic' },
+  { tag: tags.punctuation, color: '#d2deeb' },
+  { tag: tags.paren, color: '#d2deeb' },
+  { tag: tags.operator, color: '#d2deeb' },
+  { tag: tags.meta, color: '#a7d2f5' },
+  { tag: tags.invalid, color: '#ff9b9b' },
 ])
 
 const editorTheme = EditorView.theme({
   '.cm-content': {
     caretColor: '#ffffff',
-    color: '#eaf2fb',
+    color: '#edf4fb',
   },
   '.cm-cursor, .cm-dropCursor': {
     borderLeft: '2px solid #ffffff !important',
@@ -55,14 +55,17 @@ const editorTheme = EditorView.theme({
   },
   '.cm-gutters': {
     backgroundColor: '#091321',
-    color: '#66788f',
+    color: '#71869d',
     borderRight: '1px solid #1d334c',
   },
-  '.cm-lineNumbers .cm-gutterElement': { minWidth: '30px', padding: '0 4px 0 2px' },
+  '.cm-lineNumbers .cm-gutterElement': {
+    minWidth: '30px',
+    padding: '0 0.5px 0 1px',
+  },
   '.cm-foldGutter .cm-gutterElement': {
     width: '18px',
-    padding: '0 1px 0 0 !important',
-    textAlign: 'right !important',
+    padding: '0 1px 0 0.5px',
+    textAlign: 'right',
   },
   '.cm-custom-fold-marker': {
     display: 'inline-block',
@@ -121,8 +124,8 @@ function ExpandIcon({ isExpanded }) {
         </>
       ) : (
         <>
-          <path d="M3 10h12M3 10l5-5M3 10l5 5" />
-          <path d="M37 10H25M37 10l-5-5M37 10l-5 5" />
+          <path d="M3 10h12M3 10l8-8M3 10l8 8" />
+          <path d="M37 10H25M37 10l-8-8M37 10l-8 8" />
         </>
       )}
     </svg>
@@ -149,7 +152,7 @@ function RunIcon() {
 function SubmitIcon() {
   return (
     <svg className="action-icon action-icon-submit" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m3 11 18-7-5 16-4-6-9-3Z" />
+    <path d="m3 11 18-7-5 16-4-6-9-3Z" />
       <path d="m12 14 5-7" />
     </svg>
   )
