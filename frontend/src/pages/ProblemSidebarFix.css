@@ -47,7 +47,7 @@
   color: var(--problem-brand-blue);
 }
 
-/* Sidebar items use one visual treatment. Practice is not specially filled. */
+/* Sidebar items use one visual treatment. */
 .problem-page-v2 .practice-sidebar-nav {
   gap: 12px;
   margin-top: 30px;
@@ -228,5 +228,133 @@
 @media (max-width: 640px) {
   .problem-page-v2 .coding-pane {
     padding: 0;
+  }
+}
+
+/* Sidebar alignment and persistent button boundaries */
+.problem-page-v2 .practice-sidebar-brand {
+  width: 50px;
+  justify-content: center;
+  padding: 0;
+}
+
+.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-brand {
+  width: 164px;
+  justify-content: flex-start;
+  padding: 0 14px;
+}
+
+.problem-page-v2 .practice-sidebar-item {
+  width: 50px;
+  min-height: 54px;
+  box-sizing: border-box;
+  border-color: var(--problem-border-strong);
+  background: transparent;
+  color: var(--problem-text);
+  justify-content: flex-start;
+}
+
+.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item {
+  width: 164px;
+  min-height: 54px;
+  border-color: var(--problem-border-strong);
+  background: transparent;
+  color: var(--problem-text);
+}
+
+.problem-page-v2 .practice-sidebar-item.is-active,
+.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item.is-active {
+  border-color: var(--problem-border-strong);
+  background: transparent;
+  color: var(--problem-text);
+}
+
+.problem-page-v2 .practice-sidebar-item:hover,
+.problem-page-v2 .practice-sidebar-item:focus-visible,
+.problem-page-v2 .practice-sidebar-item.is-active:hover {
+  border-color: #3b638c;
+  background: #0e1d30;
+  color: #f5f8fc;
+}
+
+.problem-page-v2 .practice-sidebar-item > span:last-child {
+  color: inherit;
+}
+
+/* Submissions uses the same button language as the primary sidebar. */
+.problem-page-v2 .problem-navigation-submissions {
+  display: inline-flex;
+  min-height: 54px;
+  box-sizing: border-box;
+  align-items: center;
+  border: 1px solid var(--problem-border-strong);
+  border-radius: 12px;
+  padding: 0 14px;
+  background: transparent;
+  color: var(--problem-text);
+  font-size: .82rem;
+  font-weight: 750;
+}
+
+.problem-page-v2 .problem-navigation-submissions:hover,
+.problem-page-v2 .problem-navigation-submissions:focus-visible {
+  border-color: #3b638c;
+  background: #0e1d30;
+  color: #f5f8fc;
+  outline: none;
+}
+
+/* Keep the editor gutter visually close to the reference. */
+.problem-page-v2 .code-editor-surface .cm-gutters {
+  background: #07101d;
+  color: #66788f;
+  border-right: 1px solid var(--problem-border);
+}
+
+.problem-page-v2 .code-editor-surface .cm-lineNumbers .cm-gutterElement {
+  min-width: 34px;
+  padding: 0 8px 0 4px;
+}
+
+.problem-page-v2 .code-editor-surface .cm-foldGutter .cm-gutterElement {
+  width: 16px;
+  padding: 0 2px;
+}
+
+/* Make the expanded editor a true viewport-level workspace. */
+.problem-shell.problem-page-v2.coding-expanded .coding-pane {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  width: 100vw;
+  height: 100svh;
+  min-height: 100svh;
+  box-sizing: border-box;
+  flex-direction: column;
+  border: 0;
+  overflow: hidden;
+}
+
+.problem-shell.problem-page-v2.coding-expanded .code-editor {
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  flex: 1 1 auto;
+}
+
+.problem-shell.problem-page-v2.coding-expanded .code-editor-surface {
+  min-height: 0;
+}
+
+.problem-shell.problem-page-v2.coding-expanded .execution-workspace {
+  flex: 0 0 auto;
+  max-height: 42svh;
+  overflow: auto;
+}
+
+@media (max-width: 640px) {
+  .problem-shell.problem-page-v2.coding-expanded .coding-pane {
+    width: 100vw;
   }
 }
