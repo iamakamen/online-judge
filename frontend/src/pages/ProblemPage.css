@@ -33,6 +33,8 @@
 
 .problem-page-v2 .problem-navigation-submissions {
   display: inline-flex;
+  width: fit-content;
+  height: 46px;
   min-height: 46px;
   box-sizing: border-box;
   align-items: center;
