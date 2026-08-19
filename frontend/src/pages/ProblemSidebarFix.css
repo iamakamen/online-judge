@@ -77,6 +77,16 @@
   stroke-width: 1.7;
 }
 
+.problem-page-v2 .code-editor-expand {
+  min-width: 62px;
+  padding: 0 16px;
+}
+
+.problem-page-v2 .editor-expand-icon {
+  width: 32px;
+  height: 20px;
+}
+
 .problem-page-v2 .code-editor-surface {
   flex: 1 1 auto;
   min-height: 0;
@@ -89,7 +99,10 @@
 
 .problem-page-v2 .code-editor-surface .cm-cursor,
 .problem-page-v2 .code-editor-surface .cm-dropCursor {
-  border-left-color: var(--problem-brand-blue);
+  border-left: 2px solid #ffffff !important;
+  box-shadow: 0 0 0 1px var(--problem-blue), 0 0 5px var(--problem-blue);
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .problem-page-v2 .code-editor-actions {
@@ -158,7 +171,7 @@
   }
 }
 
-/* Keep the editor gutter visually close to the reference. */
+/* Restore the wider fold gutter used before the narrow-gutter experiment. */
 .problem-page-v2 .code-editor-surface .cm-gutters {
   background: #07101d;
   color: #66788f;
@@ -173,6 +186,12 @@
 .problem-page-v2 .code-editor-surface .cm-foldGutter .cm-gutterElement {
   width: 16px;
   padding: 0 2px;
+}
+
+/* Keep all legacy green accents inside the Problem Page on the current blue accent. */
+.problem-page-v2 {
+  --green: var(--problem-blue);
+  --green-deep: #132a43;
 }
 
 /* Make the expanded editor a true viewport-level workspace. */
