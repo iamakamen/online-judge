@@ -59,6 +59,10 @@
 .problem-page-v2 .code-editor-surface .cm-content { caret-color: #ffffff; }
 .problem-page-v2 .code-editor-surface .cm-cursor, .problem-page-v2 .code-editor-surface .cm-dropCursor { border-left: 2px solid #ffffff !important; box-shadow: 0 0 0 1px #03070d, 0 0 0 2px var(--problem-blue), 0 0 12px var(--problem-blue); opacity: 1 !important; visibility: visible !important; }
 .problem-page-v2 .code-editor-surface .cm-gutters { background: #091321; color: #7388a0; border-right: 1px solid var(--problem-border); }
+.problem-page-v2 .code-editor-surface .cm-lineNumbers { width: 30px; min-width: 30px; }
+.problem-page-v2 .code-editor-surface .cm-lineNumbers .cm-gutterElement { box-sizing: border-box; width: 30px; min-width: 30px; padding: 0 0.5px 0 1px; }
+.problem-page-v2 .code-editor-surface .cm-foldGutter { width: 14px; min-width: 14px; }
+.problem-page-v2 .code-editor-surface .cm-foldGutter .cm-gutterElement { box-sizing: border-box; width: 14px; min-width: 14px; padding: 0 1px 0 0.5px; text-align: center; }
 .problem-page-v2 .code-editor-actions { min-height: 68px; border-top: 1px solid var(--problem-border); background: #0b1625; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 14px; }
 .problem-page-v2 .code-editor-actions > button { height: 46px; min-height: 46px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 8px; line-height: 1; margin: 0; }
 .problem-page-v2 .code-editor-actions .primary-button, .problem-page-v2 .code-editor-actions .primary-button:hover, .problem-page-v2 .code-editor-actions .primary-button:focus-visible, .problem-page-v2 .code-editor-actions .primary-button:active { min-height: 46px; height: 46px; padding-inline: 18px; border-color: var(--problem-blue); background: var(--problem-blue); color: #07111f; outline-color: var(--problem-blue); }
