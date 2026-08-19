@@ -189,7 +189,7 @@ export function ProblemPage({ slug, navigate }) {
             onClick={(event) => event.stopPropagation()}
           >
             <h2 id="problem-future-feature-title">{v2Feature || 'Submissions'}</h2>
-            <p className="muted">Coming in V2</p>
+            <p className="muted">Arriving in V2</p>
             <button
               type="button"
               className="primary-button"
