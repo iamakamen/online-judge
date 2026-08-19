@@ -8,11 +8,12 @@
   --problem-text: #f5f8fc;
   --problem-soft: #c2cfdd;
   --problem-muted: #7890a9;
-  --problem-green: #b9f36b;
+  --problem-green: #61a9ff;
   --problem-blue: #61a9ff;
   --green: var(--problem-blue);
   --green-deep: #132a43;
   --sidebar-expanded: 174px;
+  --execution-workspace-height: 252px;
   background: var(--problem-bg);
 }
 
@@ -294,7 +295,7 @@
 .problem-page-v2 .code-editor-surface .cm-cursor,
 .problem-page-v2 .code-editor-surface .cm-dropCursor {
   border-left: 2px solid #ffffff !important;
-  box-shadow: 0 0 0 1px var(--problem-blue), 0 0 5px var(--problem-blue);
+  box-shadow: 0 0 0 1px #07101d, 0 0 0 2px var(--problem-blue), 0 0 8px var(--problem-blue);
   opacity: 1 !important;
   visibility: visible !important;
 }
@@ -306,14 +307,14 @@
 }
 
 .problem-page-v2 .code-editor-surface .cm-lineNumbers .cm-gutterElement {
-  min-width: 28px;
-  padding: 0 5px 0 2px;
+  min-width: 30px;
+  padding: 0 4px 0 2px;
   text-align: center;
 }
 
 .problem-page-v2 .code-editor-surface .cm-foldGutter .cm-gutterElement {
-  width: 16px;
-  padding: 0 2px;
+  width: 18px;
+  padding: 0 1px 0 1px;
   text-align: center;
 }
 
@@ -321,6 +322,122 @@
   min-height: 68px;
   border-top: 1px solid var(--problem-border);
   background: #0b1625;
+}
+
+.problem-page-v2 .code-editor-button:hover,
+.problem-page-v2 .code-editor-button:focus-visible {
+  border-color: var(--problem-blue);
+  color: var(--problem-text);
+  outline: 2px solid rgb(97 169 255 / 28%);
+  outline-offset: 2px;
+}
+
+.problem-page-v2 .code-editor-actions .primary-button,
+.problem-page-v2 .code-editor-actions .primary-button:hover,
+.problem-page-v2 .code-editor-actions .primary-button:focus-visible,
+.problem-page-v2 .code-editor-actions .primary-button:active {
+  min-height: 46px;
+  padding-inline: 18px;
+  border-color: var(--problem-blue);
+  background: var(--problem-blue);
+  color: #07111f;
+  outline-color: var(--problem-blue);
+}
+
+.problem-page-v2 .code-editor-actions .primary-button:hover,
+.problem-page-v2 .code-editor-actions .primary-button:focus-visible {
+  background: #82b9ff;
+}
+
+.problem-page-v2 .code-editor-actions .primary-button:focus-visible {
+  outline: 2px solid rgb(97 169 255 / 55%);
+  outline-offset: 2px;
+}
+
+/* Override the global green focus treatment only on the Problem Page. */
+.problem-page-v2 button:focus-visible,
+.problem-page-v2 input:focus-visible,
+.problem-page-v2 select:focus-visible,
+.problem-page-v2 textarea:focus-visible {
+  outline-color: var(--problem-blue);
+}
+
+/* Keep the execution surface at one fixed height for Custom Input, Run, and Submit. */
+.problem-page-v2 .execution-workspace {
+  flex: 0 0 var(--execution-workspace-height);
+  height: var(--execution-workspace-height);
+  min-height: var(--execution-workspace-height);
+  margin-top: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--problem-border);
+  border-left: 0;
+  border-right: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: var(--problem-panel);
+  overflow: hidden;
+}
+
+.problem-page-v2 .execution-workspace-tabs {
+  flex: 0 0 auto;
+}
+
+.problem-page-v2 .execution-workspace-panel {
+  height: calc(100% - 48px);
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 18px;
+  overflow: auto;
+}
+
+.problem-page-v2 .execution-workspace-input {
+  display: block;
+}
+
+.problem-page-v2 .execution-workspace-input textarea {
+  display: block;
+  width: 100%;
+  height: 180px;
+  min-height: 180px;
+  max-height: 180px;
+  box-sizing: border-box;
+  resize: none;
+  overflow-y: auto;
+  border: 1px solid var(--problem-border-strong);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--problem-surface);
+  color: var(--problem-soft);
+  font: .9rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.problem-page-v2 .execution-workspace-public-input {
+  height: 180px;
+  min-height: 180px;
+  max-height: 180px;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: auto;
+  border: 1px solid var(--problem-border-strong);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--problem-surface);
+  color: var(--problem-soft);
+  font: .9rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.problem-page-v2 .execution-workspace-tab.is-active {
+  border-bottom-color: var(--problem-blue);
+  color: var(--problem-blue);
+}
+
+.problem-page-v2 .execution-workspace-tab:focus-visible {
+  outline: 2px solid rgb(97 169 255 / 38%);
+  outline-offset: -2px;
+}
+
+.problem-page-v2 .execution-workspace-empty {
+  min-height: 100%;
 }
 
 .problem-page-v2 .modal .eyebrow {
@@ -349,4 +466,29 @@
   background: #132a43;
   color: #ffffff;
   outline: none;
+}
+
+@media (max-width: 1000px) {
+  .problem-page-v2 .execution-workspace {
+    flex-basis: var(--execution-workspace-height);
+    height: var(--execution-workspace-height);
+    min-height: var(--execution-workspace-height);
+  }
+}
+
+@media (max-width: 760px) {
+  .problem-page-v2 {
+    --execution-workspace-height: 230px;
+  }
+
+  .problem-page-v2 .execution-workspace-panel {
+    padding: 14px;
+  }
+
+  .problem-page-v2 .execution-workspace-input textarea,
+  .problem-page-v2 .execution-workspace-public-input {
+    height: 160px;
+    min-height: 160px;
+    max-height: 160px;
+  }
 }
