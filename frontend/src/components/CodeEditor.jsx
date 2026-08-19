@@ -25,9 +25,13 @@ const LANGUAGES = {
 }
 
 const editorTheme = EditorView.theme({
+  '.cm-content': {
+    caretColor: '#b9f36b',
+  },
   '.cm-cursor, .cm-dropCursor': {
-    borderLeftColor: '#61a9ff !important',
-    borderLeftWidth: '2px',
+    borderLeft: '2px solid #b9f36b !important',
+    opacity: '1 !important',
+    visibility: 'visible !important',
   },
   '.cm-gutters': {
     backgroundColor: '#07101d',
@@ -42,7 +46,30 @@ const editorTheme = EditorView.theme({
     width: '16px',
     padding: '0 2px',
   },
+  '.cm-custom-fold-marker': {
+    display: 'inline-block',
+    width: '8px',
+    height: '8px',
+    boxSizing: 'border-box',
+    borderRight: '1.5px solid #8da3bb',
+    borderBottom: '1.5px solid #8da3bb',
+    transform: 'rotate(-45deg)',
+    transition: 'transform 120ms ease, border-color 120ms ease',
+  },
+  '.cm-custom-fold-marker.is-open': {
+    transform: 'rotate(45deg)',
+  },
+  '.cm-custom-fold-marker:hover': {
+    borderColor: '#f5f8fc',
+  },
 })
+
+function createFoldMarker(open) {
+  const marker = document.createElement('span')
+  marker.className = `cm-custom-fold-marker${open ? ' is-open' : ''}`
+  marker.setAttribute('aria-hidden', 'true')
+  return marker
+}
 
 function createEditorState(language, document) {
   return EditorState.create({
@@ -55,7 +82,7 @@ function createEditorState(language, document) {
       indentOnInput(),
       syntaxHighlighting(defaultHighlightStyle),
       bracketMatching(),
-      foldGutter(),
+      foldGutter({ markerDOM: createFoldMarker }),
       editorTheme,
       EditorView.contentAttributes.of({ 'aria-label': `${LANGUAGES[language].label} code editor` }),
     ],
