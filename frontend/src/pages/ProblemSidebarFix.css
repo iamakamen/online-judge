@@ -79,11 +79,11 @@
 
 .problem-page-v2 .code-editor-expand {
   min-width: 62px;
-  padding: 0 16px;
+  padding: 0 12px;
 }
 
 .problem-page-v2 .editor-expand-icon {
-  width: 32px;
+  width: 40px;
   height: 20px;
 }
 
@@ -100,9 +100,27 @@
 .problem-page-v2 .code-editor-surface .cm-cursor,
 .problem-page-v2 .code-editor-surface .cm-dropCursor {
   border-left: 2px solid #ffffff !important;
-  box-shadow: 0 0 0 1px var(--problem-blue), 0 0 5px var(--problem-blue);
+  box-shadow: 0 0 0 1px #07101d, 0 0 0 2px var(--problem-blue), 0 0 7px var(--problem-blue);
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+.problem-page-v2 .code-editor-surface .cm-gutters {
+  background: #07101d;
+  color: #66788f;
+  border-right: 1px solid var(--problem-border);
+}
+
+.problem-page-v2 .code-editor-surface .cm-lineNumbers .cm-gutterElement {
+  min-width: 34px;
+  padding: 0 8px 0 4px;
+  text-align: center;
+}
+
+.problem-page-v2 .code-editor-surface .cm-foldGutter .cm-gutterElement {
+  width: 18px;
+  padding: 0 1px 0 5px;
+  text-align: center;
 }
 
 .problem-page-v2 .code-editor-actions {
@@ -230,4 +248,40 @@
   .problem-shell.problem-page-v2.coding-expanded .coding-pane {
     width: 100vw;
   }
+}
+
+/* Current Problem Page gutter alignment. */
+.problem-page-v2 .code-editor-surface .cm-foldGutter .cm-gutterElement {
+  width: 18px;
+  padding: 0 1px 0 5px;
+}
+
+/* Use the current blue accent for every Problem Page editor action state. */
+.problem-page-v2 .code-editor-button:hover,
+.problem-page-v2 .code-editor-button:focus-visible {
+  border-color: var(--problem-blue);
+  color: var(--problem-text);
+  outline: 2px solid rgb(97 169 255 / 28%);
+  outline-offset: 2px;
+}
+
+.problem-page-v2 .code-editor-actions .primary-button,
+.problem-page-v2 .code-editor-actions .primary-button:hover,
+.problem-page-v2 .code-editor-actions .primary-button:focus-visible,
+.problem-page-v2 .code-editor-actions .primary-button:active {
+  border-color: var(--problem-blue);
+  background: var(--problem-blue);
+  color: #07111f;
+  outline-color: var(--problem-blue);
+}
+
+.problem-page-v2 .code-editor-actions .primary-button:hover,
+.problem-page-v2 .code-editor-actions .primary-button:focus-visible {
+  background: #82b9ff;
+}
+
+/* The execution workspace reaches the viewport edge, so its bottom corners are square. */
+.problem-page-v2 .execution-workspace {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
