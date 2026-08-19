@@ -281,16 +281,16 @@
 
 .problem-page-v2 .code-editor-surface {
   min-height: 0;
-  background: #0a1524;
+  background: var(--problem-panel);
 }
 
 .problem-page-v2 .code-editor-surface .cm-editor {
   height: 100%;
-  background: #0a1524;
+  background: var(--problem-panel);
 }
 
 .problem-page-v2 .code-editor-surface .cm-scroller {
-  background: #0a1524;
+  background: var(--problem-panel);
 }
 
 .problem-page-v2 .code-editor-surface .cm-content {
