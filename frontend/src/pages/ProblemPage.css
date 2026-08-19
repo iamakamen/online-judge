@@ -318,6 +318,20 @@
   background: #0b1625;
 }
 
+.problem-page-v2 .modal .eyebrow {
+  display: none;
+}
+
+.problem-page-v2 .modal .muted {
+  font-size: 0;
+}
+
+.problem-page-v2 .modal .muted::after {
+  content: 'Arriving in V2';
+  color: var(--problem-muted);
+  font-size: .95rem;
+}
+
 .problem-page-v2 .modal .primary-button {
   border-color: var(--problem-border-strong);
   background: #0e1d30;
