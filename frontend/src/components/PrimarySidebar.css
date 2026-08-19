@@ -76,7 +76,7 @@
   color: #ffffff;
   font-size: 1.45rem;
   font-weight: 800;
-  letter-spacing: -.06em;
+  letter-spacing: 1px;
   line-height: 1;
   white-space: nowrap;
   transition: opacity 120ms ease, visibility 120ms ease;
