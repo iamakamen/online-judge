@@ -9,7 +9,7 @@ export function ExecutionWorkspace({ mode, activeView, customInput, runInput, on
   const visibleView = mode === 'custom' ? 'input' : mode === 'submit' ? 'result' : activeView
 
   return (
-    <section className="execution-workspace" aria-label="Result, Input, and Output">
+    <section className={`execution-workspace${showTabs ? ' has-tabs' : ''}`} aria-label="Result, Input, and Output">
       {showTabs && (
         <div className="execution-workspace-tabs" role="tablist" aria-label="Views">
           {VIEWS.map((view) => (
