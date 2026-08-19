@@ -8,11 +8,10 @@ import {
   foldGutter,
   foldKeymap,
   indentOnInput,
-  lineNumbers,
   syntaxHighlighting,
 } from '@codemirror/language'
 import { EditorState } from '@codemirror/state'
-import { EditorView, keymap } from '@codemirror/view'
+import { EditorView, keymap, lineNumbers } from '@codemirror/view'
 
 const LANGUAGES = {
   python: {
