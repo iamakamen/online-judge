@@ -13,7 +13,7 @@
   --green: var(--problem-blue);
   --green-deep: #132a43;
   --sidebar-expanded: 174px;
-  --execution-workspace-height: 252px;
+  --execution-workspace-height: 240px;
   background: var(--problem-bg);
 }
 
@@ -281,11 +281,16 @@
 
 .problem-page-v2 .code-editor-surface {
   min-height: 0;
-  background: #07101d;
+  background: #0a1524;
 }
 
 .problem-page-v2 .code-editor-surface .cm-editor {
   height: 100%;
+  background: #0a1524;
+}
+
+.problem-page-v2 .code-editor-surface .cm-scroller {
+  background: #0a1524;
 }
 
 .problem-page-v2 .code-editor-surface .cm-content {
@@ -295,26 +300,26 @@
 .problem-page-v2 .code-editor-surface .cm-cursor,
 .problem-page-v2 .code-editor-surface .cm-dropCursor {
   border-left: 2px solid #ffffff !important;
-  box-shadow: 0 0 0 1px #07101d, 0 0 0 2px var(--problem-blue), 0 0 8px var(--problem-blue);
+  box-shadow: 0 0 0 1px #03070d, 0 0 0 2px var(--problem-blue), 0 0 12px var(--problem-blue);
   opacity: 1 !important;
   visibility: visible !important;
 }
 
 .problem-page-v2 .code-editor-surface .cm-gutters {
-  background: #07101d;
-  color: #66788f;
+  background: #091321;
+  color: #7388a0;
   border-right: 1px solid var(--problem-border);
 }
 
 .problem-page-v2 .code-editor-surface .cm-lineNumbers .cm-gutterElement {
   min-width: 30px;
-  padding: 0 4px 0 2px;
+  padding: 0 0.5px 0 1px;
   text-align: center;
 }
 
 .problem-page-v2 .code-editor-surface .cm-foldGutter .cm-gutterElement {
   width: 18px;
-  padding: 0 1px 0 1px;
+  padding: 0 1px 0 0.5px;
   text-align: center;
 }
 
@@ -379,27 +384,48 @@
 }
 
 .problem-page-v2 .execution-workspace-tabs {
-  flex: 0 0 auto;
+  display: flex;
+  flex: 0 0 40px;
+  height: 40px;
+}
+
+.problem-page-v2 .execution-workspace-tab {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .problem-page-v2 .execution-workspace-panel {
-  height: calc(100% - 48px);
   min-height: 0;
   box-sizing: border-box;
   padding: 18px;
-  overflow: auto;
+  overflow: hidden;
+}
+
+.problem-page-v2 .execution-workspace-panel.is-tabbed {
+  height: calc(100% - 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.problem-page-v2 .execution-workspace-panel.is-full-height {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .problem-page-v2 .execution-workspace-input {
   display: block;
+  width: 100%;
 }
 
 .problem-page-v2 .execution-workspace-input textarea {
   display: block;
   width: 100%;
-  height: 180px;
-  min-height: 180px;
-  max-height: 180px;
+  height: 200px;
+  min-height: 200px;
+  max-height: 200px;
   box-sizing: border-box;
   resize: none;
   overflow-y: auto;
@@ -411,19 +437,19 @@
   font: .9rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-.problem-page-v2 .execution-workspace-public-input {
-  height: 180px;
-  min-height: 180px;
-  max-height: 180px;
-  margin: 0;
-  box-sizing: border-box;
-  overflow: auto;
-  border: 1px solid var(--problem-border-strong);
-  border-radius: 8px;
-  padding: 12px;
-  background: var(--problem-surface);
-  color: var(--problem-soft);
-  font: .9rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+.problem-page-v2 .execution-workspace-panel.is-tabbed .execution-workspace-input textarea {
+  height: 160px;
+  min-height: 160px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.problem-page-v2 .execution-workspace-input textarea[readonly] {
+  cursor: default;
+}
+
+.problem-page-v2 .execution-workspace-empty {
+  min-height: 100%;
 }
 
 .problem-page-v2 .execution-workspace-tab.is-active {
@@ -434,10 +460,6 @@
 .problem-page-v2 .execution-workspace-tab:focus-visible {
   outline: 2px solid rgb(97 169 255 / 38%);
   outline-offset: -2px;
-}
-
-.problem-page-v2 .execution-workspace-empty {
-  min-height: 100%;
 }
 
 .problem-page-v2 .modal .eyebrow {
@@ -478,17 +500,22 @@
 
 @media (max-width: 760px) {
   .problem-page-v2 {
-    --execution-workspace-height: 230px;
+    --execution-workspace-height: 240px;
   }
 
   .problem-page-v2 .execution-workspace-panel {
     padding: 14px;
   }
 
-  .problem-page-v2 .execution-workspace-input textarea,
-  .problem-page-v2 .execution-workspace-public-input {
+  .problem-page-v2 .execution-workspace-panel.is-tabbed .execution-workspace-input textarea {
     height: 160px;
     min-height: 160px;
     max-height: 160px;
+  }
+
+  .problem-page-v2 .execution-workspace-input textarea {
+    height: 200px;
+    min-height: 200px;
+    max-height: 200px;
   }
 }
