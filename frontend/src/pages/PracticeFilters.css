@@ -1,3 +1,5 @@
+@import './PracticeSidebarFix.css';
+
 .practice-filters {
   align-items: flex-end;
 }
