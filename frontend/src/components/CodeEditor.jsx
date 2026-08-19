@@ -40,6 +40,52 @@ function createEditorState(language, document) {
   })
 }
 
+function ChevronIcon() {
+  return (
+    <svg className="select-chevron" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="m4 6 4 4 4-4" />
+    </svg>
+  )
+}
+
+function ExpandIcon({ isExpanded }) {
+  return (
+    <svg className="editor-expand-icon" viewBox="0 0 20 20" aria-hidden="true">
+      {isExpanded ? (
+        <path d="M8 3H3v5M12 17h5v-5M3 8l5-5M17 12l-5 5" />
+      ) : (
+        <path d="M8 3H3v5M12 17h5v-5M3 3l5 5M17 17l-5-5" />
+      )}
+    </svg>
+  )
+}
+
+function CustomInputIcon() {
+  return (
+    <svg className="action-icon action-icon-terminal" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+      <path d="m7 9 3 3-3 3M12.5 15h4" />
+    </svg>
+  )
+}
+
+function RunIcon() {
+  return (
+    <svg className="action-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m8 5 11 7-11 7V5Z" />
+    </svg>
+  )
+}
+
+function SubmitIcon() {
+  return (
+    <svg className="action-icon action-icon-submit" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m3 11 18-7-5 16-4-6-9-3Z" />
+      <path d="m12 14 5-7" />
+    </svg>
+  )
+}
+
 export function CodeEditor({
   starterCode,
   isExpanded,
@@ -100,15 +146,18 @@ export function CodeEditor({
     <section className="code-editor" aria-label="Code editor">
       <div className="code-editor-toolbar">
         <label className="code-editor-language">
-          <select
-            aria-label="Editor language"
-            value={selectedLanguage}
-            onChange={(event) => setSelectedLanguage(event.target.value)}
-          >
-            {Object.entries(LANGUAGES).map(([language, details]) => (
-              <option key={language} value={language}>{details.label}</option>
-            ))}
-          </select>
+          <span className="code-editor-language-select">
+            <select
+              aria-label="Editor language"
+              value={selectedLanguage}
+              onChange={(event) => setSelectedLanguage(event.target.value)}
+            >
+              {Object.entries(LANGUAGES).map(([language, details]) => (
+                <option key={language} value={language}>{details.label}</option>
+              ))}
+            </select>
+            <ChevronIcon />
+          </span>
         </label>
         <div className="code-editor-controls">
           <button type="button" className="code-editor-button" onClick={resetCurrentLanguage}>Reset</button>
@@ -121,18 +170,7 @@ export function CodeEditor({
           aria-expanded={isExpanded}
           onClick={onToggleExpansion}
         >
-          <svg
-            className="editor-expand-icon"
-            viewBox="0 0 20 20"
-            role="img"
-            aria-label={isExpanded ? 'Collapse coding pane' : 'Expand coding pane'}
-          >
-            {isExpanded ? (
-              <path d="M8 3H3v5M12 17h5v-5M3 8l5-5M17 12l-5 5" />
-            ) : (
-              <path d="M8 3H3v5M12 17h5v-5M3 3l5 5M17 17l-5-5" />
-            )}
-          </svg>
+          <ExpandIcon isExpanded={isExpanded} />
         </button>
       </div>
 
@@ -140,23 +178,15 @@ export function CodeEditor({
 
       <div className="code-editor-actions" aria-label="Coding pane actions">
         <button type="button" className="code-editor-button" onClick={onCustomInput}>
-          <svg className="action-icon" viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M4 4h12v9H8l-4 3V4Z" />
-            <path d="m7 7 2 2-2 2M10 11h3" />
-          </svg>
+          <CustomInputIcon />
           Custom Input
         </button>
         <button type="button" className="code-editor-button" onClick={onRun}>
-          <svg className="action-icon" viewBox="0 0 20 20" aria-hidden="true">
-            <path d="m7 4 9 6-9 6V4Z" />
-          </svg>
+          <RunIcon />
           Run
         </button>
         <button type="button" className="primary-button" onClick={onSubmit}>
-          <svg className="action-icon" viewBox="0 0 20 20" aria-hidden="true">
-            <path d="m3 10 14-6-4 12-3-5-7-1Z" />
-            <path d="m10 11 4-4" />
-          </svg>
+          <SubmitIcon />
           Submit
         </button>
       </div>
