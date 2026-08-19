@@ -72,7 +72,6 @@ export function ProblemPage({ slug, navigate }) {
         onExpand={() => setIsSidebarExpanded(true)}
         onCollapse={() => setIsSidebarExpanded(false)}
         navigate={navigate}
-        onV2Click={setV2Feature}
         activeItem={null}
       />
 
