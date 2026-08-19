@@ -5,7 +5,6 @@ import { CodeEditor } from '../components/CodeEditor'
 import { ExecutionWorkspace } from '../components/ExecutionWorkspace'
 import { PrimarySidebar } from '../components/PrimarySidebar'
 import './ProblemPage.css'
-import './ProblemSidebarFix.css'
 
 export function ProblemPage({ slug, navigate }) {
   const { requestAuthenticated } = useAuth()
