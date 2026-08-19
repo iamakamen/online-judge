@@ -172,8 +172,8 @@ function RunIcon() {
 function SubmitIcon() {
   return (
     <svg className="action-icon action-icon-submit" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m3 11 18-7-5 16-4-6-9-3Z" />
-      <path d="m12 14 5-7" />
+    <path d="m3 11 18-7-5 16-4-6-9-3Z" />
+    <path d="m12 14 5-7" />
     </svg>
   )
 }
