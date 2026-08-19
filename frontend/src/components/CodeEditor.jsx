@@ -32,7 +32,11 @@ const editorTheme = EditorView.theme({
     borderRight: '1px solid #1d334c',
   },
   '.cm-lineNumbers .cm-gutterElement': { minWidth: '30px', padding: '0 4px 0 2px' },
-  '.cm-foldGutter .cm-gutterElement': { width: '18px', padding: '0 1px 0 1px' },
+  '.cm-foldGutter .cm-gutterElement': {
+    width: '18px',
+    padding: '0 1px 0 0 !important',
+    textAlign: 'right !important',
+  },
   '.cm-custom-fold-marker': {
     display: 'inline-block',
     width: '8px',
