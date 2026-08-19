@@ -1,14 +1,10 @@
-import { useState } from 'react'
-
 const VIEWS = [
   { id: 'result', label: 'Result' },
   { id: 'input', label: 'Input' },
   { id: 'output', label: 'Output' },
 ]
 
-export function ExecutionWorkspace({ mode, activeView, runInput, onViewChange }) {
-  const [customInput, setCustomInput] = useState('')
-  const [hasCustomInput, setHasCustomInput] = useState(false)
+export function ExecutionWorkspace({ mode, activeView, customInput, runInput, onCustomInputChange, onViewChange }) {
   const showTabs = mode === 'run'
   const visibleView = mode === 'custom' ? 'input' : mode === 'submit' ? 'result' : activeView
 
@@ -49,19 +45,16 @@ export function ExecutionWorkspace({ mode, activeView, runInput, onViewChange })
         {visibleView === 'input' && (
           mode === 'custom' ? (
             <label className="execution-workspace-input">
-              <span>Custom Input</span>
               <textarea
                 value={customInput}
-                onChange={(event) => {
-                  setHasCustomInput(true)
-                  setCustomInput(event.target.value)
-                }}
-                placeholder="Enter input for your code"
+                onChange={(event) => onCustomInputChange(event.target.value)}
+                placeholder="Enter your custom input here"
                 rows="8"
+                aria-label="Custom input"
               />
             </label>
           ) : (
-            <pre className="execution-workspace-public-input">{hasCustomInput ? customInput : runInput}</pre>
+            <pre className="execution-workspace-public-input">{customInput || runInput}</pre>
           )
         )}
 
