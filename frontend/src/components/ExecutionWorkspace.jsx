@@ -31,6 +31,7 @@ export function ExecutionWorkspace({ mode, activeView, customInput, runInput, on
 
       <div
         className="execution-workspace-panel"
+        style={{ height: showTabs ? 'calc(100% - 48px)' : '100%' }}
         role={showTabs ? 'tabpanel' : undefined}
         id={`execution-${visibleView}-panel`}
         aria-labelledby={showTabs ? `execution-${visibleView}-tab` : undefined}
