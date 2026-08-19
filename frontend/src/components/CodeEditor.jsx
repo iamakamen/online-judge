@@ -85,8 +85,8 @@ function ExpandIcon({ isExpanded }) {
     <svg className="editor-expand-icon" viewBox="0 0 40 20" aria-hidden="true">
       {isExpanded ? (
         <>
-          <path d="M3 10h12M3 10l5-5M3 10l5 5" />
-          <path d="M37 10H25M37 10l-5-5M37 10l-5 5" />
+          <path d="M3 10h12M15 10l-5-5M15 10l-5 5" />
+          <path d="M37 10H25M25 10l5-5M25 10l5 5" />
         </>
       ) : (
         <>
