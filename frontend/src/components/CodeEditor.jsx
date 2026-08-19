@@ -22,7 +22,7 @@ const editorTheme = EditorView.theme({
   '.cm-content': { caretColor: '#ffffff' },
   '.cm-cursor, .cm-dropCursor': {
     borderLeft: '2px solid #ffffff !important',
-    boxShadow: '0 0 0 1px #07101d, 0 0 0 2px #61a9ff, 0 0 6px #61a9ff',
+    boxShadow: '0 0 0 1px #07101d, 0 0 0 2px #61a9ff, 0 0 8px #61a9ff',
     opacity: '1 !important',
     visibility: 'visible !important',
   },
@@ -31,8 +31,8 @@ const editorTheme = EditorView.theme({
     color: '#66788f',
     borderRight: '1px solid #1d334c',
   },
-  '.cm-lineNumbers .cm-gutterElement': { minWidth: '34px', padding: '0 8px 0 4px' },
-  '.cm-foldGutter .cm-gutterElement': { width: '18px', padding: '0 1px 0 5px' },
+  '.cm-lineNumbers .cm-gutterElement': { minWidth: '30px', padding: '0 4px 0 2px' },
+  '.cm-foldGutter .cm-gutterElement': { width: '18px', padding: '0 1px 0 1px' },
   '.cm-custom-fold-marker': {
     display: 'inline-block',
     width: '8px',
