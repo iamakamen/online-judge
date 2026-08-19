@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-export function LoomMark() {
+export function EncodeMark() {
   return (
     <svg viewBox="0 0 32 32" aria-hidden="true" className="practice-sidebar-logo">
       <path d="M8 7.5c3.7 0 6.5 1.7 8 4.8 1.5-3.1 4.3-4.8 8-4.8" />
@@ -110,8 +110,8 @@ export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate, onV
         title="Dashboard"
         onClick={() => handleNavigate('/dashboard')}
       >
-        <LoomMark />
-        <span className="practice-sidebar-wordmark">loom</span>
+        <EncodeMark />
+        <span className="practice-sidebar-wordmark">encode</span>
       </button>
 
       <nav className="practice-sidebar-nav">
