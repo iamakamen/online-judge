@@ -4,12 +4,13 @@ import { cppLanguage } from '@codemirror/lang-cpp'
 import { pythonLanguage } from '@codemirror/lang-python'
 import {
   bracketMatching,
-  defaultHighlightStyle,
+  HighlightStyle,
   foldGutter,
   foldKeymap,
   indentOnInput,
   syntaxHighlighting,
 } from '@codemirror/language'
+import { tags } from '@lezer/highlight'
 import { EditorState } from '@codemirror/state'
 import { EditorView, keymap, lineNumbers } from '@codemirror/view'
 
@@ -18,16 +19,42 @@ const LANGUAGES = {
   cpp: { label: 'C++', language: cppLanguage },
 }
 
+const editorHighlightStyle = HighlightStyle.define([
+  { tag: tags.keyword, color: '#70b8ff' },
+  { tag: tags.controlKeyword, color: '#70b8ff' },
+  { tag: tags.operatorKeyword, color: '#70b8ff' },
+  { tag: tags.definition(tags.variableName), color: '#f5f8fc' },
+  { tag: tags.function(tags.variableName), color: '#f5f8fc' },
+  { tag: tags.variableName, color: '#d9e5f2' },
+  { tag: tags.typeName, color: '#8fd3ff' },
+  { tag: tags.className, color: '#8fd3ff' },
+  { tag: tags.propertyName, color: '#b9d9ff' },
+  { tag: tags.string, color: '#a9d89a' },
+  { tag: tags.number, color: '#d5b1ff' },
+  { tag: tags.bool, color: '#d5b1ff' },
+  { tag: tags.atom, color: '#d5b1ff' },
+  { tag: tags.comment, color: '#7f95ad', fontStyle: 'italic' },
+  { tag: tags.docComment, color: '#8ba5bf', fontStyle: 'italic' },
+  { tag: tags.punctuation, color: '#c6d5e5' },
+  { tag: tags.paren, color: '#c6d5e5' },
+  { tag: tags.operator, color: '#c6d5e5' },
+  { tag: tags.meta, color: '#9fc8f2' },
+  { tag: tags.invalid, color: '#ff9d9d' },
+])
+
 const editorTheme = EditorView.theme({
-  '.cm-content': { caretColor: '#ffffff' },
+  '.cm-content': {
+    caretColor: '#ffffff',
+    color: '#eaf2fb',
+  },
   '.cm-cursor, .cm-dropCursor': {
     borderLeft: '2px solid #ffffff !important',
-    boxShadow: '0 0 0 1px #07101d, 0 0 0 2px #61a9ff, 0 0 8px #61a9ff',
+    boxShadow: '0 0 0 1px #07101d, 0 0 0 2px #61a9ff, 0 0 10px #61a9ff',
     opacity: '1 !important',
     visibility: 'visible !important',
   },
   '.cm-gutters': {
-    backgroundColor: '#07101d',
+    backgroundColor: '#091321',
     color: '#66788f',
     borderRight: '1px solid #1d334c',
   },
@@ -67,7 +94,7 @@ function createEditorState(language, document) {
       lineNumbers(),
       LANGUAGES[language].language,
       indentOnInput(),
-      syntaxHighlighting(defaultHighlightStyle),
+      syntaxHighlighting(editorHighlightStyle),
       bracketMatching(),
       foldGutter({ markerDOM: createFoldMarker }),
       editorTheme,
