@@ -57,11 +57,31 @@ function ProfileIcon() {
   )
 }
 
-function SidebarItem({ label, icon, active = false, onClick }) {
+function SidebarItem({ label, icon, active = false, onClick, href }) {
+  const className = `practice-sidebar-item${active ? ' is-active' : ''}`
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        className={className}
+        aria-current={active ? 'page' : undefined}
+        onClick={(event) => {
+          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+          event.preventDefault()
+          onClick?.()
+        }}
+      >
+        {icon}
+        <span>{label}</span>
+      </a>
+    )
+  }
+
   return (
     <button
       type="button"
-      className={`practice-sidebar-item${active ? ' is-active' : ''}`}
+      className={className}
       aria-current={active ? 'page' : undefined}
       onClick={onClick}
     >
@@ -116,7 +136,7 @@ export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate, onV
       </button>
 
       <nav className="practice-sidebar-nav">
-        <SidebarItem label="Practice" icon={<PracticeIcon />} active={activeItem === 'Practice'} onClick={() => handleNavigate('/practice')} />
+        <SidebarItem label="Practice" icon={<PracticeIcon />} active={activeItem === 'Practice'} href="/practice" onClick={() => handleNavigate('/practice')} />
         <SidebarItem label="Learn" icon={<LearnIcon />} active={activeItem === 'Learn'} onClick={() => onV2Click?.('Learn')} />
         <SidebarItem label="Contest" icon={<ContestIcon />} active={activeItem === 'Contest'} onClick={() => onV2Click?.('Contest')} />
         <SidebarItem label="Forum" icon={<ForumIcon />} active={activeItem === 'Forum'} onClick={() => onV2Click?.('Forum')} />
