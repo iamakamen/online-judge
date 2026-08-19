@@ -26,10 +26,10 @@ const LANGUAGES = {
 
 const editorTheme = EditorView.theme({
   '.cm-content': {
-    caretColor: '#b9f36b',
+    caretColor: '#61a9ff',
   },
   '.cm-cursor, .cm-dropCursor': {
-    borderLeft: '2px solid #b9f36b !important',
+    borderLeft: '2px solid #61a9ff !important',
     opacity: '1 !important',
     visibility: 'visible !important',
   },
@@ -101,9 +101,15 @@ function ExpandIcon({ isExpanded }) {
   return (
     <svg className="editor-expand-icon" viewBox="0 0 20 20" aria-hidden="true">
       {isExpanded ? (
-        <path d="M8 3H3v5M12 17h5v-5M3 8l5-5M17 12l-5 5" />
+        <>
+          <path d="M4 5l5 5-5 5M16 5l-5 5 5 5" />
+          <path d="M4 10h12" />
+        </>
       ) : (
-        <path d="M8 3H3v5M12 17h5v-5M3 3l5 5M17 17l-5-5" />
+        <>
+          <path d="M8 5l-5 5 5 5M12 5l5 5-5 5" />
+          <path d="M3 10h14" />
+        </>
       )}
     </svg>
   )
@@ -180,10 +186,14 @@ export function CodeEditor({
   }, [selectedLanguage])
 
   function resetCurrentLanguage() {
+    const view = viewRef.current
+    if (!view) return
+
     const language = activeLanguageRef.current
-    const nextState = createEditorState(language, starterCode[language])
-    sessionsRef.current[language] = nextState
-    viewRef.current.setState(nextState)
+    view.dispatch({
+      changes: { from: 0, to: view.state.doc.length, insert: starterCode[language] },
+    })
+    sessionsRef.current[language] = view.state
   }
 
   function clearCurrentLanguage() {
