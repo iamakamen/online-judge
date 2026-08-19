@@ -1,12 +1,12 @@
 import { useRef } from 'react'
 
-export function EncodeMark() {
+export function LoomMark() {
   return (
     <svg viewBox="0 0 32 32" aria-hidden="true" className="practice-sidebar-logo">
       <path d="M8 7.5c3.7 0 6.5 1.7 8 4.8 1.5-3.1 4.3-4.8 8-4.8" />
       <path d="M8 24.5c3.7 0 6.5-1.7 8-4.8 1.5 3.1 4.3 4.8 8 4.8" />
       <path d="M7.5 8c0 3.7 1.7 6.5 4.8 8-3.1 1.5-4.8 4.3-4.8 8" />
-      <path d="M24.5 8c0 3.7-1.7 6.5-4.8 8 3.1 1.5 4.8 4.3 4.8 8" />
+      <path d="M24.5 8c0 3.7-1.7 6.5-4.8 8-1.5 3.1-4.3 4.8-4.3 8" />
     </svg>
   )
 }
@@ -110,7 +110,7 @@ export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate, onV
         title="Dashboard"
         onClick={() => handleNavigate('/dashboard')}
       >
-        <EncodeMark />
+        <LoomMark />
         <span className="practice-sidebar-wordmark">encode</span>
       </button>
 
