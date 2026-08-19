@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import './PrimarySidebar.css'
 
 export function LoomMark() {
   return (
