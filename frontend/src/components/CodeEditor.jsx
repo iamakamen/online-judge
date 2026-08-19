@@ -14,20 +14,12 @@ import { EditorState } from '@codemirror/state'
 import { EditorView, keymap, lineNumbers } from '@codemirror/view'
 
 const LANGUAGES = {
-  python: {
-    label: 'Python',
-    language: pythonLanguage,
-  },
-  cpp: {
-    label: 'C++',
-    language: cppLanguage,
-  },
+  python: { label: 'Python', language: pythonLanguage },
+  cpp: { label: 'C++', language: cppLanguage },
 }
 
 const editorTheme = EditorView.theme({
-  '.cm-content': {
-    caretColor: '#ffffff',
-  },
+  '.cm-content': { caretColor: '#ffffff' },
   '.cm-cursor, .cm-dropCursor': {
     borderLeft: '2px solid #ffffff !important',
     boxShadow: '0 0 0 1px #61a9ff, 0 0 5px #61a9ff',
@@ -39,14 +31,8 @@ const editorTheme = EditorView.theme({
     color: '#66788f',
     borderRight: '1px solid #1d334c',
   },
-  '.cm-lineNumbers .cm-gutterElement': {
-    minWidth: '34px',
-    padding: '0 8px 0 4px',
-  },
-  '.cm-foldGutter .cm-gutterElement': {
-    width: '16px',
-    padding: '0 2px',
-  },
+  '.cm-lineNumbers .cm-gutterElement': { minWidth: '34px', padding: '0 8px 0 4px' },
+  '.cm-foldGutter .cm-gutterElement': { width: '16px', padding: '0 2px' },
   '.cm-custom-fold-marker': {
     display: 'inline-block',
     width: '8px',
@@ -57,12 +43,8 @@ const editorTheme = EditorView.theme({
     transform: 'rotate(-45deg)',
     transition: 'transform 120ms ease, border-color 120ms ease',
   },
-  '.cm-custom-fold-marker.is-open': {
-    transform: 'rotate(45deg)',
-  },
-  '.cm-custom-fold-marker:hover': {
-    borderColor: '#f5f8fc',
-  },
+  '.cm-custom-fold-marker.is-open': { transform: 'rotate(45deg)' },
+  '.cm-custom-fold-marker:hover': { borderColor: '#f5f8fc' },
 })
 
 function createFoldMarker(open) {
@@ -140,14 +122,7 @@ function SubmitIcon() {
   )
 }
 
-export function CodeEditor({
-  starterCode,
-  isExpanded,
-  onToggleExpansion,
-  onCustomInput,
-  onRun,
-  onSubmit,
-}) {
+export function CodeEditor({ starterCode, isExpanded, onToggleExpansion, onCustomInput, onRun, onSubmit }) {
   const editorElement = useRef(null)
   const viewRef = useRef(null)
   const sessionsRef = useRef(null)
@@ -157,16 +132,13 @@ export function CodeEditor({
   useEffect(() => {
     activeLanguageRef.current = 'python'
     setSelectedLanguage('python')
-
     const sessions = {
       python: createEditorState('python', starterCode.python),
       cpp: createEditorState('cpp', starterCode.cpp),
     }
     const view = new EditorView({ state: sessions.python, parent: editorElement.current })
-
     sessionsRef.current = sessions
     viewRef.current = view
-
     return () => {
       view.destroy()
       sessionsRef.current = null
@@ -178,7 +150,6 @@ export function CodeEditor({
     const view = viewRef.current
     const sessions = sessionsRef.current
     if (!view || !sessions || activeLanguageRef.current === selectedLanguage) return
-
     sessions[activeLanguageRef.current] = view.state
     view.setState(sessions[selectedLanguage])
     activeLanguageRef.current = selectedLanguage
@@ -187,11 +158,8 @@ export function CodeEditor({
   function resetCurrentLanguage() {
     const view = viewRef.current
     if (!view) return
-
     const language = activeLanguageRef.current
-    view.dispatch({
-      changes: { from: 0, to: view.state.doc.length, insert: starterCode[language] },
-    })
+    view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: starterCode[language] } })
     sessionsRef.current[language] = view.state
   }
 
@@ -205,11 +173,7 @@ export function CodeEditor({
       <div className="code-editor-toolbar">
         <label className="code-editor-language">
           <span className="code-editor-language-select">
-            <select
-              aria-label="Editor language"
-              value={selectedLanguage}
-              onChange={(event) => setSelectedLanguage(event.target.value)}
-            >
+            <select aria-label="Editor language" value={selectedLanguage} onChange={(event) => setSelectedLanguage(event.target.value)}>
               {Object.entries(LANGUAGES).map(([language, details]) => (
                 <option key={language} value={language}>{details.label}</option>
               ))}
@@ -221,13 +185,7 @@ export function CodeEditor({
           <button type="button" className="code-editor-button" onClick={resetCurrentLanguage}>Reset</button>
           <button type="button" className="code-editor-button" onClick={clearCurrentLanguage}>Clear</button>
         </div>
-        <button
-          type="button"
-          className="code-editor-button code-editor-expand"
-          aria-label={isExpanded ? 'Collapse editor' : 'Expand editor'}
-          aria-expanded={isExpanded}
-          onClick={onToggleExpansion}
-        >
+        <button type="button" className="code-editor-button code-editor-expand" aria-label={isExpanded ? 'Collapse editor' : 'Expand editor'} aria-expanded={isExpanded} onClick={onToggleExpansion}>
           <ExpandIcon isExpanded={isExpanded} />
         </button>
       </div>
