@@ -1,15 +1,19 @@
 .problem-shell.problem-page-v2 {
-  --sidebar-expanded: 188px;
+  --sidebar-expanded: 174px;
   --problem-brand-blue: #61a9ff;
 }
 
 /* Brand */
 .problem-page-v2 .practice-sidebar-brand {
+  display: flex;
   width: 50px;
   height: 52px;
-  gap: 9px;
-  justify-content: center;
-  padding: 0;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 0 3px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -19,12 +23,9 @@
 }
 
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-brand {
-  width: 164px;
+  width: 146px;
   justify-content: flex-start;
-  padding: 0 8px;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+  padding: 0 3px;
 }
 
 .problem-page-v2 .practice-sidebar-brand:hover,
@@ -37,12 +38,13 @@
 
 .problem-page-v2 .practice-sidebar-wordmark {
   display: block;
+  flex: 0 0 auto;
   max-width: 0;
   overflow: hidden;
   opacity: 0;
   visibility: hidden;
   color: #ffffff;
-  font-size: 1.65rem;
+  font-size: 1.55rem;
   font-weight: 800;
   letter-spacing: -.055em;
   line-height: 1;
@@ -51,43 +53,49 @@
 }
 
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-wordmark {
-  max-width: 96px;
+  max-width: 82px;
   opacity: 1;
   visibility: visible;
 }
 
 .problem-page-v2 .practice-sidebar-logo {
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
   stroke-width: 1.9;
   color: var(--problem-brand-blue);
 }
 
-/* Sidebar items: borderless icon rail when collapsed, bordered controls when expanded. */
+/* Sidebar items: collapsed state is an icon rail; expansion only adds text. */
 .problem-page-v2 .practice-sidebar-nav {
   gap: 12px;
   margin-top: 30px;
 }
 
 .problem-page-v2 .practice-sidebar-item {
+  display: flex;
   width: 50px;
   min-height: 54px;
   box-sizing: border-box;
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 0 13px;
   border: 1px solid transparent;
   border-radius: 12px;
   background: transparent;
   color: var(--problem-text);
   box-shadow: none;
+  text-align: left;
 }
 
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item {
-  width: 164px;
+  width: 146px;
   min-height: 54px;
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-start;
   gap: 12px;
-  padding: 0 14px;
+  padding: 0 13px;
   border-color: var(--problem-border-strong);
   background: transparent;
   color: var(--problem-text);
@@ -126,7 +134,25 @@
 }
 
 .problem-page-v2 .practice-sidebar-item > span:last-child {
+  flex: 0 0 auto;
+  overflow: hidden;
+  max-width: 0;
   color: inherit;
+  font-weight: 700;
+  opacity: 0;
+  visibility: hidden;
+  white-space: nowrap;
+  transition: max-width 120ms ease, opacity 120ms ease, visibility 120ms ease;
+}
+
+.problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-item > span:last-child {
+  max-width: 82px;
+  opacity: 1;
+  visibility: visible;
+}
+
+.problem-page-v2 .practice-sidebar-item .practice-sidebar-icon {
+  flex: 0 0 24px;
 }
 
 /* Problem navigation accent follows the brand. */
