@@ -20,7 +20,7 @@
 }
 
 .problem-page-v2 .problem-pane {
-  padding: 24px 42px 72px;
+  padding: 18px 28px 56px;
   background: var(--problem-bg);
 }
 
@@ -60,7 +60,7 @@
   margin: 0;
   color: var(--problem-text);
   font-size: clamp(2.55rem, 4.2vw, 4rem);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: normal;
   line-height: .96;
 }
@@ -180,11 +180,6 @@
   color: var(--problem-text);
   font-size: 1.05rem;
   font-weight: 750;
-}
-
-.problem-page-v2 .practice-sidebar-item > span:last-child {
-  font-size: .92rem;
-  letter-spacing: 1px;
 }
 
 .problem-page-v2 .coding-pane {
