@@ -104,7 +104,7 @@ class SandboxExecutor:
             self._cleanup_container(container_name)
             if process is not None and process.poll() is None:
                 process.kill()
-                process.wait()
+                process.wait(timeout=1)
             return SandboxResult(
                 exit_code=None,
                 stdout="",
@@ -126,6 +126,7 @@ class SandboxExecutor:
             container_name,
             "--pull",
             "never",
+            "--init",
             "--network",
             "none",
             "--read-only",
@@ -133,6 +134,8 @@ class SandboxExecutor:
             "ALL",
             "--security-opt",
             "no-new-privileges:true",
+            "--security-opt",
+            "seccomp=builtin",
             "--pids-limit",
             str(request.pids_limit),
             "--memory",
@@ -199,14 +202,13 @@ class SandboxExecutor:
                         self._terminate_container(container_name, process)
                         selector.close()
                         return (
-                            self._decode(buffer=buffers["stdout"]),
-                            self._decode(buffer=buffers["stderr"]),
+                            self._decode(buffers["stdout"]),
+                            self._decode(buffers["stderr"]),
                             True,
                             False,
                         )
 
                 if process.poll() is not None:
-                    # Drain any final bytes already available from the pipes.
                     for key, _ in selector.select(timeout=0):
                         chunk = key.fileobj.read1(8192)
                         if not chunk:
@@ -244,14 +246,17 @@ class SandboxExecutor:
             process.wait(timeout=1)
 
     def _cleanup_container(self, container_name: str) -> None:
-        subprocess.run(
-            [self._docker_binary, "rm", "-f", container_name],
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=2,
-            check=False,
-        )
+        try:
+            subprocess.run(
+                [self._docker_binary, "rm", "-f", container_name],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=2,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            pass
 
     @staticmethod
     def _validate_request(request: SandboxRequest) -> None:
