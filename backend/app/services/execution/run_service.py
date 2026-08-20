@@ -30,6 +30,11 @@ _RUNNER_TYPES: Mapping[RunLanguage, type[ExecutionRunner]] = {
 }
 
 
+def _outputs_match(actual: str, expected: str) -> bool:
+    """Compare program output while ignoring line-ending representation."""
+    return actual.rstrip("\r\n") == expected.rstrip("\r\n")
+
+
 class RunService:
     """Orchestrate a user-facing Run without owning sandbox mechanics."""
 
@@ -125,7 +130,7 @@ class RunService:
         if execution.status is ExecutionStatus.PASSED:
             status = (
                 RunStatus.PASSED.value
-                if execution.stdout == test_case.expected_output
+                if _outputs_match(execution.stdout, test_case.expected_output)
                 else RunStatus.FAILED.value
             )
 
