@@ -149,7 +149,7 @@ class SandboxExecutor:
             "--tmpfs",
             f"/tmp:rw,noexec,nosuid,nodev,size={MAX_WORKSPACE_BYTES}",
             "--mount",
-            f"type=bind,src={request.workspace},dst=/workspace,ro,nosuid,nodev",
+            f"type=bind,src={request.workspace},dst=/workspace,ro",
             "-w",
             "/workspace",
             request.image,
