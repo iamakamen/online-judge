@@ -7,5 +7,3 @@ RUN apk add --no-cache curl \
 USER runner:runner
 
 WORKDIR /workspace
-
-ENTRYPOINT ["/bin/sh"]
