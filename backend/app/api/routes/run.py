@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from redis import Redis
 from redis.exceptions import RedisError
@@ -11,27 +13,39 @@ from backend.app.services.execution.redis_transport import RunTransport
 
 router = APIRouter(prefix="/api/v1/run", tags=["run"])
 
+DEFAULT_REDIS_URL = "redis://localhost:6379/0"
+RUN_RATE_WINDOW_SECONDS = 60
 
-def get_run_transport() -> RunTransport:
-    return RunTransport(Redis.from_url("redis://localhost:6379/0"))
+
+def get_redis() -> Redis:
+    return Redis.from_url(os.getenv("REDIS_URL", DEFAULT_REDIS_URL))
+
+
+def get_run_transport(redis: Redis = Depends(get_redis)) -> RunTransport:
+    return RunTransport(redis)
 
 
 def _rate_limit_key(user_id: int) -> str:
     return f"run:rate:{user_id}"
 
 
+def _allow_run(redis: Redis, user_id: int) -> bool:
+    key = _rate_limit_key(user_id)
+    count = redis.incr(key)
+    if count == 1:
+        redis.expire(key, RUN_RATE_WINDOW_SECONDS)
+    return count <= RUN_RATE_LIMIT_PER_MINUTE
+
+
 @router.post("", response_model=RunResponse)
 def run_route(
     request: RunRequest,
     current_user: User = Depends(get_current_user),
+    redis: Redis = Depends(get_redis),
     transport: RunTransport = Depends(get_run_transport),
 ):
     try:
-        rate_limit_key = _rate_limit_key(current_user.id)
-        count = transport._redis.incr(rate_limit_key)
-        if count == 1:
-            transport._redis.expire(rate_limit_key, 60)
-        if count > RUN_RATE_LIMIT_PER_MINUTE:
+        if not _allow_run(redis, current_user.id):
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail="Run rate limit exceeded",
