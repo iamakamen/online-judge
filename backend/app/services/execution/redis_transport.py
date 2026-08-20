@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from redis import Redis
+from redis.exceptions import TimeoutError as RedisTimeoutError
 
 from backend.app.core.execution import (
     RUN_REQUEST_TIMEOUT_MS,
@@ -75,7 +76,14 @@ class RunTransport:
         )
 
     def consume_job(self, timeout_seconds: int = 5) -> RunJob | None:
-        item = self._redis.blpop(RUN_QUEUE_KEY, timeout=timeout_seconds)
+        try:
+            item = self._redis.blpop(RUN_QUEUE_KEY, timeout=timeout_seconds)
+        except RedisTimeoutError:
+            # An idle worker must survive a Redis client socket timeout. The
+            # next loop iteration retries consumption rather than terminating
+            # the worker process.
+            return None
+
         if item is None:
             return None
         _, payload = item
