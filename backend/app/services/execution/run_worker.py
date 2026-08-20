@@ -12,7 +12,6 @@ from redis import Redis
 from sqlalchemy.orm import Session
 
 from backend.app.core.execution import MAX_CONCURRENT_RUNS
-from backend.app.db.session import SessionLocal
 from backend.app.schemas.run import RunResponse, RunStatus
 from backend.app.services.execution.redis_transport import RunJob, RunTransport
 from backend.app.services.execution.run_service import RunService
@@ -38,7 +37,7 @@ class RunWorker:
         transport: RunTransportProtocol,
         *,
         run_service: RunService | None = None,
-        session_factory: Callable[[], Session] = SessionLocal,
+        session_factory: Callable[[], Session] | None = None,
         max_concurrent_runs: int = MAX_CONCURRENT_RUNS,
         consume_timeout_seconds: int = DEFAULT_CONSUME_TIMEOUT_SECONDS,
     ) -> None:
@@ -49,9 +48,15 @@ class RunWorker:
 
         self._transport = transport
         self._run_service = run_service or RunService()
-        self._session_factory = session_factory
+        self._session_factory = session_factory or self._default_session_factory
         self._max_concurrent_runs = max_concurrent_runs
         self._consume_timeout_seconds = consume_timeout_seconds
+
+    @staticmethod
+    def _default_session_factory() -> Session:
+        from backend.app.db.session import SessionLocal
+
+        return SessionLocal()
 
     @property
     def max_concurrent_runs(self) -> int:
