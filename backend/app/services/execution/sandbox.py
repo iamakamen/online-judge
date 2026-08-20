@@ -33,6 +33,7 @@ class SandboxRequest:
     workspace: Path
     timeout_ms: int
     memory_limit_mb: int
+    stdin: str = ""
     cpus: float = 1.0
     pids_limit: int = MAX_PROCESSES
     stdout_limit_bytes: int = MAX_STDOUT_BYTES
@@ -81,11 +82,18 @@ class SandboxExecutor:
         try:
             process = subprocess.Popen(
                 command,
-                stdin=subprocess.DEVNULL,
+                stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=False,
             )
+            if process.stdin is not None:
+                try:
+                    process.stdin.write(request.stdin.encode("utf-8"))
+                    process.stdin.close()
+                except BrokenPipeError:
+                    process.stdin.close()
+
             stdout, stderr, output_limited, timed_out = self._collect_output(
                 process,
                 container_name,
