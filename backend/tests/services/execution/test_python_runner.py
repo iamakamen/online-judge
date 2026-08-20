@@ -67,5 +67,6 @@ def test_python_runner_does_not_execute_on_host(tmp_path):
 
     result = PythonRunner().execute(request(source))
 
-    assert result.status is ExecutionStatus.PASSED
+    assert result.status is ExecutionStatus.RUNTIME_ERROR
+    assert result.exit_code != 0
     assert not marker.exists()
