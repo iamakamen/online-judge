@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import time
 import uuid
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any
 
 from redis import Redis
@@ -87,9 +87,7 @@ class RunTransport:
 
     @staticmethod
     def serialize_job(job: RunJob) -> str:
-        payload: dict[str, Any] = asdict(job.request)
-        payload["language"] = job.request.language.value
-        payload["mode"] = job.request.mode.value
+        payload: dict[str, Any] = job.request.model_dump(mode="json")
         return json.dumps(
             {
                 "request_id": job.request_id,
