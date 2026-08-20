@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from backend.app.api.routes.auth import router as auth_router
 from backend.app.api.routes.dashboard import router as dashboard_router
 from backend.app.api.routes.problems import router as problems_router
+from backend.app.api.routes.run import router as run_router
 from backend.app.api.routes.test_cases import router as test_cases_router
 from backend.app.api.routes.topics import router as topics_router
 
@@ -25,6 +26,7 @@ app.include_router(dashboard_router)
 app.include_router(topics_router)
 app.include_router(problems_router)
 app.include_router(test_cases_router)
+app.include_router(run_router)
 
 
 @app.get("/health")
