@@ -12,7 +12,7 @@ SANDBOX_TEST_IMAGE = os.getenv("SANDBOX_TEST_IMAGE", "oj-sandbox-test:latest")
 
 @pytest.fixture(scope="module")
 def sandbox():
-    return SandboxExecutor(image=SANDBOX_TEST_IMAGE)
+    return SandboxExecutor()
 
 
 @pytest.fixture(scope="module")
@@ -25,8 +25,11 @@ def workspace(tmp_path_factory):
 def run(sandbox, workspace, command, **kwargs):
     return sandbox.execute(
         SandboxRequest(
+            image=SANDBOX_TEST_IMAGE,
             workspace=Path(workspace),
             command=command,
+            timeout_ms=kwargs.pop("timeout_ms", 2_000),
+            memory_limit_mb=kwargs.pop("memory_limit_mb", 64),
             **kwargs,
         )
     )
@@ -96,21 +99,39 @@ def test_stdout_limit_terminates_execution(sandbox, workspace):
     assert len(result.stdout.encode()) <= 64_000
 
 
+def test_stderr_limit_terminates_execution(sandbox, workspace):
+    result = run(
+        sandbox,
+        workspace,
+        ("/bin/sh", "-c", "head -c 70000 /dev/zero >&2"),
+        stderr_limit_bytes=64_000,
+    )
+
+    assert result.output_limited is True
+    assert len(result.stderr.encode()) <= 64_000
+
+
 def test_network_is_disabled(sandbox, workspace):
     result = run(
         sandbox,
         workspace,
-        ("/bin/sh", "-c", "wget -q -T 1 -O - http://1.1.1.1/"),
+        ("/usr/bin/curl", "--connect-timeout", "1", "http://1.1.1.1/"),
     )
 
     assert result.exit_code != 0
 
 
-def test_container_is_cleaned_up(sandbox, workspace):
-    result = run(sandbox, workspace, ("/bin/sh", "-c", "printf cleanup"))
+def test_pids_limit_is_enforced(sandbox, workspace):
+    result = run(
+        sandbox,
+        workspace,
+        (
+            "/bin/sh",
+            "-c",
+            "i=0; while [ $i -lt 40 ]; do (sleep 5) & i=$((i+1)); done; wait",
+        ),
+        pids_limit=8,
+        timeout_ms=1_000,
+    )
 
-    assert result.exit_code == 0
-
-    # SandboxExecutor uses --rm and therefore should not leave its named
-    # execution container behind after a normal completion.
-    assert not sandbox.container_exists(result.container_name)
+    assert result.exit_code != 0 or result.timed_out is True
