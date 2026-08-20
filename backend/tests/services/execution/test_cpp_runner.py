@@ -80,18 +80,21 @@ def test_cpp_output_limit_is_reported(runner):
     assert len(result.stdout.encode("utf-8")) <= 64_000
 
 
-def test_cpp_runtime_workspace_is_read_only(runner, tmp_path):
-    marker = tmp_path / "host-marker"
+def test_cpp_runtime_workspace_is_read_only(runner):
     source = (
         "#include <fstream>\n"
-        "int main() { std::ofstream f(\"/workspace/blocked.txt\"); "
-        "f << \"executed\"; }\n"
+        "int main() { "
+        "std::ofstream f(\"/workspace/blocked.txt\"); "
+        "if (!f) return 7; "
+        "f << \"executed\"; "
+        "return 0; "
+        "}\n"
     )
 
     result = runner.execute(request(source))
 
     assert result.status is ExecutionStatus.RUNTIME_ERROR
-    assert not marker.exists()
+    assert result.exit_code == 7
 
 
 def test_cpp_network_is_disabled(runner):
