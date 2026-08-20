@@ -8,6 +8,7 @@ export function ExecutionWorkspace({ mode, activeView, customInput, runInput, on
   const showTabs = mode === 'run'
   const visibleView = mode === 'custom' ? 'input' : mode === 'submit' ? 'result' : activeView
   const panelClassName = `execution-workspace-panel ${showTabs ? 'is-tabbed' : 'is-full-height'}`
+  const inputClassName = `execution-workspace-input ${mode === 'custom' ? 'execution-workspace-input--custom' : 'execution-workspace-input--run'}`
 
   return (
     <section className={`execution-workspace${showTabs ? ' has-tabs' : ''}`} aria-label="Result, Input, and Output">
@@ -43,7 +44,7 @@ export function ExecutionWorkspace({ mode, activeView, customInput, runInput, on
         )}
 
         {visibleView === 'input' && (
-          <label className="execution-workspace-input">
+          <label className={inputClassName}>
             <textarea
               value={mode === 'custom' ? customInput : customInput || runInput}
               onChange={mode === 'custom' ? (event) => onCustomInputChange(event.target.value) : undefined}
@@ -55,7 +56,7 @@ export function ExecutionWorkspace({ mode, activeView, customInput, runInput, on
         )}
 
         {visibleView === 'output' && (
-          <label className="execution-workspace-input">
+          <label className="execution-workspace-input execution-workspace-input--run">
             <textarea
               value=""
               placeholder="No output yet."
