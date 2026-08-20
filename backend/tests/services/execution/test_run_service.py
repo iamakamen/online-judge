@@ -44,7 +44,7 @@ def test_run_tests_selects_run_enabled_cases_and_compares_output(monkeypatch):
             id=1,
             display_order=1,
             input="3\n1 2 3",
-            expected_output="6\n",
+            expected_output="6",
         ),
         SimpleNamespace(
             id=2,
@@ -81,6 +81,96 @@ def test_run_tests_selects_run_enabled_cases_and_compares_output(monkeypatch):
     ]
     assert all(request.time_limit_ms == 1000 for request in runner.requests)
     assert all(request.memory_limit_mb == 128 for request in runner.requests)
+
+
+def test_run_tests_ignores_trailing_line_endings(monkeypatch):
+    runner = FakeRunner(
+        [
+            ExecutionResult(
+                status=ExecutionStatus.PASSED,
+                stdout="0 1\n",
+                execution_time_ms=10,
+            ),
+            ExecutionResult(
+                status=ExecutionStatus.PASSED,
+                stdout="0 1\r\n",
+                execution_time_ms=11,
+            ),
+        ]
+    )
+    cases = [
+        SimpleNamespace(
+            id=1,
+            display_order=1,
+            input="4\n2 7 11 15\n9",
+            expected_output="0 1",
+        ),
+        SimpleNamespace(
+            id=2,
+            display_order=2,
+            input="4\n2 7 11 15\n9",
+            expected_output="0 1\n",
+        ),
+    ]
+
+    monkeypatch.setattr(
+        "backend.app.services.execution.run_service.get_problem", lambda db, problem_id: problem()
+    )
+    monkeypatch.setattr(
+        "backend.app.services.execution.run_service.list_test_cases_for_problem",
+        lambda db, problem_id, run_visible_only: cases,
+    )
+
+    request = RunRequest(
+        problem_id=1,
+        language=RunLanguage.PYTHON,
+        source_code="print('0 1')",
+    )
+    response = RunService({RunLanguage.PYTHON: runner}).execute(None, request)
+
+    assert response.status is RunStatus.PASSED
+    assert [result.status for result in response.results] == [
+        RunStatus.PASSED,
+        RunStatus.PASSED,
+    ]
+
+
+def test_run_tests_preserves_meaningful_output_difference(monkeypatch):
+    runner = FakeRunner(
+        [
+            ExecutionResult(
+                status=ExecutionStatus.PASSED,
+                stdout=" 0 1\n",
+                execution_time_ms=10,
+            )
+        ]
+    )
+    cases = [
+        SimpleNamespace(
+            id=1,
+            display_order=1,
+            input="input",
+            expected_output="0 1",
+        )
+    ]
+
+    monkeypatch.setattr(
+        "backend.app.services.execution.run_service.get_problem", lambda db, problem_id: problem()
+    )
+    monkeypatch.setattr(
+        "backend.app.services.execution.run_service.list_test_cases_for_problem",
+        lambda db, problem_id, run_visible_only: cases,
+    )
+
+    request = RunRequest(
+        problem_id=1,
+        language=RunLanguage.PYTHON,
+        source_code="print(' 0 1')",
+    )
+    response = RunService({RunLanguage.PYTHON: runner}).execute(None, request)
+
+    assert response.status is RunStatus.FAILED
+    assert response.results[0].status is RunStatus.FAILED
 
 
 def test_custom_input_does_not_load_test_cases(monkeypatch):
