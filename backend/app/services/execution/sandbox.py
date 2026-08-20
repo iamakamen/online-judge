@@ -38,6 +38,7 @@ class SandboxRequest:
     pids_limit: int = MAX_PROCESSES
     stdout_limit_bytes: int = MAX_STDOUT_BYTES
     stderr_limit_bytes: int = MAX_STDERR_BYTES
+    workspace_read_only: bool = True
 
 
 @dataclass(frozen=True)
@@ -55,8 +56,10 @@ class SandboxExecutor:
     """Execute a command in one ephemeral, restricted Docker container.
 
     The caller supplies a trusted image and a workspace containing only the
-    files required for the current run. The workspace is mounted read-only;
-    writable temporary state is provided through a size-limited tmpfs.
+    files required for the current run. The workspace is read-only by default;
+    callers may explicitly enable workspace writes for trusted preparation
+    phases such as compilation. Writable temporary state is always provided
+    through a size-limited tmpfs.
     """
 
     def __init__(self, docker_binary: str = "docker") -> None:
@@ -126,7 +129,13 @@ class SandboxExecutor:
     def _build_command(
         self, request: SandboxRequest, container_name: str
     ) -> list[str]:
-        return [
+        workspace_mount = (
+            f"type=bind,src={request.workspace},dst=/workspace"
+            if request.workspace_read_only
+            else f"type=bind,src={request.workspace},dst=/workspace,rw"
+        )
+
+        command = [
             self._docker_binary,
             "run",
             "--rm",
@@ -158,12 +167,13 @@ class SandboxExecutor:
             "--tmpfs",
             f"/tmp:rw,noexec,nosuid,nodev,size={MAX_WORKSPACE_BYTES}",
             "--mount",
-            f"type=bind,src={request.workspace},dst=/workspace,ro",
+            workspace_mount,
             "-w",
             "/workspace",
             request.image,
             *request.command,
         ]
+        return command
 
     def _collect_output(
         self,
