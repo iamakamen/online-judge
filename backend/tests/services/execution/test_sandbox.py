@@ -24,6 +24,7 @@ def test_build_command_enforces_container_isolation(
     assert "--network" in command
     assert command[command.index("--network") + 1] == "none"
     assert "--read-only" in command
+    assert "-i" in command
     assert command[command.index("--cap-drop") + 1] == "ALL"
     assert "--init" in command
     assert "--security-opt" in command
