@@ -73,7 +73,7 @@
 .problem-page-v2 .execution-workspace { flex: 0 0 var(--execution-workspace-height); height: var(--execution-workspace-height); min-height: var(--execution-workspace-height); margin-top: 0; box-sizing: border-box; border: 1px solid var(--problem-border); border-left: 0; border-right: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; background: var(--problem-panel); overflow: hidden; }
 .problem-page-v2 .execution-workspace-tabs { display: flex; flex: 0 0 40px; height: 40px; align-items: stretch; }
 .problem-page-v2 .execution-workspace-tab { flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; height: 40px; padding: 0; line-height: 1; }
-.problem-page-v2 .execution-workspace-panel { min-height: 0; box-sizing: border-box; padding: 16px 12px 24px; overflow: hidden; }
+.problem-page-v2 .execution-workspace-panel { min-height: 0; box-sizing: border-box; padding: 8px 12px 32px; overflow: hidden; }
 .problem-page-v2 .execution-workspace-panel.is-tabbed { height: calc(100% - 40px); display: block; }
 .problem-page-v2 .execution-workspace-panel.is-full-height { height: 100%; display: flex; align-items: center; justify-content: center; }
 .problem-page-v2 .execution-workspace-input { display: block; width: 100%; height: 160px; max-height: 160px; }
