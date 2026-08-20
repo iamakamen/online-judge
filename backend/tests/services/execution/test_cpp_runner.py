@@ -2,6 +2,7 @@ import os
 
 import pytest
 
+from backend.app.core.execution import MAX_STDOUT_BYTES
 from backend.app.services.execution.cpp_runner import CppRunner
 from backend.app.services.execution.models import ExecutionRequest, ExecutionStatus
 
@@ -77,7 +78,7 @@ def test_cpp_output_limit_is_reported(runner):
     )
 
     assert result.status is ExecutionStatus.OUTPUT_LIMIT_EXCEEDED
-    assert len(result.stdout.encode("utf-8")) <= 64_000
+    assert len(result.stdout.encode("utf-8")) <= MAX_STDOUT_BYTES
 
 
 def test_cpp_runtime_workspace_is_read_only(runner):
