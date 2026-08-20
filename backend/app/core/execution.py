@@ -1,41 +1,50 @@
-"""Configuration for the V1 Run execution boundary.
+"""Centralized configuration for the V1 Run execution boundary.
 
-Problem-specific limits are supplied by the Problem model. These values are
-process-wide safety ceilings for the execution infrastructure itself.
+Problem-specific time and memory limits are supplied by the Problem model.
+These values define process-wide safety ceilings and Run infrastructure policy.
 """
 
 
-# Maximum source submitted in a single Run request.
+# Client-controlled payload ceilings.
 MAX_SOURCE_CODE_BYTES = 100_000
-
-# Maximum custom input accepted by the Run API.
 MAX_CUSTOM_INPUT_BYTES = 100_000
 
 # Maximum captured output from a user program, per stream.
-MAX_STDOUT_BYTES = 64_000
-MAX_STDERR_BYTES = 64_000
+MAX_STDOUT_BYTES = 200_000
+MAX_STDERR_BYTES = 65_536
 
-# Infrastructure ceilings. A problem may request a lower limit, never a
-# higher one.
-MAX_EXECUTION_TIME_MS = 5_000
+# Execution and compilation ceilings.
+MAX_RUN_TIMEOUT_MS = 5_000
+COMPILE_TIMEOUT_MS = 5_000
+RUN_REQUEST_TIMEOUT_MS = 15_000
+
+# Infrastructure ceiling for problem memory limits.
 MAX_MEMORY_LIMIT_MB = 512
 
-# Compilation is separate from program execution for C++.
-COMPILE_TIMEOUT_MS = 5_000
-
 # Maximum number of processes/threads allowed inside a sandbox.
-MAX_PROCESSES = 32
+MAX_PIDS = 64
 
-# Maximum filesystem space exposed to a single execution workspace.
-MAX_WORKSPACE_BYTES = 16 * 1024 * 1024
+# Maximum writable temporary filesystem exposed to a single execution.
+RUN_WORKSPACE_SIZE_MB = 64
 
-# Maximum number of Run jobs one worker should execute concurrently on the
-# V1 EC2 baseline. This is intentionally conservative for a 2-vCPU host.
-MAX_CONCURRENT_EXECUTIONS = 2
+# Maximum CPU capacity allocated to a single execution.
+RUN_CPU_COUNT = 1.0
 
-# Redis result lifetime once a Run has completed.
-RESULT_TTL_SECONDS = 300
+# Worker concurrency policy for the V1 EC2 baseline.
+MAX_CONCURRENT_RUNS = 2
+MAX_CONCURRENT_RUNS_PER_USER = 2
 
-# Maximum time the API layer should wait for a synchronous Run result before
-# returning an infrastructure timeout to the caller.
-API_RESULT_WAIT_TIMEOUT_MS = 10_000
+# Run API rate-limit policy.
+RUN_RATE_LIMIT_PER_MINUTE = 10
+
+# Redis transient result lifetime.
+RUN_RESULT_TTL_SECONDS = 60
+
+
+# Backward-compatible aliases for the lower-level sandbox implementation.
+# New Run/worker code should use the canonical names above.
+MAX_EXECUTION_TIME_MS = MAX_RUN_TIMEOUT_MS
+MAX_PROCESSES = MAX_PIDS
+MAX_WORKSPACE_BYTES = RUN_WORKSPACE_SIZE_MB * 1024 * 1024
+RESULT_TTL_SECONDS = RUN_RESULT_TTL_SECONDS
+API_RESULT_WAIT_TIMEOUT_MS = RUN_REQUEST_TIMEOUT_MS
