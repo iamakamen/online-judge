@@ -1,6 +1,11 @@
 from enum import Enum
 
-from pydantic import BaseModel, Field, PositiveInt
+from pydantic import BaseModel, Field, PositiveInt, model_validator
+
+from backend.app.core.execution import (
+    MAX_CUSTOM_INPUT_BYTES,
+    MAX_SOURCE_CODE_BYTES,
+)
 
 
 class RunLanguage(str, Enum):
@@ -30,6 +35,33 @@ class RunRequest(BaseModel):
     mode: RunMode = RunMode.TEST_CASES
     source_code: str = Field(min_length=1)
     custom_input: str | None = None
+
+    @model_validator(mode="after")
+    def validate_execution_payload(self):
+        source_bytes = len(self.source_code.encode("utf-8"))
+        if source_bytes > MAX_SOURCE_CODE_BYTES:
+            raise ValueError(
+                f"source_code exceeds {MAX_SOURCE_CODE_BYTES} bytes"
+            )
+
+        if self.custom_input is not None:
+            custom_input_bytes = len(self.custom_input.encode("utf-8"))
+            if custom_input_bytes > MAX_CUSTOM_INPUT_BYTES:
+                raise ValueError(
+                    f"custom_input exceeds {MAX_CUSTOM_INPUT_BYTES} bytes"
+                )
+
+        if self.mode is RunMode.TEST_CASES and self.custom_input is not None:
+            raise ValueError(
+                "custom_input must be omitted when mode is run_tests"
+            )
+
+        if self.mode is RunMode.CUSTOM_INPUT and self.custom_input is None:
+            raise ValueError(
+                "custom_input is required when mode is custom_input"
+            )
+
+        return self
 
 
 class RunTestResult(BaseModel):
