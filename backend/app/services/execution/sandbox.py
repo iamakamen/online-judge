@@ -7,15 +7,16 @@ and command to execute.
 
 from __future__ import annotations
 
+import selectors
 import shutil
 import subprocess
 import tempfile
 import time
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
 from backend.app.core.execution import (
-    MAX_CONCURRENT_EXECUTIONS,
     MAX_EXECUTION_TIME_MS,
     MAX_MEMORY_LIMIT_MB,
     MAX_PROCESSES,
@@ -52,8 +53,9 @@ class SandboxResult:
 class SandboxExecutor:
     """Execute a command in one ephemeral, restricted Docker container.
 
-    The caller is responsible for supplying a trusted execution image and a
-    workspace containing only the files required for the current run.
+    The caller supplies a trusted image and a workspace containing only the
+    files required for the current run. The workspace is mounted read-only;
+    writable temporary state is provided through a size-limited tmpfs.
     """
 
     def __init__(self, docker_binary: str = "docker") -> None:
@@ -71,36 +73,38 @@ class SandboxExecutor:
             )
 
         request.workspace.mkdir(parents=True, exist_ok=True)
-        command = self._build_command(request)
+        container_name = f"oj-run-{uuid.uuid4().hex}"
+        command = self._build_command(request, container_name)
         started = time.monotonic()
+        process: subprocess.Popen[bytes] | None = None
 
         try:
-            completed = subprocess.run(
+            process = subprocess.Popen(
                 command,
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=False,
-                timeout=request.timeout_ms / 1000,
-                check=False,
             )
-        except subprocess.TimeoutExpired as exc:
-            elapsed = self._elapsed_ms(started)
-            stdout = self._decode_and_limit(exc.stdout or b"", request.stdout_limit_bytes)
-            stderr = self._decode_and_limit(exc.stderr or b"", request.stderr_limit_bytes)
-            self._force_cleanup_container(command)
+            stdout, stderr, output_limited, timed_out = self._collect_output(
+                process,
+                container_name,
+                request,
+                started,
+            )
             return SandboxResult(
-                exit_code=None,
+                exit_code=None if timed_out else process.returncode,
                 stdout=stdout,
                 stderr=stderr,
-                execution_time_ms=elapsed,
-                timed_out=True,
-                output_limited=(
-                    len(stdout.encode()) >= request.stdout_limit_bytes
-                    or len(stderr.encode()) >= request.stderr_limit_bytes
-                ),
+                execution_time_ms=self._elapsed_ms(started),
+                timed_out=timed_out,
+                output_limited=output_limited,
             )
         except OSError as exc:
+            self._cleanup_container(container_name)
+            if process is not None and process.poll() is None:
+                process.kill()
+                process.wait()
             return SandboxResult(
                 exit_code=None,
                 stdout="",
@@ -108,32 +112,20 @@ class SandboxExecutor:
                 execution_time_ms=self._elapsed_ms(started),
                 infrastructure_error=str(exc),
             )
+        finally:
+            self._cleanup_container(container_name)
 
-        elapsed = self._elapsed_ms(started)
-        stdout = self._decode_and_limit(
-            completed.stdout, request.stdout_limit_bytes
-        )
-        stderr = self._decode_and_limit(
-            completed.stderr, request.stderr_limit_bytes
-        )
-        output_limited = (
-            len(completed.stdout) > request.stdout_limit_bytes
-            or len(completed.stderr) > request.stderr_limit_bytes
-        )
-
-        return SandboxResult(
-            exit_code=completed.returncode,
-            stdout=stdout,
-            stderr=stderr,
-            execution_time_ms=elapsed,
-            output_limited=output_limited,
-        )
-
-    def _build_command(self, request: SandboxRequest) -> list[str]:
+    def _build_command(
+        self, request: SandboxRequest, container_name: str
+    ) -> list[str]:
         return [
             self._docker_binary,
             "run",
             "--rm",
+            "--name",
+            container_name,
+            "--pull",
+            "never",
             "--network",
             "none",
             "--read-only",
@@ -145,27 +137,127 @@ class SandboxExecutor:
             str(request.pids_limit),
             "--memory",
             f"{request.memory_limit_mb}m",
+            "--memory-swap",
+            f"{request.memory_limit_mb}m",
             "--cpus",
             str(request.cpus),
             "--user",
             "1000:1000",
             "--tmpfs",
-            "/tmp:rw,noexec,nosuid,size=8m",
+            f"/tmp:rw,noexec,nosuid,nodev,size={MAX_WORKSPACE_BYTES}",
             "--mount",
-            f"type=bind,src={request.workspace},dst=/workspace,rw,nosuid,nodev",
+            f"type=bind,src={request.workspace},dst=/workspace,ro,nosuid,nodev",
             "-w",
             "/workspace",
             request.image,
             *request.command,
         ]
 
+    def _collect_output(
+        self,
+        process: subprocess.Popen[bytes],
+        container_name: str,
+        request: SandboxRequest,
+        started: float,
+    ) -> tuple[str, str, bool, bool]:
+        selector = selectors.DefaultSelector()
+        if process.stdout is not None:
+            selector.register(process.stdout, selectors.EVENT_READ, "stdout")
+        if process.stderr is not None:
+            selector.register(process.stderr, selectors.EVENT_READ, "stderr")
+
+        buffers = {"stdout": bytearray(), "stderr": bytearray()}
+        limits = {
+            "stdout": request.stdout_limit_bytes,
+            "stderr": request.stderr_limit_bytes,
+        }
+        output_limited = False
+        timed_out = False
+
+        try:
+            while selector.get_map():
+                remaining = request.timeout_ms / 1000 - (
+                    time.monotonic() - started
+                )
+                if remaining <= 0:
+                    timed_out = True
+                    self._terminate_container(container_name, process)
+                    break
+
+                for key, _ in selector.select(timeout=min(remaining, 0.05)):
+                    chunk = key.fileobj.read1(8192)
+                    if not chunk:
+                        selector.unregister(key.fileobj)
+                        continue
+
+                    stream = key.data
+                    buffer = buffers[stream]
+                    buffer.extend(chunk)
+                    if len(buffer) > limits[stream]:
+                        del buffer[limits[stream] :]
+                        output_limited = True
+                        self._terminate_container(container_name, process)
+                        selector.close()
+                        return (
+                            self._decode(buffer=buffers["stdout"]),
+                            self._decode(buffer=buffers["stderr"]),
+                            True,
+                            False,
+                        )
+
+                if process.poll() is not None:
+                    # Drain any final bytes already available from the pipes.
+                    for key, _ in selector.select(timeout=0):
+                        chunk = key.fileobj.read1(8192)
+                        if not chunk:
+                            selector.unregister(key.fileobj)
+                            continue
+                        stream = key.data
+                        buffer = buffers[stream]
+                        remaining_limit = limits[stream] - len(buffer)
+                        if remaining_limit <= 0:
+                            output_limited = True
+                            continue
+                        buffer.extend(chunk[:remaining_limit])
+                        if len(chunk) > remaining_limit:
+                            output_limited = True
+                    break
+        finally:
+            selector.close()
+
+        if process.poll() is None:
+            process.wait(timeout=1)
+
+        return (
+            self._decode(buffers["stdout"]),
+            self._decode(buffers["stderr"]),
+            output_limited,
+            timed_out,
+        )
+
+    def _terminate_container(
+        self, container_name: str, process: subprocess.Popen[bytes]
+    ) -> None:
+        self._cleanup_container(container_name)
+        if process.poll() is None:
+            process.kill()
+            process.wait(timeout=1)
+
+    def _cleanup_container(self, container_name: str) -> None:
+        subprocess.run(
+            [self._docker_binary, "rm", "-f", container_name],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=2,
+            check=False,
+        )
+
     @staticmethod
     def _validate_request(request: SandboxRequest) -> None:
         if not request.command:
             raise ValueError("sandbox command must not be empty")
-        if request.timeout_ms <= 0:
-            raise ValueError("sandbox timeout must be positive")
-        if request.timeout_ms > MAX_EXECUTION_TIME_MS:
+        if request.timeout_ms <= 0 or request.timeout_ms > MAX_EXECUTION_TIME_MS:
             raise ValueError("sandbox timeout exceeds configured ceiling")
         if request.memory_limit_mb <= 0 or request.memory_limit_mb > MAX_MEMORY_LIMIT_MB:
             raise ValueError("sandbox memory limit exceeds configured ceiling")
@@ -182,26 +274,13 @@ class SandboxExecutor:
         if request.workspace.exists() and not request.workspace.is_dir():
             raise ValueError("sandbox workspace must be a directory")
 
-        # Keep the workspace inside a caller-managed temporary directory. The
-        # size ceiling is a policy value here; actual enforcement is added by
-        # the execution image/filesystem layer where it can be measured safely.
-        if MAX_WORKSPACE_BYTES <= 0:
-            raise ValueError("sandbox workspace ceiling must be positive")
-
     @staticmethod
-    def _decode_and_limit(data: bytes, limit: int) -> str:
-        return data[:limit].decode("utf-8", errors="replace")
+    def _decode(buffer: bytearray) -> str:
+        return bytes(buffer).decode("utf-8", errors="replace")
 
     @staticmethod
     def _elapsed_ms(started: float) -> int:
         return int((time.monotonic() - started) * 1000)
-
-    def _force_cleanup_container(self, command: list[str]) -> None:
-        # docker run --rm normally removes the container. After a host-side
-        # timeout, attempt a best-effort cleanup using the container name only
-        # if a future implementation adds an explicit name. Currently there is
-        # no safe deterministic container identifier to target here.
-        return None
 
 
 class SandboxWorkspace:
