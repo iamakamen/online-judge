@@ -129,13 +129,13 @@ class SandboxExecutor:
     def _build_command(
         self, request: SandboxRequest, container_name: str
     ) -> list[str]:
-        workspace_mount = (
-            f"type=bind,src={request.workspace},dst=/workspace"
+        workspace_volume = (
+            f"{request.workspace}:/workspace:ro"
             if request.workspace_read_only
-            else f"type=bind,src={request.workspace},dst=/workspace,rw"
+            else f"{request.workspace}:/workspace:rw"
         )
 
-        command = [
+        return [
             self._docker_binary,
             "run",
             "--rm",
@@ -166,14 +166,13 @@ class SandboxExecutor:
             "1000:1000",
             "--tmpfs",
             f"/tmp:rw,noexec,nosuid,nodev,size={MAX_WORKSPACE_BYTES}",
-            "--mount",
-            workspace_mount,
+            "-v",
+            workspace_volume,
             "-w",
             "/workspace",
             request.image,
             *request.command,
         ]
-        return command
 
     def _collect_output(
         self,
