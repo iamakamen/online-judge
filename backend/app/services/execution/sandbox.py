@@ -135,6 +135,7 @@ class SandboxExecutor:
             "--pull",
             "never",
             "--init",
+            "-i",
             "--network",
             "none",
             "--read-only",
