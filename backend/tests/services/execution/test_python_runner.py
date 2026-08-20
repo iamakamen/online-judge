@@ -1,11 +1,6 @@
-from pathlib import Path
-
+from backend.app.core.execution import MAX_STDOUT_BYTES
 from backend.app.services.execution.models import ExecutionRequest, ExecutionStatus
 from backend.app.services.execution.python_runner import PythonRunner
-from backend.app.services.execution.sandbox import SandboxExecutor
-
-
-IMAGE = "online-judge-run-python:3.12"
 
 
 def request(source_code: str, stdin: str = "", timeout_ms: int = 2_000) -> ExecutionRequest:
@@ -51,11 +46,11 @@ def test_python_runner_maps_timeout():
 
 def test_python_runner_maps_output_limit():
     result = PythonRunner().execute(
-        request("print('x' * 100_000)\n")
+        request(f"print('x' * ({MAX_STDOUT_BYTES + 1}))\n")
     )
 
     assert result.status is ExecutionStatus.OUTPUT_LIMIT_EXCEEDED
-    assert len(result.stdout.encode("utf-8")) <= 64_000
+    assert len(result.stdout.encode("utf-8")) <= MAX_STDOUT_BYTES
 
 
 def test_python_runner_does_not_execute_on_host(tmp_path):
