@@ -53,6 +53,19 @@ def test_python_runner_maps_output_limit():
     assert len(result.stdout.encode("utf-8")) <= MAX_STDOUT_BYTES
 
 
+def test_python_runner_maps_memory_limit():
+    result = PythonRunner().execute(
+        request(
+            "data = []\n"
+            "while True:\n"
+            "    data.append('x' * 1024 * 1024)\n"
+        )
+    )
+
+    assert result.status is ExecutionStatus.MEMORY_LIMIT_EXCEEDED
+    assert result.exit_code != 0
+
+
 def test_python_runner_does_not_execute_on_host(tmp_path):
     marker = tmp_path / "host-marker"
     source = (
