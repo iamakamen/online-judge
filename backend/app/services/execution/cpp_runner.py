@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from backend.app.core.execution import (
+    COMPILE_MEMORY_LIMIT_MB,
     COMPILE_TIMEOUT_MS,
     MAX_STDERR_BYTES,
     MAX_STDOUT_BYTES,
@@ -48,7 +49,7 @@ class CppRunner(ExecutionRunner):
                     workspace=Path(workspace),
                     stdin="",
                     timeout_ms=COMPILE_TIMEOUT_MS,
-                    memory_limit_mb=request.memory_limit_mb,
+                    memory_limit_mb=COMPILE_MEMORY_LIMIT_MB,
                     stdout_limit_bytes=MAX_STDOUT_BYTES,
                     stderr_limit_bytes=MAX_STDERR_BYTES,
                     workspace_read_only=False,
