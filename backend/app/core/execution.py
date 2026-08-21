@@ -16,6 +16,7 @@ MAX_STDERR_BYTES = 65_536
 # Execution and compilation ceilings.
 MAX_RUN_TIMEOUT_MS = 5_000
 COMPILE_TIMEOUT_MS = 5_000
+COMPILE_MEMORY_LIMIT_MB = 256
 RUN_REQUEST_TIMEOUT_MS = 15_000
 
 # Infrastructure ceiling for problem memory limits.
