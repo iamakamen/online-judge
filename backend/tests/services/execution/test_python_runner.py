@@ -1,6 +1,7 @@
 from backend.app.core.execution import MAX_STDOUT_BYTES
 from backend.app.services.execution.models import ExecutionRequest, ExecutionStatus
 from backend.app.services.execution.python_runner import PythonRunner
+from backend.app.services.execution.sandbox import SandboxResult
 
 
 def request(source_code: str, stdin: str = "", timeout_ms: int = 2_000) -> ExecutionRequest:
@@ -64,6 +65,23 @@ def test_python_runner_maps_memory_limit():
 
     assert result.status is ExecutionStatus.MEMORY_LIMIT_EXCEEDED
     assert result.exit_code != 0
+
+
+def test_python_runner_maps_infrastructure_error():
+    class FailingSandbox:
+        def execute(self, request):
+            return SandboxResult(
+                exit_code=None,
+                stdout="",
+                stderr="",
+                execution_time_ms=0,
+                infrastructure_error="docker unavailable",
+            )
+
+    result = PythonRunner(sandbox=FailingSandbox()).execute(request("print('x')\n"))
+
+    assert result.status is ExecutionStatus.SYSTEM_ERROR
+    assert result.exit_code is None
 
 
 def test_python_runner_does_not_execute_on_host(tmp_path):
