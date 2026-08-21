@@ -97,6 +97,16 @@ def test_detects_docker_oom_killed(monkeypatch: pytest.MonkeyPatch) -> None:
     assert SandboxExecutor()._container_oom_killed("oj-run-test") is True
 
 
-def test_non_oom_docker_result_is_not_memory_limit() -> None:
-    result = SandboxExecutor()._container_oom_killed
-    assert callable(result)
+def test_non_oom_docker_result_is_not_memory_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_run(*args, **kwargs):
+        return subprocess.CompletedProcess(
+            args=args[0],
+            returncode=0,
+            stdout="false\n",
+        )
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    assert SandboxExecutor()._container_oom_killed("oj-run-test") is False
