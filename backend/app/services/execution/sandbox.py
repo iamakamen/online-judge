@@ -145,7 +145,6 @@ class SandboxExecutor:
         return [
             self._docker_binary,
             "run",
-            "--rm",
             "--name",
             container_name,
             "--pull",
@@ -265,7 +264,6 @@ class SandboxExecutor:
     def _terminate_container(
         self, container_name: str, process: subprocess.Popen[bytes]
     ) -> None:
-        self._cleanup_container(container_name)
         if process.poll() is None:
             process.kill()
             process.wait(timeout=1)
