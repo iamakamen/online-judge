@@ -7,7 +7,11 @@ from backend.app.services.execution.models import (
     ExecutionRunner,
     ExecutionStatus,
 )
-from backend.app.services.execution.sandbox import SandboxExecutor, SandboxWorkspace, SandboxRequest
+from backend.app.services.execution.sandbox import (
+    SandboxExecutor,
+    SandboxWorkspace,
+    SandboxRequest,
+)
 
 
 PYTHON_IMAGE = "online-judge-run-python:3.12"
@@ -43,6 +47,8 @@ class PythonRunner(ExecutionRunner):
             status = ExecutionStatus.TIME_LIMIT_EXCEEDED
         elif result.output_limited:
             status = ExecutionStatus.OUTPUT_LIMIT_EXCEEDED
+        elif result.memory_limit_exceeded:
+            status = ExecutionStatus.MEMORY_LIMIT_EXCEEDED
         elif result.exit_code == 0:
             status = ExecutionStatus.PASSED
         else:
