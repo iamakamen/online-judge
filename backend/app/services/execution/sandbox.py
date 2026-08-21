@@ -49,6 +49,7 @@ class SandboxResult:
     execution_time_ms: int
     timed_out: bool = False
     output_limited: bool = False
+    memory_limit_exceeded: bool = False
     infrastructure_error: str | None = None
 
 
@@ -103,6 +104,11 @@ class SandboxExecutor:
                 request,
                 started,
             )
+            memory_limit_exceeded = (
+                not timed_out
+                and not output_limited
+                and self._container_oom_killed(container_name)
+            )
             return SandboxResult(
                 exit_code=None if timed_out else process.returncode,
                 stdout=stdout,
@@ -110,6 +116,7 @@ class SandboxExecutor:
                 execution_time_ms=self._elapsed_ms(started),
                 timed_out=timed_out,
                 output_limited=output_limited,
+                memory_limit_exceeded=memory_limit_exceeded,
             )
         except OSError as exc:
             self._cleanup_container(container_name)
@@ -262,6 +269,28 @@ class SandboxExecutor:
         if process.poll() is None:
             process.kill()
             process.wait(timeout=1)
+
+    def _container_oom_killed(self, container_name: str) -> bool:
+        try:
+            result = subprocess.run(
+                [
+                    self._docker_binary,
+                    "inspect",
+                    "--format",
+                    "{{.State.OOMKilled}}",
+                    container_name,
+                ],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+                timeout=2,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+
+        return result.returncode == 0 and result.stdout.strip().lower() == "true"
 
     def _cleanup_container(self, container_name: str) -> None:
         try:
