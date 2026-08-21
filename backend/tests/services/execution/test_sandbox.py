@@ -1,8 +1,13 @@
 from pathlib import Path
+import stat
 
 import pytest
 
-from backend.app.services.execution.sandbox import SandboxExecutor, SandboxRequest
+from backend.app.services.execution.sandbox import (
+    SandboxExecutor,
+    SandboxRequest,
+    SandboxWorkspace,
+)
 
 
 @pytest.fixture()
@@ -37,6 +42,12 @@ def test_build_command_enforces_container_isolation(
     assert "--pids-limit" in command
     assert "--pull" in command
     assert command[command.index("--pull") + 1] == "never"
+
+
+def test_workspace_is_traversable_by_sandbox_user() -> None:
+    with SandboxWorkspace() as workspace:
+        mode = stat.S_IMODE(workspace.stat().st_mode)
+        assert mode == 0o755
 
 
 def test_rejects_timeout_above_global_ceiling(
