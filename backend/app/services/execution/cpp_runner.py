@@ -83,6 +83,15 @@ class CppRunner(ExecutionRunner):
                     execution_time_ms=compile_result.execution_time_ms,
                 )
 
+            if compile_result.memory_limit_exceeded:
+                return ExecutionResult(
+                    status=ExecutionStatus.COMPILE_ERROR,
+                    stdout=compile_result.stdout,
+                    stderr=compile_result.stderr,
+                    exit_code=compile_result.exit_code,
+                    execution_time_ms=compile_result.execution_time_ms,
+                )
+
             if compile_result.exit_code != 0 or not binary_path.is_file():
                 return ExecutionResult(
                     status=ExecutionStatus.COMPILE_ERROR,
@@ -112,6 +121,8 @@ class CppRunner(ExecutionRunner):
             status = ExecutionStatus.TIME_LIMIT_EXCEEDED
         elif runtime_result.output_limited:
             status = ExecutionStatus.OUTPUT_LIMIT_EXCEEDED
+        elif runtime_result.memory_limit_exceeded:
+            status = ExecutionStatus.MEMORY_LIMIT_EXCEEDED
         elif runtime_result.exit_code == 0:
             status = ExecutionStatus.PASSED
         else:
