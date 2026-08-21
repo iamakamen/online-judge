@@ -1,0 +1,53 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from backend.app.api.dependencies import get_current_user
+from backend.app.db.session import get_db
+from backend.app.models.submission import Submission
+from backend.app.models.user import User
+from backend.app.schemas.submission import (
+    SubmissionCreate,
+    SubmissionResponse,
+)
+from backend.app.services.submission import create_submission
+
+
+router = APIRouter(
+    prefix="/api/v1/submissions",
+    tags=["submissions"],
+)
+
+
+@router.post(
+    "",
+    response_model=SubmissionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_submission_route(
+    request: SubmissionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Submission:
+    try:
+        result = create_submission(
+            db,
+            user_id=current_user.id,
+            problem_id=request.problem_id,
+            language=request.language,
+            source_code=request.source_code,
+        )
+    except ValueError as exc:
+        detail = str(exc)
+
+        if detail == "Problem not found":
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=detail,
+            ) from exc
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=detail,
+        ) from exc
+
+    return result.submission
