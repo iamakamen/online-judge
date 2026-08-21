@@ -81,6 +81,23 @@ def test_cpp_output_limit_is_reported(runner):
     assert len(result.stdout.encode("utf-8")) <= MAX_STDOUT_BYTES
 
 
+def test_cpp_memory_limit_is_reported(runner):
+    result = runner.execute(
+        request(
+            "#include <cstddef>\n"
+            "int main() {\n"
+            "  const std::size_t size = 128ULL * 1024 * 1024;\n"
+            "  volatile char* data = new char[size];\n"
+            "  for (std::size_t i = 0; i < size; i += 4096) data[i] = 1;\n"
+            "  return 0;\n"
+            "}\n"
+        )
+    )
+
+    assert result.status is ExecutionStatus.MEMORY_LIMIT_EXCEEDED
+    assert result.exit_code != 0
+
+
 def test_cpp_runtime_workspace_is_read_only(runner):
     source = (
         "#include <fstream>\n"
