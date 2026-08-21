@@ -93,6 +93,25 @@ def list_test_cases_for_problem(
     )
 
 
+def list_submit_test_cases_for_problem(
+    db: Session,
+    problem_id: int,
+) -> list[TestCase]:
+    """Return the test cases that are enabled for judge submission."""
+    _require_problem(db, problem_id)
+
+    return list(
+        db.scalars(
+            select(TestCase)
+            .where(
+                TestCase.problem_id == problem_id,
+                TestCase.submit_enabled.is_(True),
+            )
+            .order_by(TestCase.display_order.asc(), TestCase.id.asc())
+        ).all()
+    )
+
+
 def update_test_case(
     db: Session,
     test_case_id: int,
