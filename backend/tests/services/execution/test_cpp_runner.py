@@ -5,6 +5,7 @@ import pytest
 from backend.app.core.execution import MAX_STDOUT_BYTES
 from backend.app.services.execution.cpp_runner import CppRunner
 from backend.app.services.execution.models import ExecutionRequest, ExecutionStatus
+from backend.app.services.execution.sandbox import SandboxResult
 
 
 CPP_IMAGE = os.getenv("CPP_TEST_IMAGE", "online-judge-run-cpp:17")
@@ -96,6 +97,23 @@ def test_cpp_memory_limit_is_reported(runner):
 
     assert result.status is ExecutionStatus.MEMORY_LIMIT_EXCEEDED
     assert result.exit_code != 0
+
+
+def test_cpp_maps_compile_infrastructure_error():
+    class FailingSandbox:
+        def execute(self, request):
+            return SandboxResult(
+                exit_code=None,
+                stdout="",
+                stderr="",
+                execution_time_ms=0,
+                infrastructure_error="docker unavailable",
+            )
+
+    result = CppRunner(sandbox=FailingSandbox()).execute(request("int main() {}\n"))
+
+    assert result.status is ExecutionStatus.SYSTEM_ERROR
+    assert result.exit_code is None
 
 
 def test_cpp_runtime_workspace_is_read_only(runner):
