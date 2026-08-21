@@ -313,7 +313,13 @@ class SandboxWorkspace:
         self._temporary_directory = tempfile.TemporaryDirectory(
             prefix="online-judge-run-"
         )
-        return Path(self._temporary_directory.name)
+        workspace = Path(self._temporary_directory.name)
+        # Docker execution runs as UID 1000. TemporaryDirectory creates a
+        # 0700 directory, which prevents that container user from traversing
+        # the bind-mounted workspace. Keep the container unprivileged while
+        # allowing it to access the files prepared by the host process.
+        workspace.chmod(0o755)
+        return workspace
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         self._temporary_directory.cleanup()
