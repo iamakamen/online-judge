@@ -1,5 +1,6 @@
 from pathlib import Path
 import stat
+import subprocess
 
 import pytest
 
@@ -81,3 +82,21 @@ def test_rejects_relative_workspace(
 
     with pytest.raises(ValueError, match="absolute"):
         SandboxExecutor._validate_request(request)
+
+
+def test_detects_docker_oom_killed(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_run(*args, **kwargs):
+        return subprocess.CompletedProcess(
+            args=args[0],
+            returncode=0,
+            stdout="true\n",
+        )
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    assert SandboxExecutor()._container_oom_killed("oj-run-test") is True
+
+
+def test_non_oom_docker_result_is_not_memory_limit() -> None:
+    result = SandboxExecutor()._container_oom_killed
+    assert callable(result)
