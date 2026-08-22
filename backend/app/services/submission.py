@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from contextlib import contextmanager
+from collections.abc import Iterator
 
+from sqlalchemy import delete, text, update
 from sqlalchemy.orm import Session
 
 from backend.app.models.problem import Problem
@@ -37,6 +40,123 @@ class SubmissionCreationResult:
     test_cases: list[TestCase]
 
 
+@contextmanager
+def submission_execution_fence(
+    db: Session,
+    submission_id: int,
+) -> Iterator[bool]:
+    """Hold a PostgreSQL session advisory lock for one judging lifecycle."""
+    if not hasattr(db, "connection"):
+        # Lightweight worker fakes do not expose a SQLAlchemy bind.
+        yield True
+        return
+
+    connection = db.connection()
+    lock_key = f"submission:{submission_id}"
+    acquired = bool(
+        connection.execute(
+            text(
+                "SELECT pg_try_advisory_lock(hashtextextended(:lock_key, 0))"
+            ),
+            {"lock_key": lock_key},
+        ).scalar()
+    )
+    if not acquired:
+        yield False
+        return
+
+    db.info["submission_execution_connection"] = connection
+    try:
+        yield True
+    finally:
+        try:
+            if not connection.invalidated:
+                connection.execute(
+                    text(
+                        "SELECT pg_advisory_unlock(hashtextextended(:lock_key, 0))"
+                    ),
+                    {"lock_key": lock_key},
+                )
+        finally:
+            db.info.pop("submission_execution_connection", None)
+
+
+def _submission_fence_connection_invalidated(db: Session) -> bool:
+    connection = db.info.get("submission_execution_connection")
+    return bool(connection is not None and connection.invalidated)
+
+
+def reset_stale_submission(
+    db: Session,
+    submission_id: int,
+    *,
+    stale_cutoff: datetime,
+) -> bool:
+    """Reset one stale running submission and discard partial results."""
+    now = datetime.now(timezone.utc)
+    result = db.execute(
+        update(Submission)
+        .where(
+            Submission.id == submission_id,
+            Submission.status == SubmissionStatus.RUNNING,
+            Submission.updated_at <= stale_cutoff,
+        )
+        .values(
+            status=SubmissionStatus.QUEUED,
+            verdict=None,
+            completed_at=None,
+            updated_at=now,
+        )
+    )
+    if result.rowcount != 1:
+        db.rollback()
+        return False
+
+    db.execute(
+        delete(SubmissionResult).where(
+            SubmissionResult.submission_id == submission_id
+        )
+    )
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    return True
+
+
+def fail_submission_with_system_error(
+    db: Session,
+    submission_id: int,
+) -> bool:
+    """Persist a terminal infrastructure failure for an active submission."""
+    now = datetime.now(timezone.utc)
+    result = db.execute(
+        update(Submission)
+        .where(
+            Submission.id == submission_id,
+            Submission.status.in_(
+                [SubmissionStatus.QUEUED, SubmissionStatus.RUNNING]
+            ),
+        )
+        .values(
+            status=SubmissionStatus.FAILED,
+            verdict=SubmissionVerdict.SYSTEM_ERROR,
+            completed_at=now,
+            updated_at=now,
+        )
+    )
+    if result.rowcount != 1:
+        db.rollback()
+        return False
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    return True
+
+
 _EXECUTION_RESULT_STATUSES = {
     ExecutionStatus.COMPILE_ERROR: SubmissionResultStatus.COMPILE_ERROR,
     ExecutionStatus.RUNTIME_ERROR: SubmissionResultStatus.RUNTIME_ERROR,
@@ -45,6 +165,40 @@ _EXECUTION_RESULT_STATUSES = {
     ExecutionStatus.OUTPUT_LIMIT_EXCEEDED: SubmissionResultStatus.OUTPUT_LIMIT_EXCEEDED,
     ExecutionStatus.SYSTEM_ERROR: SubmissionResultStatus.SYSTEM_ERROR,
 }
+
+
+def claim_submission(db: Session, submission_id: int) -> Submission:
+    """Atomically transition one queued submission to running."""
+    now = datetime.now(timezone.utc)
+    result = db.execute(
+        update(Submission)
+        .where(
+            Submission.id == submission_id,
+            Submission.status == SubmissionStatus.QUEUED,
+        )
+        .values(
+            status=SubmissionStatus.RUNNING,
+            updated_at=now,
+        )
+    )
+
+    if result.rowcount != 1:
+        db.rollback()
+        submission = db.get(Submission, submission_id)
+        if submission is None:
+            raise ValueError("Submission not found")
+        raise ValueError("Submission is not queued")
+
+    try:
+        db.commit()
+        submission = db.get(Submission, submission_id)
+    except Exception:
+        db.rollback()
+        raise
+
+    if submission is None:
+        raise ValueError("Submission not found")
+    return submission
 
 
 class SubmissionJudgeService:
@@ -69,8 +223,52 @@ class SubmissionJudgeService:
             raise ValueError("Problem has no submit-enabled test cases")
 
         runner = self._runner_for(submission.language)
-        self._transition_to_running(db, submission)
+        submission = claim_submission(db, submission.id)
 
+        return self._execute_claimed(
+            db,
+            submission,
+            problem,
+            test_cases,
+            runner,
+        )
+
+    def execute_claimed(
+        self,
+        db: Session,
+        submission: Submission,
+    ) -> Submission:
+        """Judge a submission already claimed by the current worker."""
+        if submission.status is not SubmissionStatus.RUNNING:
+            raise ValueError("Submission is not running")
+
+        try:
+            problem = get_problem(db, submission.problem_id)
+            test_cases = list_submit_test_cases_for_problem(db, problem.id)
+            if not test_cases:
+                raise ValueError("Problem has no submit-enabled test cases")
+            runner = self._runner_for(submission.language)
+            return self._execute_claimed(
+                db,
+                submission,
+                problem,
+                test_cases,
+                runner,
+            )
+        except Exception:
+            if _submission_fence_connection_invalidated(db):
+                raise
+            self._mark_failed(db, submission.id)
+            return db.get(Submission, submission.id) or submission
+
+    def _execute_claimed(
+        self,
+        db: Session,
+        submission: Submission,
+        problem: Problem,
+        test_cases: list[TestCase],
+        runner: ExecutionRunner,
+    ) -> Submission:
         try:
             for test_case in test_cases:
                 execution = runner.execute(
@@ -102,6 +300,8 @@ class SubmissionJudgeService:
 
             return self._complete(db, submission, SubmissionVerdict.ACCEPTED)
         except Exception:
+            if _submission_fence_connection_invalidated(db):
+                raise
             self._mark_failed(db, submission.id)
             return db.get(Submission, submission.id) or submission
 
@@ -133,19 +333,6 @@ class SubmissionJudgeService:
             execution.status,
             SubmissionResultStatus.SYSTEM_ERROR,
         )
-
-    @staticmethod
-    def _transition_to_running(
-        db: Session,
-        submission: Submission,
-    ) -> None:
-        submission.status = SubmissionStatus.RUNNING
-        submission.updated_at = datetime.now(timezone.utc)
-        try:
-            db.commit()
-        except Exception:
-            db.rollback()
-            raise
 
     @staticmethod
     def _persist_result(
