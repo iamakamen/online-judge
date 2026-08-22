@@ -5,9 +5,9 @@ from datetime import datetime, timezone
 from contextlib import contextmanager
 from collections.abc import Iterator
 
-from sqlalchemy import delete, text, update
+from sqlalchemy import delete, select, text, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from backend.app.models.problem import Problem
 from backend.app.models.submission import (
@@ -44,6 +44,30 @@ class SubmissionCreationResult:
 
 class AcceptedProgressPersistenceError(RuntimeError):
     """The Accepted terminal transaction could not persist solved progress."""
+
+
+def get_submission_for_user(
+    db: Session,
+    *,
+    submission_id: int,
+    user_id: int,
+) -> Submission:
+    """Return one owner's submission with results in deterministic order."""
+    submission = db.scalar(
+        select(Submission)
+        .options(selectinload(Submission.results))
+        .where(
+            Submission.id == submission_id,
+            Submission.user_id == user_id,
+        )
+    )
+    if submission is None:
+        raise ValueError("Submission not found")
+
+    submission.results.sort(
+        key=lambda result: (result.display_order, result.id)
+    )
+    return submission
 
 
 @contextmanager
