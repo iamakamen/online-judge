@@ -1,14 +1,30 @@
+import os
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from redis import Redis
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.app.db.session import get_db
 from backend.app.models.user import User, UserRole
+from backend.app.services.execution.submission_transport import SubmissionTransport
+from backend.app.services.submission_dispatch import SubmissionDispatcher
 from backend.app.services.token import decode_access_token
 
 
 bearer_scheme = HTTPBearer(auto_error=False)
+DEFAULT_REDIS_URL = "redis://localhost:6379/0"
+
+
+def get_redis() -> Redis:
+    return Redis.from_url(os.getenv("REDIS_URL", DEFAULT_REDIS_URL))
+
+
+def get_submission_dispatcher(
+    redis: Redis = Depends(get_redis),
+) -> SubmissionDispatcher:
+    return SubmissionDispatcher(SubmissionTransport(redis))
 
 
 def get_current_user(

@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
+from backend.app.api.dependencies import get_submission_dispatcher
+from backend.app.main import app
 from backend.app.models.problem import Difficulty, Problem
 from backend.app.models.submission import (
     Submission,
@@ -12,6 +15,16 @@ from backend.app.models.submission_result import (
 )
 from backend.app.models.test_case import TestCase
 from backend.app.models.topic import Topic
+
+
+class FakeDispatcher:
+    def __init__(self, result=True):
+        self.result = result
+        self.dispatched = []
+
+    def dispatch(self, submission_id):
+        self.dispatched.append(submission_id)
+        return self.result
 
 
 def create_problem(db, *, starter_code=None):
@@ -110,18 +123,23 @@ def test_create_submission_api(
     normal_user,
     user_token,
 ):
+    dispatcher = FakeDispatcher()
+    app.dependency_overrides[get_submission_dispatcher] = lambda: dispatcher
     problem = create_problem(db)
     create_test_case(db, problem)
 
-    response = client.post(
-        "/api/v1/submissions",
-        headers={"Authorization": f"Bearer {user_token}"},
-        json={
-            "problem_id": problem.id,
-            "language": "python",
-            "source_code": "print(1)",
-        },
-    )
+    try:
+        response = client.post(
+            "/api/v1/submissions",
+            headers={"Authorization": f"Bearer {user_token}"},
+            json={
+                "problem_id": problem.id,
+                "language": "python",
+                "source_code": "print(1)",
+            },
+        )
+    finally:
+        app.dependency_overrides.pop(get_submission_dispatcher, None)
 
     assert response.status_code == 201
 
@@ -140,6 +158,38 @@ def test_create_submission_api(
     assert submission.user_id == normal_user.id
     assert submission.problem_id == problem.id
     assert submission.source_code == "print(1)"
+    assert dispatcher.dispatched == [submission.id]
+
+
+def test_create_submission_api_returns_201_when_dispatch_is_exhausted(
+    client,
+    db,
+    normal_user,
+    user_token,
+):
+    dispatcher = FakeDispatcher(result=False)
+    app.dependency_overrides[get_submission_dispatcher] = lambda: dispatcher
+    problem = create_problem(db)
+    create_test_case(db, problem)
+
+    try:
+        response = client.post(
+            "/api/v1/submissions",
+            headers={"Authorization": f"Bearer {user_token}"},
+            json={
+                "problem_id": problem.id,
+                "language": "python",
+                "source_code": "print(1)",
+            },
+        )
+    finally:
+        app.dependency_overrides.pop(get_submission_dispatcher, None)
+
+    assert response.status_code == 201
+    submission = db.get(Submission, response.json()["id"])
+    assert submission is not None
+    assert submission.status is SubmissionStatus.QUEUED
+    assert dispatcher.dispatched == [submission.id]
 
 
 def test_submission_owner_can_retrieve_submission_without_hidden_fields(

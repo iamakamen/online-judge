@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from backend.app.api.dependencies import get_current_user
+from backend.app.api.dependencies import (
+    get_current_user,
+    get_submission_dispatcher,
+)
 from backend.app.db.session import get_db
 from backend.app.models.submission import Submission
 from backend.app.models.user import User
@@ -14,6 +17,7 @@ from backend.app.services.submission import (
     create_submission,
     get_submission_for_user,
 )
+from backend.app.services.submission_dispatch import SubmissionDispatcher
 
 
 router = APIRouter(
@@ -31,6 +35,7 @@ def create_submission_route(
     request: SubmissionCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    dispatcher: SubmissionDispatcher = Depends(get_submission_dispatcher),
 ) -> Submission:
     try:
         result = create_submission(
@@ -54,6 +59,7 @@ def create_submission_route(
             detail=detail,
         ) from exc
 
+    dispatcher.dispatch(result.submission.id)
     return result.submission
 
 
