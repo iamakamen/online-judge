@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import math
+import os
 import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -11,6 +13,7 @@ from typing import Protocol
 
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Session
+from redis import Redis
 
 from backend.app.core.execution import MAX_CONCURRENT_RUNS
 from backend.app.models.submission import Submission, SubmissionStatus
@@ -26,6 +29,7 @@ from backend.app.services.submission import (
     reset_stale_submission,
     submission_execution_fence,
 )
+from backend.app.services.submission_dispatch import SubmissionDispatcher
 from backend.app.services.submission_reconciliation import SubmissionReconciler
 
 
@@ -33,7 +37,32 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_CONSUME_TIMEOUT_SECONDS = 5
 DEFAULT_MAX_DELIVERY_ATTEMPTS = 5
+DEFAULT_REDIS_URL = "redis://localhost:6379/0"
+DEFAULT_SUBMISSION_WORKER_NAME = "submission-worker-1"
 SUBMISSION_RECONCILIATION_INTERVAL_SECONDS = 5
+SUBMISSION_RECONCILIATION_BATCH_SIZE = 50
+
+
+def _positive_float_from_environment(name: str, default: float) -> float:
+    value = os.getenv(name, str(default))
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must be a positive number") from exc
+    if not math.isfinite(parsed) or parsed <= 0:
+        raise ValueError(f"{name} must be a positive number")
+    return parsed
+
+
+def _positive_int_from_environment(name: str, default: int) -> int:
+    value = os.getenv(name, str(default))
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must be a positive integer") from exc
+    if parsed <= 0:
+        raise ValueError(f"{name} must be a positive integer")
+    return parsed
 
 
 class SubmissionTransportProtocol(Protocol):
@@ -287,3 +316,52 @@ class SubmissionWorker:
                 )
                 for delivery in deliveries:
                     executor.submit(self.process_delivery, delivery)
+
+
+def build_worker() -> SubmissionWorker:
+    """Build the production submission worker from environment configuration."""
+    consumer_name = os.getenv(
+        "SUBMISSION_WORKER_NAME",
+        DEFAULT_SUBMISSION_WORKER_NAME,
+    ).strip()
+    if not consumer_name:
+        raise ValueError("SUBMISSION_WORKER_NAME must not be empty")
+
+    reconciliation_interval = _positive_float_from_environment(
+        "SUBMISSION_RECONCILIATION_INTERVAL_SECONDS",
+        SUBMISSION_RECONCILIATION_INTERVAL_SECONDS,
+    )
+    reconciliation_batch_size = _positive_int_from_environment(
+        "SUBMISSION_RECONCILIATION_BATCH_SIZE",
+        SUBMISSION_RECONCILIATION_BATCH_SIZE,
+    )
+
+    redis = Redis.from_url(os.getenv("REDIS_URL", DEFAULT_REDIS_URL))
+    transport = SubmissionTransport(redis)
+    dispatcher = SubmissionDispatcher(transport)
+
+    from backend.app.db.session import SessionLocal
+
+    reconciler = SubmissionReconciler(
+        dispatcher,
+        session_factory=SessionLocal,
+        batch_size=reconciliation_batch_size,
+    )
+    return SubmissionWorker(
+        transport,
+        consumer_name=consumer_name,
+        reconciler=reconciler,
+        reconciliation_interval_seconds=reconciliation_interval,
+    )
+
+
+def main() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
+    build_worker().run_forever()
+
+
+if __name__ == "__main__":
+    main()

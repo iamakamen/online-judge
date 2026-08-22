@@ -8,7 +8,14 @@ from backend.app.services.execution.submission_transport import (
     SubmissionDelivery,
     SubmissionJob,
 )
-from backend.app.services.execution.submission_worker import SubmissionWorker
+from backend.app.services.execution.submission_worker import (
+    DEFAULT_SUBMISSION_WORKER_NAME,
+    SUBMISSION_RECONCILIATION_BATCH_SIZE,
+    SUBMISSION_RECONCILIATION_INTERVAL_SECONDS,
+    SubmissionWorker,
+    build_worker,
+    main,
+)
 
 
 class FakeDb:
@@ -315,3 +322,106 @@ def test_worker_rejects_invalid_reconciliation_interval(interval):
             consumer_name="worker-1",
             reconciliation_interval_seconds=interval,
         )
+
+
+def test_build_worker_uses_one_redis_client_and_reconciliation_session_factory(
+    monkeypatch,
+):
+    redis = object()
+    monkeypatch.setattr(
+        "backend.app.services.execution.submission_worker.Redis.from_url",
+        lambda url: redis,
+    )
+    monkeypatch.setenv("REDIS_URL", "redis://example:6379/4")
+    monkeypatch.setenv("SUBMISSION_WORKER_NAME", "submission-worker-2")
+    monkeypatch.setenv(
+        "SUBMISSION_RECONCILIATION_INTERVAL_SECONDS",
+        "7.5",
+    )
+    monkeypatch.setenv("SUBMISSION_RECONCILIATION_BATCH_SIZE", "25")
+
+    worker_instance = build_worker()
+
+    from backend.app.db.session import SessionLocal
+
+    transport = worker_instance._transport
+    dispatcher = worker_instance._reconciler._dispatcher
+    reconciler = worker_instance._reconciler
+
+    assert transport._redis is redis
+    assert dispatcher._transport is transport
+    assert reconciler._dispatcher is dispatcher
+    assert reconciler._session_factory is SessionLocal
+    assert reconciler._batch_size == 25
+    assert worker_instance._consumer_name == "submission-worker-2"
+    assert worker_instance._reconciliation_interval_seconds == 7.5
+    assert worker_instance._session_factory is None
+
+
+def test_build_worker_uses_documented_defaults(monkeypatch):
+    redis = object()
+    captured_urls = []
+    monkeypatch.setattr(
+        "backend.app.services.execution.submission_worker.Redis.from_url",
+        lambda url: captured_urls.append(url) or redis,
+    )
+    for name in (
+        "REDIS_URL",
+        "SUBMISSION_WORKER_NAME",
+        "SUBMISSION_RECONCILIATION_INTERVAL_SECONDS",
+        "SUBMISSION_RECONCILIATION_BATCH_SIZE",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+    worker_instance = build_worker()
+
+    assert captured_urls == ["redis://localhost:6379/0"]
+    assert worker_instance._consumer_name == DEFAULT_SUBMISSION_WORKER_NAME
+    assert (
+        worker_instance._reconciliation_interval_seconds
+        == SUBMISSION_RECONCILIATION_INTERVAL_SECONDS
+    )
+    assert (
+        worker_instance._reconciler._batch_size
+        == SUBMISSION_RECONCILIATION_BATCH_SIZE
+    )
+
+
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("SUBMISSION_RECONCILIATION_INTERVAL_SECONDS", "0"),
+        ("SUBMISSION_RECONCILIATION_INTERVAL_SECONDS", "nan"),
+        ("SUBMISSION_RECONCILIATION_BATCH_SIZE", "0"),
+        ("SUBMISSION_RECONCILIATION_BATCH_SIZE", "not-an-integer"),
+    ],
+)
+def test_build_worker_rejects_invalid_configuration(monkeypatch, name, value):
+    monkeypatch.setenv(name, value)
+
+    with pytest.raises(ValueError, match=name):
+        build_worker()
+
+
+def test_build_worker_rejects_empty_worker_name(monkeypatch):
+    monkeypatch.setenv("SUBMISSION_WORKER_NAME", "   ")
+
+    with pytest.raises(ValueError, match="SUBMISSION_WORKER_NAME"):
+        build_worker()
+
+
+def test_main_runs_built_worker(monkeypatch):
+    events = []
+
+    class FakeWorker:
+        def run_forever(self):
+            events.append("run")
+
+    monkeypatch.setattr(
+        "backend.app.services.execution.submission_worker.build_worker",
+        lambda: events.append("build") or FakeWorker(),
+    )
+
+    main()
+
+    assert events == ["build", "run"]
