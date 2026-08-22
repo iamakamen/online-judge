@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from collections.abc import Iterator
 
 from sqlalchemy import delete, text, update
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
 from backend.app.models.problem import Problem
@@ -19,6 +20,7 @@ from backend.app.models.submission_result import (
     SubmissionResultStatus,
 )
 from backend.app.models.test_case import TestCase
+from backend.app.models.user_problem_progress import UserProblemProgress
 from backend.app.schemas.run import RunLanguage
 from backend.app.services.execution.models import (
     ExecutionRequest,
@@ -38,6 +40,10 @@ from backend.app.services.test_case import list_submit_test_cases_for_problem
 class SubmissionCreationResult:
     submission: Submission
     test_cases: list[TestCase]
+
+
+class AcceptedProgressPersistenceError(RuntimeError):
+    """The Accepted terminal transaction could not persist solved progress."""
 
 
 @contextmanager
@@ -201,6 +207,36 @@ def claim_submission(db: Session, submission_id: int) -> Submission:
     return submission
 
 
+def upsert_solved_progress(
+    db: Session,
+    *,
+    user_id: int,
+    problem_id: int,
+    now: datetime,
+) -> None:
+    """Mark a user's problem as solved without ever downgrading it."""
+    db.execute(
+        pg_insert(UserProblemProgress)
+        .values(
+            user_id=user_id,
+            problem_id=problem_id,
+            solved=True,
+            created_at=now,
+            updated_at=now,
+        )
+        .on_conflict_do_update(
+            index_elements=[
+                UserProblemProgress.user_id,
+                UserProblemProgress.problem_id,
+            ],
+            set_={
+                "solved": True,
+                "updated_at": now,
+            },
+        )
+    )
+
+
 class SubmissionJudgeService:
     """Judge a persisted submission using the existing execution runners."""
 
@@ -255,6 +291,9 @@ class SubmissionJudgeService:
                 test_cases,
                 runner,
             )
+        except AcceptedProgressPersistenceError:
+            db.rollback()
+            raise
         except Exception:
             if _submission_fence_connection_invalidated(db):
                 raise
@@ -299,6 +338,9 @@ class SubmissionJudgeService:
                     )
 
             return self._complete(db, submission, SubmissionVerdict.ACCEPTED)
+        except AcceptedProgressPersistenceError:
+            db.rollback()
+            raise
         except Exception:
             if _submission_fence_connection_invalidated(db):
                 raise
@@ -372,10 +414,21 @@ class SubmissionJudgeService:
         submission.completed_at = now
         submission.updated_at = now
         try:
+            if verdict is SubmissionVerdict.ACCEPTED:
+                upsert_solved_progress(
+                    db,
+                    user_id=submission.user_id,
+                    problem_id=submission.problem_id,
+                    now=now,
+                )
             db.commit()
             db.refresh(submission)
-        except Exception:
+        except Exception as exc:
             db.rollback()
+            if verdict is SubmissionVerdict.ACCEPTED:
+                raise AcceptedProgressPersistenceError(
+                    "Could not persist Accepted progress"
+                ) from exc
             raise
         return submission
 

@@ -14,6 +14,7 @@ from backend.app.models.submission_result import (
 )
 from backend.app.models.test_case import TestCase
 from backend.app.models.topic import Topic
+from backend.app.models.user_problem_progress import UserProblemProgress
 from backend.app.services.execution.models import (
     ExecutionRequest,
     ExecutionResult,
@@ -21,6 +22,7 @@ from backend.app.services.execution.models import (
     ExecutionStatus,
 )
 from backend.app.services.submission import SubmissionJudgeService
+import backend.app.services.submission as submission_service
 
 
 class FakeRunner(ExecutionRunner):
@@ -130,6 +132,104 @@ def test_all_passes_are_accepted_and_persisted(db, normal_user):
         SubmissionResultStatus.PASSED,
         SubmissionResultStatus.PASSED,
     ]
+    progress = db.query(UserProblemProgress).filter_by(
+        user_id=normal_user.id,
+        problem_id=problem.id,
+    ).one()
+    assert progress.solved is True
+
+
+def test_accepted_marks_existing_unsolved_progress_solved(db, normal_user):
+    problem = create_problem(db)
+    create_case(db, problem, display_order=1, input_text="first")
+    progress = UserProblemProgress(
+        user_id=normal_user.id,
+        problem_id=problem.id,
+        solved=False,
+    )
+    db.add(progress)
+    db.commit()
+
+    submission = create_submission(db, normal_user, problem)
+    SubmissionJudgeService({"python": FakeRunner([passed()])}).execute(
+        db, submission.id
+    )
+
+    db.refresh(progress)
+    assert progress.solved is True
+
+
+def test_accepted_never_downgrades_already_solved_progress(db, normal_user):
+    problem = create_problem(db)
+    create_case(db, problem, display_order=1, input_text="first")
+    progress = UserProblemProgress(
+        user_id=normal_user.id,
+        problem_id=problem.id,
+        solved=True,
+    )
+    db.add(progress)
+    db.commit()
+
+    submission = create_submission(db, normal_user, problem)
+    SubmissionJudgeService({"python": FakeRunner([passed()])}).execute(
+        db, submission.id
+    )
+
+    db.refresh(progress)
+    assert progress.solved is True
+
+
+def test_repeated_accepted_completion_is_idempotent(db, normal_user):
+    problem = create_problem(db)
+    create_case(db, problem, display_order=1, input_text="first")
+    submission = create_submission(db, normal_user, problem)
+    service = SubmissionJudgeService({"python": FakeRunner([passed()])})
+
+    service.execute(db, submission.id)
+    completed = db.get(Submission, submission.id)
+    service._complete(db, completed, SubmissionVerdict.ACCEPTED)
+
+    assert db.query(UserProblemProgress).filter_by(
+        user_id=normal_user.id,
+        problem_id=problem.id,
+    ).count() == 1
+    assert db.query(UserProblemProgress).filter_by(
+        user_id=normal_user.id,
+        problem_id=problem.id,
+    ).one().solved is True
+
+
+def test_accepted_progress_failure_rolls_back_terminal_completion(
+    db,
+    normal_user,
+    monkeypatch,
+):
+    problem = create_problem(db)
+    create_case(db, problem, display_order=1, input_text="first")
+    submission = create_submission(db, normal_user, problem)
+
+    def fail_progress(*args, **kwargs):
+        raise RuntimeError("progress database failure")
+
+    monkeypatch.setattr(
+        submission_service,
+        "upsert_solved_progress",
+        fail_progress,
+    )
+
+    with pytest.raises(submission_service.AcceptedProgressPersistenceError):
+        SubmissionJudgeService({"python": FakeRunner([passed()])}).execute(
+            db, submission.id
+        )
+
+    db.refresh(submission)
+    assert submission.status is SubmissionStatus.RUNNING
+    assert submission.verdict is None
+    assert submission.completed_at is None
+    assert db.query(UserProblemProgress).filter_by(
+        user_id=normal_user.id,
+        problem_id=problem.id,
+    ).count() == 0
 
 
 @pytest.mark.parametrize(
@@ -199,6 +299,10 @@ def test_first_non_pass_maps_to_verdict_and_stops(
     ).all()
     assert len(persisted) == 1
     assert persisted[0].status is expected_result_status
+    assert db.query(UserProblemProgress).filter_by(
+        user_id=normal_user.id,
+        problem_id=problem.id,
+    ).count() == 0
 
 
 def test_submit_cases_are_ordered_and_run_limits_are_used(db, normal_user):
