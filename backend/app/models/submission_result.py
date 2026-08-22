@@ -11,6 +11,7 @@ from backend.app.db.base import Base
 
 class SubmissionResultStatus(str, enum.Enum):
     PASSED = "passed"
+    WRONG_ANSWER = "wrong_answer"
     COMPILE_ERROR = "compile_error"
     RUNTIME_ERROR = "runtime_error"
     TIME_LIMIT_EXCEEDED = "time_limit_exceeded"

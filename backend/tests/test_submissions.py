@@ -135,6 +135,46 @@ def test_submission_result_persists_and_round_trips_status(
     assert result.memory_used_mb == 12
 
 
+def test_submission_result_wrong_answer_persists_and_round_trips_status(
+    db,
+    normal_user,
+):
+    problem = create_problem(db)
+    test_case = create_test_case(db, problem)
+
+    now = datetime.now(timezone.utc)
+
+    submission = Submission(
+        user_id=normal_user.id,
+        problem_id=problem.id,
+        language="python",
+        source_code="print(2)",
+        created_at=now,
+        updated_at=now,
+    )
+
+    db.add(submission)
+    db.commit()
+    db.refresh(submission)
+
+    result = SubmissionResult(
+        submission_id=submission.id,
+        test_case_id=test_case.id,
+        display_order=1,
+        status=SubmissionResultStatus.WRONG_ANSWER,
+        created_at=now,
+    )
+
+    db.add(result)
+    db.commit()
+    db.refresh(result)
+
+    assert result.status is SubmissionResultStatus.WRONG_ANSWER
+    assert db.get(SubmissionResult, result.id).status is (
+        SubmissionResultStatus.WRONG_ANSWER
+    )
+
+
 def test_submission_results_relationship(db, normal_user):
     problem = create_problem(db)
     test_case = create_test_case(db, problem)
