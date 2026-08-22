@@ -1,3 +1,5 @@
+import subprocess
+import sys
 from datetime import datetime, timezone
 
 import pytest
@@ -373,6 +375,26 @@ def test_unexpected_execution_exception_marks_submission_failed(
     assert db.query(SubmissionResult).filter_by(
         submission_id=submission.id
     ).count() == 0
+
+
+def test_worker_import_registers_submission_foreign_key_models():
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "from backend.app.db.base import Base; "
+                "import backend.app.services.execution.submission_worker; "
+                "assert 'users' in Base.metadata.tables; "
+                "assert 'submission_results' in Base.metadata.tables"
+            ),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
 
 
 def test_missing_and_non_queued_submissions_are_rejected(db, normal_user):

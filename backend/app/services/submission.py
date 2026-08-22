@@ -20,6 +20,7 @@ from backend.app.models.submission_result import (
     SubmissionResultStatus,
 )
 from backend.app.models.test_case import TestCase
+from backend.app.models.user import User  # noqa: F401 - registers FK metadata
 from backend.app.models.user_problem_progress import UserProblemProgress
 from backend.app.schemas.run import RunLanguage
 from backend.app.services.execution.models import (
