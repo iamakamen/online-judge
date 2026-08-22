@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
@@ -25,12 +26,14 @@ from backend.app.services.submission import (
     reset_stale_submission,
     submission_execution_fence,
 )
+from backend.app.services.submission_reconciliation import SubmissionReconciler
 
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_CONSUME_TIMEOUT_SECONDS = 5
 DEFAULT_MAX_DELIVERY_ATTEMPTS = 5
+SUBMISSION_RECONCILIATION_INTERVAL_SECONDS = 5
 
 
 class SubmissionTransportProtocol(Protocol):
@@ -65,6 +68,10 @@ class SubmissionWorker:
         judge_service: SubmissionJudgeService | None = None,
         session_factory: Callable[[], Session] | None = None,
         connection_factory: Callable[[], Connection] | None = None,
+        reconciler: SubmissionReconciler | None = None,
+        reconciliation_interval_seconds: float = (
+            SUBMISSION_RECONCILIATION_INTERVAL_SECONDS
+        ),
         max_concurrent_submissions: int = MAX_CONCURRENT_RUNS,
         consume_timeout_seconds: int = DEFAULT_CONSUME_TIMEOUT_SECONDS,
         reclaim_idle_time_ms: int = DEFAULT_RECLAIM_IDLE_TIME_MS,
@@ -80,12 +87,20 @@ class SubmissionWorker:
             raise ValueError("reclaim_idle_time_ms must be positive")
         if max_delivery_attempts <= 0:
             raise ValueError("max_delivery_attempts must be positive")
+        if reconciliation_interval_seconds <= 0:
+            raise ValueError(
+                "reconciliation_interval_seconds must be positive"
+            )
 
         self._transport = transport
         self._consumer_name = consumer_name
         self._judge_service = judge_service or SubmissionJudgeService()
         self._session_factory = session_factory
         self._connection_factory = connection_factory
+        self._reconciler = reconciler
+        self._reconciliation_interval_seconds = (
+            reconciliation_interval_seconds
+        )
         self._max_concurrent_submissions = max_concurrent_submissions
         self._consume_timeout_seconds = consume_timeout_seconds
         self._reclaim_idle_time_ms = reclaim_idle_time_ms
@@ -235,12 +250,35 @@ class SubmissionWorker:
             raise RuntimeError("submission judge did not reach a terminal status")
         self._transport.acknowledge(delivery.stream_id)
 
+    def _reconcile(self) -> None:
+        if self._reconciler is None:
+            return
+
+        try:
+            self._reconciler.reconcile_once()
+        except Exception:
+            logger.exception("Submission reconciliation pass failed")
+
     def run_forever(self) -> None:
         """Consume submission deliveries until the worker is terminated."""
+        next_reconciliation_at = (
+            time.monotonic() if self._reconciler is not None else None
+        )
         with ThreadPoolExecutor(
             max_workers=self._max_concurrent_submissions
         ) as executor:
             while True:
+                if (
+                    self._reconciler is not None
+                    and next_reconciliation_at is not None
+                    and time.monotonic() >= next_reconciliation_at
+                ):
+                    self._reconcile()
+                    next_reconciliation_at = (
+                        time.monotonic()
+                        + self._reconciliation_interval_seconds
+                    )
+
                 self.recover_pending()
                 deliveries = self._transport.consume(
                     self._consumer_name,

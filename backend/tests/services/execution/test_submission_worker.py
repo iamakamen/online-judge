@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from types import SimpleNamespace
 
+import pytest
+
 from backend.app.models.submission import SubmissionStatus
 from backend.app.services.execution.submission_transport import (
     SubmissionDelivery,
@@ -29,6 +31,41 @@ class FakeTransport:
         self.events.append("ack")
         self.acknowledged.append(stream_id)
         return 1
+
+
+class StopWorker(Exception):
+    pass
+
+
+class FakeReconciler:
+    def __init__(self, events, error=None):
+        self.events = events
+        self.error = error
+        self.calls = 0
+
+    def reconcile_once(self):
+        self.calls += 1
+        self.events.append("reconcile")
+        if self.error is not None:
+            raise self.error
+
+
+def run_until_stopped(worker, events, *, consume_calls=1):
+    worker.recover_pending = lambda: events.append("recover")
+    calls = 0
+
+    def consume(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        events.append("consume")
+        if calls >= consume_calls:
+            raise StopWorker()
+        return []
+
+    worker._transport.consume = consume
+
+    with pytest.raises(StopWorker):
+        worker.run_forever()
 
 
 @dataclass
@@ -185,3 +222,96 @@ def test_multiple_deliveries_are_processed_independently(monkeypatch):
     assert judged_ids == [7, 8]
     assert transport.acknowledged == ["1-0", "2-0"]
     assert all(db.closed for db in dbs)
+
+
+def test_reconciliation_runs_at_startup_before_recovery():
+    events = []
+    reconciler = FakeReconciler(events)
+    worker_instance = SubmissionWorker(
+        FakeTransport(),
+        consumer_name="worker-1",
+        reconciler=reconciler,
+    )
+
+    run_until_stopped(worker_instance, events)
+
+    assert reconciler.calls == 1
+    assert events == ["reconcile", "recover", "consume"]
+
+
+def test_reconciliation_runs_periodically_from_monotonic_deadline(monkeypatch):
+    events = []
+    reconciler = FakeReconciler(events)
+    worker_instance = SubmissionWorker(
+        FakeTransport(),
+        consumer_name="worker-1",
+        reconciler=reconciler,
+        reconciliation_interval_seconds=5,
+    )
+    monotonic_values = iter([0.0, 0.0, 0.0, 100.0, 100.0, 100.1])
+    monkeypatch.setattr(
+        "backend.app.services.execution.submission_worker.time.monotonic",
+        lambda: next(monotonic_values),
+    )
+
+    run_until_stopped(worker_instance, events, consume_calls=3)
+
+    assert reconciler.calls == 2
+    assert events == [
+        "reconcile",
+        "recover",
+        "consume",
+        "reconcile",
+        "recover",
+        "consume",
+        "recover",
+        "consume",
+    ]
+
+
+def test_reconciliation_failure_is_logged_and_worker_continues(caplog):
+    events = []
+    reconciler = FakeReconciler(
+        events,
+        error=RuntimeError("reconciliation unavailable"),
+    )
+    worker_instance = SubmissionWorker(
+        FakeTransport(),
+        consumer_name="worker-1",
+        reconciler=reconciler,
+    )
+
+    with caplog.at_level("ERROR"):
+        run_until_stopped(worker_instance, events)
+
+    assert events == ["reconcile", "recover", "consume"]
+    assert "reconciliation unavailable" in caplog.text
+
+
+def test_worker_without_reconciler_preserves_existing_loop(monkeypatch):
+    events = []
+    worker_instance = SubmissionWorker(
+        FakeTransport(),
+        consumer_name="worker-1",
+    )
+    monkeypatch.setattr(
+        "backend.app.services.execution.submission_worker.time.monotonic",
+        lambda: pytest.fail("monotonic must not be used without reconciler"),
+    )
+
+    run_until_stopped(worker_instance, events)
+
+    assert events == ["recover", "consume"]
+
+
+@pytest.mark.parametrize("interval", [0, -1, -0.1])
+def test_worker_rejects_invalid_reconciliation_interval(interval):
+    with pytest.raises(
+        ValueError,
+        match="reconciliation_interval_seconds",
+    ):
+        SubmissionWorker(
+            FakeTransport(),
+            consumer_name="worker-1",
+            reconciliation_interval_seconds=interval,
+        )
