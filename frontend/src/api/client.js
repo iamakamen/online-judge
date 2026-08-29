@@ -84,3 +84,31 @@ export function getProblemBySlug(accessToken, slug) {
     { accessToken },
   )
 }
+
+export function runCode(accessToken, payload) {
+  return request('/api/v1/run', {
+    method: 'POST',
+    accessToken,
+    body: payload,
+  })
+}
+
+export function createSubmission(accessToken, payload) {
+  return request('/api/v1/submissions', {
+    method: 'POST',
+    accessToken,
+    body: payload,
+  })
+}
+
+export function getSubmission(accessToken, submissionId) {
+  return request(`/api/v1/submissions/${submissionId}`, { accessToken })
+}
+
+export function requestAiHelp(accessToken, payload) {
+  return request('/api/v1/ai/help', {
+    method: 'POST',
+    accessToken,
+    body: payload,
+  })
+}

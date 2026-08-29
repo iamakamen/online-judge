@@ -4,6 +4,7 @@ sqlalchemy
 psycopg[binary]
 alembic
 redis
+boto3
 
 pwdlib[argon2]
 email-validator

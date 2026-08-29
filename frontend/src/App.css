@@ -137,7 +137,7 @@ button { cursor: pointer; }
 .practice-topic-chevron.is-expanded { transform: rotate(45deg); }
 .practice-topic-body { border-top: 1px solid var(--border); }
 .practice-problem-list { display: grid; }
-.practice-problem-row { display: grid; grid-template-columns: minmax(180px, 1.5fr) 36px 90px minmax(180px, 1fr); width: 100%; min-height: 64px; box-sizing: border-box; align-items: center; gap: 12px; border: 0; border-bottom: 1px solid var(--border); padding: 10px 22px; background: transparent; color: var(--text); text-align: left; }
+.practice-problem-row { display: grid; grid-template-columns: minmax(180px, 1.5fr) 36px 90px minmax(180px, 1fr); width: 100%; min-height: 64px; box-sizing: border-box; align-items: center; gap: 12px; border: 0; border-bottom: 1px solid var(--border); padding: 10px 22px; background: transparent; color: var(--text); text-align: left; text-decoration: none; }
 .practice-problem-row:last-child { border-bottom: 0; }
 .practice-problem-row:hover, .practice-problem-row:focus-visible { background: var(--panel-raised); }
 .practice-problem-title { min-width: 0; overflow: hidden; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
@@ -150,6 +150,7 @@ button { cursor: pointer; }
 .practice-problem-tags { display: flex; min-width: 0; flex-wrap: wrap; gap: 6px; }
 .practice-problem-tag { max-width: 130px; overflow: hidden; border: 1px solid var(--border); border-radius: 999px; padding: 3px 8px; color: var(--text-muted); font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
 .practice-empty-state { border: 1px dashed var(--border-strong); border-radius: var(--radius-md); padding: 32px 24px; color: var(--text-muted); text-align: center; }
+.execution-workspace-input-error { margin: 8px 0 0; color: #ff7777; font-size: .85rem; }
 
 /* Three-column problem workspace */
 .problem-shell { height: 100svh; overflow: hidden; }

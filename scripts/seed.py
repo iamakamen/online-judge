@@ -1,18 +1,17 @@
-"""Seed the canonical Online Judge V1 Problem Management data.
+"""Seed the frozen Module 8 canonical problem-management dataset.
+
+The catalog is loaded from docs/module-8/dataset/canonical-problem-data-v0.json.
+User-facing stdin/stdout starters are loaded from docs/module-8/starter.
 
 Usage:
     backend/.venv/bin/python scripts/seed.py --dry-run
     backend/.venv/bin/python scripts/seed.py
-
-The seed is deterministic and idempotent. Canonical topics and problems are
-identified by stable slugs. Existing records with other slugs are reported
-and never deleted. Test cases are matched by their complete deterministic
-content, so unexpected existing cases are preserved as well.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -31,8 +30,67 @@ from backend.app.models.topic import Topic
 from backend.app.models.user import User  # noqa: F401 - registers FK metadata
 
 
+CANONICAL_DATA_PATH = (
+    PROJECT_ROOT / "docs/module-8/dataset/canonical-problem-data-v0.json"
+)
+STARTER_ROOT = PROJECT_ROOT / "docs/module-8/starter"
+
+TOPIC_DIRECTORIES = {
+    "Arrays": "arrays",
+    "Strings": "strings",
+    "Linked List": "linked-list",
+    "Stack & Queue": "stack-queue",
+    "Dynamic Programming": "dynamic-programming",
+}
+
+EXPECTED_CASE_KEYS = ("P1", "P2", "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H8")
+PUBLIC_CASE_KEYS = {"P1", "P2"}
+
+# These are the known rows from the superseded hard-coded Module 8 catalog.
+# They are an explicit cleanup allowlist, not a general "delete unexpected"
+# policy. linked-list-cycle is intentionally absent because its slug is still
+# canonical and will be reconciled in place.
+LEGACY_MODULE_8_PROBLEM_SLUGS = frozenset(
+    {
+        "two-sum",
+        "maximum-subarray",
+        "merge-intervals",
+        "product-except-self",
+        "rotate-array",
+        "valid-anagram",
+        "longest-substring-without-repeat",
+        "group-anagrams",
+        "valid-palindrome",
+        "minimum-window-substring",
+        "reverse-linked-list",
+        "merge-two-sorted-lists",
+        "remove-nth-node",
+        "copy-list-with-random-pointer",
+        "valid-parentheses",
+        "min-stack",
+        "daily-temperatures",
+        "evaluate-reverse-polish-notation",
+        "sliding-window-maximum",
+        "climbing-stairs",
+        "house-robber",
+        "coin-change",
+        "longest-increasing-subsequence",
+        "edit-distance",
+    }
+)
+DIAGNOSTIC_PROBLEM_SLUG = "c54d-diagnostic"
+
+
+@dataclass(frozen=True)
+class SeedExample:
+    input: str
+    output: str
+    explanation: str
+
+
 @dataclass(frozen=True)
 class SeedCase:
+    case_key: str
     input: str
     expected_output: str
     run_enabled: bool
@@ -50,6 +108,7 @@ class SeedProblem:
     constraints: str
     difficulty: Difficulty
     tags: tuple[str, ...]
+    examples: tuple[SeedExample, ...]
     python_starter: str
     cpp_starter: str
     time_limit_ms: int
@@ -64,308 +123,179 @@ class SeedTopic:
     display_order: int
 
 
-TOPICS = (
-    SeedTopic("arrays", "Arrays", 1),
-    SeedTopic("strings", "Strings", 2),
-    SeedTopic("linked-list", "Linked List", 3),
-    SeedTopic("stack-queue", "Stack & Queue", 4),
-    SeedTopic("dynamic-programming", "Dynamic Programming", 5),
-)
+def _starter_path(problem: dict[str, object], language: str) -> Path:
+    topic = str(problem["topic"])
+    slug = str(problem["slug"])
+    topic_directory = TOPIC_DIRECTORIES.get(topic)
+    if topic_directory is None:
+        raise ValueError(f"Unknown canonical topic: {topic}")
+    extension = "py" if language == "python" else "cpp"
+    return STARTER_ROOT / topic_directory / language / f"{slug}.{extension}"
 
 
-def starter(function: str, python_args: str, cpp_args: str) -> tuple[str, str]:
-    return (
-        f"def {function}({python_args}):\n    pass\n",
-        f"class Solution {{\npublic:\n    auto {function}({cpp_args}) {{\n        // TODO\n    }}\n}};\n",
+def _read_starter(problem: dict[str, object], language: str) -> str:
+    path = _starter_path(problem, language)
+    if not path.is_file():
+        raise ValueError(f"Missing {language} starter: {path}")
+    source = path.read_text(encoding="utf-8")
+    if not source.strip():
+        raise ValueError(f"Empty {language} starter: {path}")
+    if "TODO" not in source:
+        raise ValueError(f"{language} starter has no algorithm TODO: {path}")
+    return source
+
+
+def _difficulty(value: object) -> Difficulty:
+    try:
+        return Difficulty[str(value).upper()]
+    except KeyError as exc:
+        raise ValueError(f"Invalid canonical difficulty: {value}") from exc
+
+
+def load_canonical_data(
+    path: Path = CANONICAL_DATA_PATH,
+) -> tuple[tuple[SeedTopic, ...], tuple[SeedProblem, ...]]:
+    """Load and validate the structured catalog without opening a DB session."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    raw_topics = payload.get("topics")
+    raw_problems = payload.get("problems")
+    if not isinstance(raw_topics, list) or len(raw_topics) != 5:
+        raise ValueError("Canonical dataset must contain exactly five topics")
+    if not isinstance(raw_problems, list) or len(raw_problems) != 25:
+        raise ValueError("Canonical dataset must contain exactly 25 problems")
+
+    topics = tuple(
+        SeedTopic(
+            slug=str(item["slug"]),
+            name=str(item["name"]),
+            display_order=int(item["display_order"]),
+        )
+        for item in raw_topics
     )
+    topic_by_name = {topic.name: topic for topic in topics}
+    if len(topic_by_name) != 5 or len({topic.slug for topic in topics}) != 5:
+        raise ValueError("Canonical topic names and slugs must be unique")
+    if [topic.display_order for topic in topics] != [1, 2, 3, 4, 5]:
+        raise ValueError("Canonical topics must use display orders 1 through 5")
+
+    problems: list[SeedProblem] = []
+    seen_slugs: set[str] = set()
+    topic_counts = {topic.name: 0 for topic in topics}
+
+    for raw in raw_problems:
+        slug = str(raw["slug"])
+        topic_name = str(raw["topic"])
+        if slug in seen_slugs:
+            raise ValueError(f"Duplicate canonical problem slug: {slug}")
+        seen_slugs.add(slug)
+        topic = topic_by_name.get(topic_name)
+        if topic is None:
+            raise ValueError(f"Problem {slug} has an unknown topic: {topic_name}")
+
+        tags = tuple(str(tag) for tag in raw["tags"])
+        if len(tags) != 3 or len(set(tags)) != 3:
+            raise ValueError(f"Problem {slug} must have exactly three unique tags")
+        if topic_name in tags:
+            raise ValueError(f"Problem {slug} uses its topic as a tag")
+
+        raw_examples = raw["examples"]
+        if not isinstance(raw_examples, list) or len(raw_examples) != 2:
+            raise ValueError(f"Problem {slug} must have exactly two examples")
+        examples = tuple(
+            SeedExample(
+                input=str(example["input"]),
+                output=str(example["output"]),
+                explanation=str(example["explanation"]),
+            )
+            for example in raw_examples
+        )
+
+        raw_cases = raw["test_cases"]
+        if not isinstance(raw_cases, list) or len(raw_cases) != 10:
+            raise ValueError(f"Problem {slug} must have exactly ten cases")
+        case_keys = [str(raw_case["case_key"]) for raw_case in raw_cases]
+        if case_keys != list(EXPECTED_CASE_KEYS):
+            raise ValueError(
+                f"Problem {slug} must use ordered P1/P2/H1-H8 case keys"
+            )
+        cases: list[SeedCase] = []
+        for raw_case in raw_cases:
+            case_key = str(raw_case["case_key"])
+            expected_order = (
+                EXPECTED_CASE_KEYS.index(case_key) + 1
+                if case_key in EXPECTED_CASE_KEYS
+                else None
+            )
+            if expected_order is None:
+                raise ValueError(f"Problem {slug} has invalid case key: {case_key}")
+            is_public = case_key in PUBLIC_CASE_KEYS
+            expected_flags = (
+                is_public,
+                True,
+                is_public,
+                expected_order,
+            )
+            actual_flags = (
+                bool(raw_case["run_enabled"]),
+                bool(raw_case["submit_enabled"]),
+                bool(raw_case["is_sample"]),
+                int(raw_case["display_order"]),
+            )
+            if actual_flags != expected_flags:
+                raise ValueError(
+                    f"Problem {slug} case {case_key} has invalid flags/order"
+                )
+            cases.append(
+                SeedCase(
+                    case_key=case_key,
+                    input=str(raw_case["input"]),
+                    expected_output=str(raw_case["expected_output"]),
+                    run_enabled=actual_flags[0],
+                    submit_enabled=actual_flags[1],
+                    is_sample=actual_flags[2],
+                    display_order=actual_flags[3],
+                )
+            )
+
+        if examples[0].input != cases[0].input or examples[0].output != cases[0].expected_output:
+            raise ValueError(f"Problem {slug} Example 1 must equal P1")
+        if examples[1].input != cases[1].input or examples[1].output != cases[1].expected_output:
+            raise ValueError(f"Problem {slug} Example 2 must equal P2")
+
+        topic_counts[topic_name] += 1
+        problems.append(
+            SeedProblem(
+                topic_slug=topic.slug,
+                slug=slug,
+                title=str(raw["title"]),
+                statement=str(raw["statement"]),
+                constraints=str(raw["constraints"]),
+                difficulty=_difficulty(raw["difficulty"]),
+                tags=tags,
+                examples=examples,
+                python_starter=_read_starter(raw, "python"),
+                cpp_starter=_read_starter(raw, "cpp"),
+                time_limit_ms=int(raw["time_limit_ms"]),
+                memory_limit_mb=int(raw["memory_limit_mb"]),
+                cases=tuple(cases),
+            )
+        )
+
+    if any(count != 5 for count in topic_counts.values()):
+        raise ValueError(f"Canonical topic distribution is invalid: {topic_counts}")
+    if sum(len(problem.cases) for problem in problems) != 250:
+        raise ValueError("Canonical dataset must contain 250 test cases")
+
+    return topics, tuple(problems)
 
 
-def cases(
-    sample_input: str,
-    sample_output: str,
-    run_input: str,
-    run_output: str,
-    hidden_input: str,
-    hidden_output: str,
-) -> tuple[SeedCase, ...]:
-    return (
-        SeedCase(sample_input, sample_output, True, True, True, 1),
-        SeedCase(run_input, run_output, True, False, False, 2),
-        SeedCase(hidden_input, hidden_output, False, True, False, 3),
-    )
+TOPICS, PROBLEMS = load_canonical_data()
+CANONICAL_PROBLEM_SLUGS = frozenset(problem.slug for problem in PROBLEMS)
 
 
-def problem(
-    topic_slug: str,
-    slug: str,
-    title: str,
-    statement: str,
-    constraints: str,
-    difficulty: Difficulty,
-    tags: tuple[str, ...],
-    function: str,
-    python_args: str,
-    cpp_args: str,
-    test_cases: tuple[SeedCase, ...],
-    time_limit_ms: int,
-    memory_limit_mb: int,
-) -> SeedProblem:
-    python_starter, cpp_starter = starter(function, python_args, cpp_args)
-    return SeedProblem(
-        topic_slug=topic_slug,
-        slug=slug,
-        title=title,
-        statement=statement,
-        constraints=constraints,
-        difficulty=difficulty,
-        tags=tags,
-        python_starter=python_starter,
-        cpp_starter=cpp_starter,
-        time_limit_ms=time_limit_ms,
-        memory_limit_mb=memory_limit_mb,
-        cases=test_cases,
-    )
-
-
-PROBLEMS = (
-    problem(
-        "arrays", "two-sum", "Two Sum",
-        "Given an array of integers and a target, return the indices of two distinct values that add to the target.",
-        """2 <= nums.length <= 10^5
--10^9 <= nums[i], target <= 10^9""",
-        Difficulty.EASY, ("hash-map", "complement", "lookup"), "two_sum",
-        "nums: list[int], target: int", "nums, target", cases(
-            "4\n2 7 11 15\n9", "0 1", "4\n3 2 4 7\n6", "1 2", "5\n1 5 3 7 9\n10", "1 2"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "arrays", "maximum-subarray", "Maximum Subarray",
-        "Find the contiguous subarray with the largest sum and return that sum.",
-        """1 <= nums.length <= 10^5
--10^4 <= nums[i] <= 10^4""",
-        Difficulty.MEDIUM, ("kadane", "greedy", "subarray"), "max_sub_array",
-        "nums: list[int]", "nums", cases(
-            "-2 1 -3 4 -1 2 1 -5 4", "6", "1", "1", "-8 -3 -6 -2 -5 -4", "-2"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "arrays", "merge-intervals", "Merge Intervals",
-        "Merge every pair of overlapping intervals and return the resulting sorted intervals.",
-        """1 <= intervals.length <= 10^4
-intervals[i].length == 2
--10^4 <= start <= end <= 10^4""",
-        Difficulty.MEDIUM, ("sorting", "intervals", "sweep"), "merge",
-        "intervals: list[list[int]]", "intervals", cases(
-            "1 3;2 6;8 10;15 18", "1 6;8 10;15 18", "1 4;4 5", "1 5", "1 10;2 3;4 8", "1 10"),
-        time_limit_ms=1500, memory_limit_mb=128),
-    problem(
-        "arrays", "product-except-self", "Product of Array Except Self",
-        "Return an array where each position contains the product of every input value except the value at that position.",
-        """2 <= nums.length <= 10^5
--30 <= nums[i] <= 30""",
-        Difficulty.MEDIUM, ("prefix-product", "suffix-product", "no-division"), "product_except_self",
-        "nums: list[int]", "nums", cases(
-            "1 2 3 4", "24 12 8 6", "-1 1 0 -3 3", "0 0 9 0 0", "2 3 4 5", "60 40 30 24"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "arrays", "rotate-array", "Rotate Array",
-        "Rotate an array to the right by k positions in place and return the resulting array.",
-        """1 <= nums.length <= 10^5
--10^9 <= nums[i] <= 10^9
-0 <= k <= 10^9""",
-        Difficulty.MEDIUM, ("in-place", "reversal", "cyclic"), "rotate",
-        "nums: list[int], k: int", "nums, k", cases(
-            "1 2 3 4 5 6 7\n3", "5 6 7 1 2 3 4", "-1 -100 3\n2", "-100 3 -1", "0 1 2 3 4 5\n8", "4 5 0 1 2 3"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "strings", "valid-anagram", "Valid Anagram",
-        "Return whether two strings contain the same letters with the same frequencies.",
-        """1 <= s.length, t.length <= 5 * 10^4
-s and t contain lowercase English letters""",
-        Difficulty.EASY, ("frequency-count", "hash-map", "sorting"), "is_anagram",
-        "s: str, t: str", "s, t", cases(
-            "anagram\nnagaram", "true", "rat\ncar", "false", "conversation\nvoicesranton", "true"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "strings", "longest-substring-without-repeat", "Longest Substring Without Repeating Characters",
-        "Return the length of the longest substring containing no repeated characters.",
-        """0 <= s.length <= 5 * 10^4
-s contains printable ASCII characters""",
-        Difficulty.MEDIUM, ("sliding-window", "hash-set", "two-pointers"), "length_of_longest_substring",
-        "s: str", "s", cases(
-            "abcabcbb", "3", "bbbbb", "1", "pwwkew", "3"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "strings", "group-anagrams", "Group Anagrams",
-        "Group words that are anagrams of one another. The order of groups is unrestricted.",
-        """1 <= strs.length <= 10^4
-0 <= strs[i].length <= 100
-strs[i] contains lowercase English letters""",
-        Difficulty.MEDIUM, ("hash-map", "canonical-form", "sorting"), "group_anagrams",
-        "strs: list[str]", "strs", cases(
-            "eat tea tan ate nat bat", "aet ate eat;ant nat tan;abt bat", "", "", "abc bca cab xyz", "abc bca cab;xyz"),
-        time_limit_ms=2000, memory_limit_mb=256),
-    problem(
-        "strings", "valid-palindrome", "Valid Palindrome",
-        "Return whether the input is a palindrome after removing non-alphanumeric characters and ignoring case.",
-        """1 <= s.length <= 2 * 10^5
-s contains printable ASCII characters""",
-        Difficulty.EASY, ("two-pointers", "string-normalization"), "is_palindrome",
-        "s: str", "s", cases(
-            "A man, a plan, a canal: Panama", "true", "race a car", "false", "0P", "false"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "strings", "minimum-window-substring", "Minimum Window Substring",
-        "Return the smallest substring of s containing every character of t with the required multiplicity.",
-        """1 <= s.length, t.length <= 10^5
-s and t contain English letters""",
-        Difficulty.HARD, ("sliding-window", "frequency-count", "two-pointers"), "min_window",
-        "s: str, t: str", "s, t", cases(
-            "ADOBECODEBANC\nABC", "BANC", "a\naa", "aa", "a\na", ""),
-        time_limit_ms=2000, memory_limit_mb=128),
-    problem(
-        "linked-list", "reverse-linked-list", "Reverse Linked List",
-        "Reverse a singly linked list and return its new head.",
-        """0 <= number of nodes <= 10^5
--10^4 <= node value <= 10^4""",
-        Difficulty.EASY, ("iteration", "pointers"), "reverse_list",
-        "head", "head", cases(
-            "1 2 3 4 5", "5 4 3 2 1", "1 2", "2 1", "", ""),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "linked-list", "merge-two-sorted-lists", "Merge Two Sorted Lists",
-        "Merge two sorted singly linked lists into one sorted list.",
-        """0 <= list1.length, list2.length <= 10^5
--10^4 <= node value <= 10^4""",
-        Difficulty.EASY, ("two-pointers", "sentinel"), "merge_two_lists",
-        "list1, list2", "list1, list2", cases(
-            "1 2 4\n1 3 4", "1 1 2 3 4 4", "\n0", "0", "-5 -2\n-6 -3 -1", "-6 -5 -3 -2 -1"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "linked-list", "linked-list-cycle", "Linked List Cycle",
-        "Return whether a singly linked list contains a cycle.",
-        """0 <= number of nodes <= 10^5
--10^4 <= node value <= 10^4""",
-        Difficulty.EASY, ("fast-slow-pointers", "cycle-detection"), "has_cycle",
-        "head", "head", cases(
-            "3 2 0 -4\nindex=1", "true", "1\nindex=-1", "false", "1 2\nindex=0", "true"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "linked-list", "remove-nth-node", "Remove Nth Node From End of List",
-        "Remove the nth node from the end of a linked list and return the resulting list.",
-        """1 <= number of nodes <= 10^5
-1 <= n <= number of nodes""",
-        Difficulty.MEDIUM, ("two-pointers", "sentinel"), "remove_nth_from_end",
-        "head, n", "head, n", cases(
-            "1 2 3 4 5\n2", "1 2 3 5", "1\n1", "", "1 2\n2", "2"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "linked-list", "copy-list-with-random-pointer", "Copy List with Random Pointer",
-        "Deep-copy a linked list whose nodes have both next and arbitrary random pointers.",
-        """0 <= number of nodes <= 10^5
--10^4 <= node value <= 10^4""",
-        Difficulty.HARD, ("hash-map", "deep-copy"), "copy_random_list",
-        "head", "head", cases(
-            "7,null;13,0;11,4;10,2;1,0", "7,null;13,0;11,4;10,2;1,0", "1,null", "1,null", "", ""),
-        time_limit_ms=2000, memory_limit_mb=256),
-    problem(
-        "stack-queue", "valid-parentheses", "Valid Parentheses",
-        "Return whether every opening bracket is closed by the correct bracket in the correct order.",
-        """1 <= s.length <= 10^5
-s contains only ()[]{}""",
-        Difficulty.EASY, ("stack", "parsing", "matching"), "is_valid",
-        "s: str", "s", cases(
-            "()[]{}", "true", "(]", "false", "([)]", "false"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "stack-queue", "min-stack", "Min Stack",
-        "Design a stack supporting push, pop, top, and retrieving the minimum value in constant time.",
-        """1 <= number of operations <= 10^5
--10^9 <= value <= 10^9""",
-        Difficulty.MEDIUM, ("stack", "design", "constant-time"), "min_stack_operations",
-        "operations: list[str]", "operations", cases(
-            "push -2;push 0;push -3;getMin;pop;top;getMin", "-3 -2 -2", "push 2;push 1;getMin", "1", "push 5;push 4;pop;getMin", "5"),
-        time_limit_ms=1500, memory_limit_mb=128),
-    problem(
-        "stack-queue", "daily-temperatures", "Daily Temperatures",
-        "For each day, return how many days must pass before a warmer temperature occurs.",
-        """1 <= temperatures.length <= 10^5
-30 <= temperatures[i] <= 100""",
-        Difficulty.MEDIUM, ("monotonic-stack", "stack", "next-greater"), "daily_temperatures",
-        "temperatures: list[int]", "temperatures", cases(
-            "73 74 75 71 69 72 76 73", "1 1 4 2 1 1 0 0", "30 40 50 60", "1 1 1 0", "90 80 70", "0 0 0"),
-        time_limit_ms=1500, memory_limit_mb=128),
-    problem(
-        "stack-queue", "evaluate-reverse-polish-notation", "Evaluate Reverse Polish Notation",
-        "Evaluate an arithmetic expression written in postfix notation using integer division toward zero.",
-        """1 <= tokens.length <= 10^4
-tokens form a valid RPN expression""",
-        Difficulty.MEDIUM, ("stack", "expression-evaluation", "division"), "eval_rpn",
-        "tokens: list[str]", "tokens", cases(
-            "2 1 + 3 *", "9", "4 13 5 / +", "6", "10 6 9 3 + -11 * / * 17 + 5 +", "22"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "stack-queue", "sliding-window-maximum", "Sliding Window Maximum",
-        "Return the maximum value in every contiguous window of size k.",
-        """1 <= nums.length <= 10^5
--10^4 <= nums[i] <= 10^4
-1 <= k <= nums.length""",
-        Difficulty.HARD, ("deque", "monotonic-queue", "sliding-window"), "max_sliding_window",
-        "nums: list[int], k: int", "nums, k", cases(
-            "1 3 -1 -3 5 3 6 7\n3", "3 3 5 5 6 7", "1\n1", "1", "9 8 7 6 5\n2", "9 8 7 6"),
-        time_limit_ms=2000, memory_limit_mb=128),
-    problem(
-        "dynamic-programming", "climbing-stairs", "Climbing Stairs",
-        "Count the distinct ways to reach the nth step when each move advances one or two steps.",
-        """1 <= n <= 45""",
-        Difficulty.EASY, ("fibonacci", "counting"), "climb_stairs",
-        "n: int", "n", cases(
-            "2", "2", "3", "3", "10", "89"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "dynamic-programming", "house-robber", "House Robber",
-        "Maximize the amount robbed from non-adjacent houses without triggering the alarm.",
-        """1 <= nums.length <= 10^5
-0 <= nums[i] <= 10^4""",
-        Difficulty.MEDIUM, ("one-dimensional-dp", "optimization"), "rob",
-        "nums: list[int]", "nums", cases(
-            "1 2 3 1", "4", "2 7 9 3 1", "12", "2 1 1 2", "4"),
-        time_limit_ms=1000, memory_limit_mb=128),
-    problem(
-        "dynamic-programming", "coin-change", "Coin Change",
-        "Return the fewest coins needed to make the target amount, or -1 if it is impossible.",
-        """1 <= coins.length <= 100
-1 <= coins[i] <= 10^4
-1 <= amount <= 10^4""",
-        Difficulty.MEDIUM, ("unbounded-knapsack", "bottom-up"), "coin_change",
-        "coins: list[int], amount: int", "coins, amount", cases(
-            "1 2 5\n11", "3", "2\n3", "-1", "1 3 4\n6", "2"),
-        time_limit_ms=2500, memory_limit_mb=128),
-    problem(
-        "dynamic-programming", "longest-increasing-subsequence", "Longest Increasing Subsequence",
-        "Return the length of the longest strictly increasing subsequence.",
-        """1 <= nums.length <= 2500
--10^4 <= nums[i] <= 10^4""",
-        Difficulty.MEDIUM, ("binary-search", "subsequence"), "length_of_lis",
-        "nums: list[int]", "nums", cases(
-            "10 9 2 5 3 7 101 18", "4", "0 1 0 3 2 3", "4", "7 7 7 7", "1"),
-        time_limit_ms=2000, memory_limit_mb=128),
-    problem(
-        "dynamic-programming", "edit-distance", "Edit Distance",
-        "Return the minimum number of insertions, deletions, and substitutions needed to transform one word into another.",
-        """1 <= word1.length, word2.length <= 500
-word1 and word2 contain lowercase English letters""",
-        Difficulty.HARD, ("two-dimensional-dp", "levenshtein"), "min_distance",
-        "word1: str, word2: str", "word1, word2", cases(
-            "horse\nros", "3", "intention\nexecution", "5", "abc\nabc", "0"),
-        time_limit_ms=3000, memory_limit_mb=256),
-)
-
-
-def _case_identity(test_case: TestCase | SeedCase) -> tuple[object, ...]:
-    return (
-        test_case.input,
-        test_case.expected_output,
-        test_case.display_order,
-    )
+def _case_identity(test_case: TestCase | SeedCase) -> tuple[int]:
+    """Use stable display order as the DB identity for source case keys."""
+    return (test_case.display_order,)
 
 
 def _set_if_changed(record: object, field: str, value: object) -> bool:
@@ -375,26 +305,71 @@ def _set_if_changed(record: object, field: str, value: object) -> bool:
     return True
 
 
-def _report_existing_records(
-    topics: list[Topic], problems: list[Problem]
-) -> None:
-    topic_slugs = {topic.slug for topic in TOPICS}
-    problem_slugs = {item.slug for item in PROBLEMS}
-    extra_topics = [topic for topic in topics if topic.slug not in topic_slugs]
-    extra_problems = [
-        item for item in problems if item.slug not in problem_slugs
+def _remove_obsolete_problems(
+    db,
+    problems: list[Problem],
+    *,
+    dry_run: bool,
+) -> set[str]:
+    targets = LEGACY_MODULE_8_PROBLEM_SLUGS | {DIAGNOSTIC_PROBLEM_SLUG}
+    obsolete = [
+        problem
+        for problem in problems
+        if problem.slug in targets and problem.slug not in CANONICAL_PROBLEM_SLUGS
     ]
+    for problem in obsolete:
+        label = (
+            "explicit diagnostic cleanup"
+            if problem.slug == DIAGNOSTIC_PROBLEM_SLUG
+            else "legacy Module 8 cleanup"
+        )
+        print(f"{label}: {problem.slug}")
+        if not dry_run:
+            db.delete(problem)
+    return {problem.slug for problem in obsolete}
 
+
+def _remove_obsolete_topics(
+    db,
+    topics: list[Topic],
+    *,
+    dry_run: bool,
+) -> set[str]:
+    """Remove only the explicitly allowlisted diagnostic topic."""
+    obsolete = [
+        topic
+        for topic in topics
+        if topic.slug == DIAGNOSTIC_PROBLEM_SLUG
+        and topic.slug not in {item.slug for item in TOPICS}
+    ]
+    for topic in obsolete:
+        print(f"explicit diagnostic topic cleanup: {topic.slug}")
+        if not dry_run:
+            db.delete(topic)
+    return {topic.slug for topic in obsolete}
+
+
+def _report_unexpected_records(
+    topics: list[Topic],
+    problems: list[Problem],
+) -> None:
+    canonical_topic_slugs = {topic.slug for topic in TOPICS}
+    extra_topics = [topic for topic in topics if topic.slug not in canonical_topic_slugs]
+    extra_problems = [
+        problem
+        for problem in problems
+        if problem.slug not in CANONICAL_PROBLEM_SLUGS
+        and problem.slug not in LEGACY_MODULE_8_PROBLEM_SLUGS
+        and problem.slug != DIAGNOSTIC_PROBLEM_SLUG
+    ]
     if extra_topics:
         print("Unexpected existing topics (preserved):")
         for topic in extra_topics:
             print(f"  - {topic.slug}: {topic.name}")
     if extra_problems:
         print("Unexpected existing problems (preserved):")
-        for item in extra_problems:
-            print(f"  - {item.slug}: {item.title}")
-            if item.title.casefold() == "two sum":
-                print("    conflict: Two Sum title uses a non-canonical slug")
+        for problem in extra_problems:
+            print(f"  - {problem.slug}: {problem.title}")
     if not extra_topics and not extra_problems:
         print("No unexpected existing topics or problems found.")
 
@@ -403,37 +378,46 @@ def seed(*, dry_run: bool = False) -> None:
     with SessionLocal() as db:
         topics = db.scalars(select(Topic).order_by(Topic.id)).all()
         problems = db.scalars(select(Problem).order_by(Problem.id)).all()
-        _report_existing_records(topics, problems)
+        removed_slugs = _remove_obsolete_problems(
+            db,
+            problems,
+            dry_run=dry_run,
+        )
+        removed_topic_slugs = _remove_obsolete_topics(
+            db,
+            topics,
+            dry_run=dry_run,
+        )
+        _report_unexpected_records(
+            [topic for topic in topics if topic.slug not in removed_topic_slugs],
+            [problem for problem in problems if problem.slug not in removed_slugs],
+        )
 
         topics_by_slug = {topic.slug: topic for topic in topics}
-        problems_by_slug = {item.slug: item for item in problems}
+        problems_by_slug = {
+            problem.slug: problem
+            for problem in problems
+            if problem.slug not in removed_slugs
+        }
 
         if dry_run:
-            canonical_problem_slugs = {item.slug for item in PROBLEMS}
-            existing_canonical_problems = [
-                item
-                for item in problems
-                if item.slug in canonical_problem_slugs
+            existing_canonical = [
+                problem
+                for problem in problems
+                if problem.slug in CANONICAL_PROBLEM_SLUGS
             ]
             print(
                 "Dry run: no database changes made. "
-                f"Would create {len(TOPICS) - len(topics_by_slug.keys() & {item.slug for item in TOPICS})} topics and "
-                f"{len(PROBLEMS) - len(existing_canonical_problems)} problems."
-            )
-            print(
-                "Canonical test cases would be reconciled for "
-                f"{len(existing_canonical_problems)} existing and "
-                f"{len(PROBLEMS) - len(existing_canonical_problems)} new problems."
+                f"Would create {len(TOPICS) - len(topics_by_slug.keys() & {item.slug for item in TOPICS})} topics, "
+                f"{len(PROBLEMS) - len(existing_canonical)} problems, "
+                "and reconcile 250 canonical test cases."
             )
             return
 
         topic_ids: dict[str, int] = {}
-        created_topics = 0
-        updated_topics = 0
-        created_problems = 0
-        updated_problems = 0
-        created_cases = 0
-        unexpected_cases = 0
+        created_topics = updated_topics = 0
+        created_problems = updated_problems = 0
+        created_cases = updated_cases = deleted_cases = 0
 
         for seed_topic in TOPICS:
             topic = topics_by_slug.get(seed_topic.slug)
@@ -451,7 +435,9 @@ def seed(*, dry_run: bool = False) -> None:
                 changed = False
                 changed |= _set_if_changed(topic, "name", seed_topic.name)
                 changed |= _set_if_changed(
-                    topic, "display_order", seed_topic.display_order
+                    topic,
+                    "display_order",
+                    seed_topic.display_order,
                 )
                 updated_topics += int(changed)
             topic_ids[seed_topic.slug] = topic.id
@@ -491,42 +477,29 @@ def seed(*, dry_run: bool = False) -> None:
                     .order_by(TestCase.id)
                 ).all()
             )
+            canonical_by_identity: dict[tuple[int], TestCase] = {}
+            stale_case_ids: set[int] = set()
+            for existing_case in existing_cases:
+                identity = _case_identity(existing_case)
+                if identity in canonical_by_identity:
+                    stale_case_ids.add(existing_case.id)
+                else:
+                    canonical_by_identity[identity] = existing_case
 
-            used_case_ids: set[int] = set()
+            expected_identities = {
+                _case_identity(seed_case) for seed_case in seed_problem.cases
+            }
+            stale_case_ids.update(
+                case.id
+                for identity, case in canonical_by_identity.items()
+                if identity not in expected_identities
+            )
 
             for seed_case in seed_problem.cases:
-                matches = [
-                    case
-                    for case in existing_cases
-                    if case.id not in used_case_ids
-                    and _case_identity(case) == _case_identity(seed_case)
-                ]
-
-                if matches:
-                    canonical_case = matches[0]
-                    used_case_ids.add(canonical_case.id)
-
-                    if not dry_run:
-                        _set_if_changed(
-                            canonical_case,
-                            "run_enabled",
-                            seed_case.run_enabled,
-                        )
-                        _set_if_changed(
-                            canonical_case,
-                            "submit_enabled",
-                            seed_case.submit_enabled,
-                        )
-                        _set_if_changed(
-                            canonical_case,
-                            "is_sample",
-                            seed_case.is_sample,
-                        )
-
-                    unexpected_cases += len(matches) - 1
-                    continue
-
-                if not dry_run:
+                canonical_case = canonical_by_identity.get(
+                    _case_identity(seed_case)
+                )
+                if canonical_case is None:
                     db.add(
                         TestCase(
                             problem_id=problem_record.id,
@@ -538,36 +511,62 @@ def seed(*, dry_run: bool = False) -> None:
                             display_order=seed_case.display_order,
                         )
                     )
+                    created_cases += 1
+                    continue
 
-                created_cases += 1
-            unexpected_cases += sum(
-                1
-                for case in existing_cases
-                if case.id not in used_case_ids
-            )
+                changed = False
+                changed |= _set_if_changed(
+                    canonical_case,
+                    "input",
+                    seed_case.input,
+                )
+                changed |= _set_if_changed(
+                    canonical_case,
+                    "expected_output",
+                    seed_case.expected_output,
+                )
+                changed |= _set_if_changed(
+                    canonical_case,
+                    "run_enabled",
+                    seed_case.run_enabled,
+                )
+                changed |= _set_if_changed(
+                    canonical_case,
+                    "submit_enabled",
+                    seed_case.submit_enabled,
+                )
+                changed |= _set_if_changed(
+                    canonical_case,
+                    "is_sample",
+                    seed_case.is_sample,
+                )
+                changed |= _set_if_changed(
+                    canonical_case,
+                    "display_order",
+                    seed_case.display_order,
+                )
+                updated_cases += int(changed)
+
+            for stale_case in existing_cases:
+                if stale_case.id in stale_case_ids:
+                    db.delete(stale_case)
+                    deleted_cases += 1
 
         db.commit()
-
         print(
             "Topics: "
-            f"created={created_topics}, updated={updated_topics}, "
-            f"canonical={len(TOPICS)}"
+            f"created={created_topics}, updated={updated_topics}, canonical={len(TOPICS)}"
         )
         print(
             "Problems: "
             f"created={created_problems}, updated={updated_problems}, "
-            f"canonical={len(PROBLEMS)}"
+            f"removed={len(removed_slugs)}, canonical={len(PROBLEMS)}"
         )
         print(
             "Test cases: "
-            f"canonical_per_problem={len(PROBLEMS[0].cases)}, "
-            f"created={created_cases}"
+            f"created={created_cases}, updated={updated_cases}, "
+            f"deleted={deleted_cases}, canonical={len(PROBLEMS) * 10}"
         )
-        if unexpected_cases:
-            print(
-                "Unexpected or duplicate test cases under canonical problems "
-                f"(preserved): {unexpected_cases}"
-            )
 
 
 def main() -> int:

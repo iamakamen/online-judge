@@ -108,7 +108,7 @@ function createFoldMarker(open) {
   return marker
 }
 
-function createEditorState(language, document) {
+function createEditorState(language, document, onUpdate) {
   return EditorState.create({
     doc: document,
     extensions: [
@@ -122,6 +122,7 @@ function createEditorState(language, document) {
       foldGutter({ markerDOM: createFoldMarker }),
       editorTheme,
       EditorView.contentAttributes.of({ 'aria-label': `${LANGUAGES[language].label} code editor` }),
+      EditorView.updateListener.of(onUpdate),
     ],
   })
 }
@@ -178,29 +179,50 @@ function SubmitIcon() {
   )
 }
 
-export function CodeEditor({ starterCode, isExpanded, onToggleExpansion, onCustomInput, onRun, onSubmit }) {
+export function CodeEditor({ starterCode, initialSession = null, isExpanded, onToggleExpansion, onCustomInput, onRun, onSubmit, onEditorChange, executionDisabled = false }) {
   const editorElement = useRef(null)
   const viewRef = useRef(null)
   const sessionsRef = useRef(null)
   const activeLanguageRef = useRef('python')
+  const onEditorChangeRef = useRef(onEditorChange)
   const [selectedLanguage, setSelectedLanguage] = useState('python')
 
+  onEditorChangeRef.current = onEditorChange
+
   useEffect(() => {
-    activeLanguageRef.current = 'python'
-    setSelectedLanguage('python')
-    const sessions = {
-      python: createEditorState('python', starterCode.python),
-      cpp: createEditorState('cpp', starterCode.cpp),
+    const restoredLanguage = initialSession?.selectedLanguage || 'python'
+    const restoredContents = initialSession?.editorContents || starterCode
+    activeLanguageRef.current = restoredLanguage
+    setSelectedLanguage(restoredLanguage)
+    const sessions = {}
+    const notifyEditorChange = () => {
+      const currentSessions = sessionsRef.current
+      if (!currentSessions) return
+      onEditorChangeRef.current?.({
+        selectedLanguage: activeLanguageRef.current,
+        editorContents: {
+          python: currentSessions.python.doc.toString(),
+          cpp: currentSessions.cpp.doc.toString(),
+        },
+      })
     }
-    const view = new EditorView({ state: sessions.python, parent: editorElement.current })
+    const onUpdate = (update) => {
+      if (!update.docChanged) return
+      sessions[activeLanguageRef.current] = update.state
+      notifyEditorChange()
+    }
+    sessions.python = createEditorState('python', restoredContents.python, onUpdate)
+    sessions.cpp = createEditorState('cpp', restoredContents.cpp, onUpdate)
+    const view = new EditorView({ state: sessions[restoredLanguage], parent: editorElement.current })
     sessionsRef.current = sessions
     viewRef.current = view
+    notifyEditorChange()
     return () => {
       view.destroy()
       sessionsRef.current = null
       viewRef.current = null
     }
-  }, [starterCode])
+  }, [initialSession, starterCode])
 
   useEffect(() => {
     const view = viewRef.current
@@ -209,6 +231,13 @@ export function CodeEditor({ starterCode, isExpanded, onToggleExpansion, onCusto
     sessions[activeLanguageRef.current] = view.state
     view.setState(sessions[selectedLanguage])
     activeLanguageRef.current = selectedLanguage
+    onEditorChangeRef.current?.({
+      selectedLanguage,
+      editorContents: {
+        python: sessions.python.doc.toString(),
+        cpp: sessions.cpp.doc.toString(),
+      },
+    })
   }, [selectedLanguage])
 
   function resetCurrentLanguage() {
@@ -221,7 +250,28 @@ export function CodeEditor({ starterCode, isExpanded, onToggleExpansion, onCusto
 
   function clearCurrentLanguage() {
     const view = viewRef.current
+    if (!view) return
     view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: '' } })
+  }
+
+  function currentExecutionPayload() {
+    const view = viewRef.current
+    if (!view) return null
+
+    return {
+      language: activeLanguageRef.current,
+      sourceCode: view.state.doc.toString(),
+    }
+  }
+
+  function handleRun() {
+    const payload = currentExecutionPayload()
+    if (payload) onRun(payload)
+  }
+
+  function handleSubmit() {
+    const payload = currentExecutionPayload()
+    if (payload) onSubmit(payload)
   }
 
   return (
@@ -253,11 +303,11 @@ export function CodeEditor({ starterCode, isExpanded, onToggleExpansion, onCusto
           <CustomInputIcon />
           Custom Input
         </button>
-        <button type="button" className="code-editor-button" onClick={onRun}>
+        <button type="button" className="code-editor-button" onClick={handleRun} disabled={executionDisabled}>
           <RunIcon />
           Run
         </button>
-        <button type="button" className="primary-button" onClick={onSubmit}>
+        <button type="button" className="primary-button" onClick={handleSubmit} disabled={executionDisabled}>
           <SubmitIcon />
           Submit
         </button>

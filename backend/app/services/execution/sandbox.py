@@ -7,6 +7,7 @@ and command to execute.
 
 from __future__ import annotations
 
+import os
 import selectors
 import shutil
 import subprocess
@@ -24,6 +25,9 @@ from backend.app.core.execution import (
     MAX_STDOUT_BYTES,
     MAX_WORKSPACE_BYTES,
 )
+
+SANDBOX_UID = 1000
+SANDBOX_GID = 1000
 
 
 @dataclass(frozen=True)
@@ -78,6 +82,19 @@ class SandboxExecutor:
             )
 
         request.workspace.mkdir(parents=True, exist_ok=True)
+        if not request.workspace_read_only:
+            try:
+                self._prepare_workspace(request)
+            except OSError as exc:
+                return SandboxResult(
+                    exit_code=None,
+                    stdout="",
+                    stderr="",
+                    execution_time_ms=0,
+                    infrastructure_error=(
+                        f"sandbox workspace preparation failed: {exc}"
+                    ),
+                )
         container_name = f"oj-run-{uuid.uuid4().hex}"
         command = self._build_command(request, container_name)
         started = time.monotonic()
@@ -179,6 +196,11 @@ class SandboxExecutor:
             request.image,
             *request.command,
         ]
+
+    @staticmethod
+    def _prepare_workspace(request: SandboxRequest) -> None:
+        os.chown(request.workspace, SANDBOX_UID, SANDBOX_GID)
+        request.workspace.chmod(0o700)
 
     def _collect_output(
         self,

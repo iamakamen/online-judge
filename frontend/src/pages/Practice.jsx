@@ -6,10 +6,14 @@ import { PrimarySidebar } from '../components/PrimarySidebar'
 
 function ProblemRow({ problem, navigate }) {
   return (
-    <button
-      type="button"
+    <a
+      href={`/problems/${encodeURIComponent(problem.slug)}`}
       className="practice-problem-row"
-      onClick={() => navigate(`/problems/${problem.slug}`)}
+      onClick={(event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+        event.preventDefault()
+        navigate(`/problems/${problem.slug}`)
+      }}
     >
       <span className="practice-problem-title">{problem.title}</span>
       <span
@@ -24,7 +28,7 @@ function ProblemRow({ problem, navigate }) {
       <span className="practice-problem-tags">
         {problem.tags.map((tag) => <span key={tag} className="practice-problem-tag">{tag}</span>)}
       </span>
-    </button>
+    </a>
   )
 }
 

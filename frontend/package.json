@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "test": "node --test src/problem/problemSessionStorage.test.js src/problem/runValidation.test.js src/problem/constraintFormatting.test.js src/components/executionPresentation.test.js",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"

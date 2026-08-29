@@ -117,6 +117,31 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
 
+  run-worker:
+    <<: *backend
+    working_dir: /app
+    command:
+      [
+        "python",
+        "-m",
+        "backend.app.services.execution.run_worker",
+      ]
+    environment:
+      DATABASE_URL: postgresql+psycopg://online_judge:${POSTGRES_PASSWORD:-dev_password_change_me}@postgres:5432/online_judge
+      REDIS_URL: redis://redis:6379/0?decode_responses=true
+      TMPDIR: /opt/online-judge/runtime/workspaces
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/online-judge/runtime/workspaces:/opt/online-judge/runtime/workspaces
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:

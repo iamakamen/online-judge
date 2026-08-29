@@ -5,6 +5,8 @@ import subprocess
 import pytest
 
 from backend.app.services.execution.sandbox import (
+    SANDBOX_GID,
+    SANDBOX_UID,
     SandboxExecutor,
     SandboxRequest,
     SandboxWorkspace,
@@ -51,6 +53,30 @@ def test_workspace_is_traversable_by_sandbox_user() -> None:
     with SandboxWorkspace() as workspace:
         mode = stat.S_IMODE(workspace.stat().st_mode)
         assert mode == 0o755
+
+
+def test_writable_workspace_allows_sandbox_user_to_create_output(
+    tmp_path: Path,
+) -> None:
+    request = SandboxRequest(
+        image="online-judge-runner:test",
+        command=("g++", "/workspace/solution.cpp"),
+        workspace=tmp_path,
+        timeout_ms=1000,
+        memory_limit_mb=128,
+        workspace_read_only=False,
+    )
+
+    SandboxExecutor()._prepare_workspace(request)
+
+    workspace_stat = tmp_path.stat()
+    assert workspace_stat.st_uid == SANDBOX_UID
+    assert workspace_stat.st_gid == SANDBOX_GID
+    assert stat.S_IMODE(workspace_stat.st_mode) == 0o700
+
+    output_path = tmp_path / "solution"
+    output_path.write_bytes(b"compiled")
+    assert output_path.read_bytes() == b"compiled"
 
 
 def test_rejects_timeout_above_global_ceiling(

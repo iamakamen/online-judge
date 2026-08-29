@@ -1,0 +1,2 @@
+#include <bits/stdc++.h>
+using namespace std;int main(){int n;cin>>n;map<string,vector<string>>d;string w;while(n--){cin>>w;string k=w;sort(k.begin(),k.end());d[k].push_back(w);}vector<vector<string>>g;for(auto&[k,v]:d){sort(v.begin(),v.end());g.push_back(v);}sort(g.begin(),g.end(),[](auto&a,auto&b){return a[0]<b[0];});for(auto&v:g){for(int i=0;i<(int)v.size();i++)cout<<(i?" ":"")<<v[i];cout<<'\n';}}

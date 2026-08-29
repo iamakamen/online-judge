@@ -14,6 +14,7 @@
   --problem-blue: #61a9ff;
   --green: var(--problem-blue);
   --green-deep: #132a43;
+  --execution-ai-response-height: 90px;
   --sidebar-expanded: 174px;
   --execution-workspace-height: 240px;
   background: var(--problem-bg);
@@ -28,7 +29,7 @@
 .problem-page-v2 .problem-header { margin: 0; padding: 0 0 24px; border-bottom: 1px solid var(--problem-border); }
 .problem-page-v2 .problem-header h1 { max-width: 760px; margin: 0; color: var(--problem-text); font-size: clamp(2.25rem, 3.5vw, 3.5rem); font-weight: 500; letter-spacing: normal; line-height: 1.04; }
 .problem-page-v2 .problem-meta { margin-top: 20px; }
-.problem-page-v2 .problem-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+.problem-page-v2 .problem-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-left: auto; }
 .problem-page-v2 .problem-tag { padding: 7px 11px; border: 1px solid var(--problem-border-strong); border-radius: 999px; background: var(--problem-surface); color: var(--problem-soft); font-size: .72rem; font-weight: 650; }
 .problem-page-v2 .problem-section { margin-top: 28px; }
 .problem-page-v2 .problem-section h2 { margin: 0 0 12px; color: var(--problem-text); font-size: 1.1rem; letter-spacing: normal; }
@@ -40,7 +41,7 @@
 .problem-page-v2 .problem-example h4, .problem-page-v2 .problem-limit h3 { margin: 0 0 8px; color: var(--problem-muted); font-size: .65rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
 .problem-page-v2 .problem-example pre, .problem-page-v2 .problem-constraints { margin: 0; border: 1px solid var(--problem-border); border-radius: 8px; background: var(--problem-surface); color: var(--problem-soft); font-family: inherit; }
 .problem-page-v2 .problem-example pre { min-height: 50px; box-sizing: border-box; padding: 12px; white-space: pre-wrap; }
-.problem-page-v2 .problem-constraints { padding: 14px; line-height: 1.65; white-space: pre-wrap; }
+.problem-page-v2 .problem-constraints { padding: 14px; line-height: 1.65; white-space: pre-wrap; overflow-x: hidden; overflow-wrap: anywhere; word-break: break-word; }
 .problem-page-v2 .problem-limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
 .problem-page-v2 .problem-limit { padding: 14px; border: 1px solid var(--problem-border); border-radius: 12px; background: var(--problem-panel); }
 .problem-page-v2 .problem-limit p { margin: 0; color: var(--problem-text); font-size: 1.05rem; font-weight: 750; }
@@ -70,17 +71,105 @@
 .problem-page-v2 .code-editor-actions .primary-button:hover, .problem-page-v2 .code-editor-actions .primary-button:focus-visible { background: #82b9ff; }
 .problem-page-v2 .code-editor-actions .primary-button:focus-visible { outline: 2px solid rgb(97 169 255 / 55%); outline-offset: 2px; }
 .problem-page-v2 button:focus-visible, .problem-page-v2 input:focus-visible, .problem-page-v2 select:focus-visible, .problem-page-v2 textarea:focus-visible { outline-color: var(--problem-blue); }
-.problem-page-v2 .execution-workspace { flex: 0 0 var(--execution-workspace-height); height: var(--execution-workspace-height); min-height: var(--execution-workspace-height); margin-top: 0; box-sizing: border-box; border: 1px solid var(--problem-border); border-left: 0; border-right: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; background: var(--problem-panel); overflow: hidden; }
-.problem-page-v2 .execution-workspace-tabs { display: flex; flex: 0 0 40px; height: 40px; align-items: stretch; }
+.problem-page-v2 .execution-workspace { flex: 0 0 var(--execution-workspace-height); height: var(--execution-workspace-height); min-height: var(--execution-workspace-height); margin-top: 0; box-sizing: border-box; border: 1px solid var(--problem-border); border-left: 0; border-right: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; background: var(--problem-panel); overflow-x: hidden; overflow-y: hidden; }
+.problem-page-v2 .execution-workspace.is-submit { overflow-y: auto; }
+.problem-page-v2 .execution-workspace-tabs { display: flex; flex: 0 0 40px; height: 40px; box-sizing: border-box; align-items: stretch; }
 .problem-page-v2 .execution-workspace-tab { flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; height: 40px; padding: 0; line-height: 1; }
-.problem-page-v2 .execution-workspace-panel { min-height: 0; box-sizing: border-box; padding: 8px 12px 32px; overflow: hidden; }
-.problem-page-v2 .execution-workspace-panel.is-tabbed { height: calc(100% - 40px); display: block; }
+.problem-page-v2 .execution-workspace-panel { min-height: 0; box-sizing: border-box; padding: 8px 12px; overflow-x: hidden; overflow-y: hidden; }
+.problem-page-v2 .execution-workspace-panel.is-tabbed { height: calc(100% - 40px); display: flex; flex-direction: column; }
+.problem-page-v2 .execution-workspace-panel.is-tabbed.has-ai-response { overflow-y: auto; }
 .problem-page-v2 .execution-workspace-panel.is-full-height { height: 100%; display: flex; align-items: center; justify-content: center; }
 .problem-page-v2 .execution-workspace-input { display: block; width: 100%; }
 .problem-page-v2 .execution-workspace-input--custom { height: 160px; max-height: 160px; margin: 23px 0 17px; }
 .problem-page-v2 .execution-workspace-input--run { height: 140px; max-height: 140px; margin: 3px 0 57px; }
+.problem-page-v2 .execution-workspace-input--fill { display: flex; width: 100%; min-width: 0; min-height: 0; height: auto; max-height: none; flex: 1 1 auto; margin: 0; }
 .problem-page-v2 .execution-workspace-input textarea { width: 100%; box-sizing: border-box; resize: none; overflow: auto; border: 1px solid var(--problem-border-strong); border-radius: 8px; background: var(--problem-surface); color: var(--problem-soft); }
 .problem-page-v2 .execution-workspace-input--custom textarea { height: 160px; max-height: 160px; }
 .problem-page-v2 .execution-workspace-input--run textarea { height: 140px; max-height: 140px; }
+.problem-page-v2 .execution-workspace-input textarea, .problem-page-v2 .execution-workspace-readonly-content { width: 100%; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; overflow-wrap: anywhere; border: 1px solid var(--problem-border-strong); border-radius: 8px; background: var(--problem-surface); color: var(--problem-soft); white-space: pre-wrap; word-break: break-word; }
+.problem-page-v2 .execution-workspace-readonly-content { height: 140px; max-height: 140px; padding: 12px; font: .9rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: normal; text-transform: none; }
+.problem-page-v2 .execution-workspace-input--fill .execution-workspace-readonly-content { height: auto; max-height: none; min-height: 0; flex: 1 1 auto; }
+.problem-page-v2 .execution-workspace-result { min-width: 0; max-height: 100%; overflow-y: auto; overflow-x: hidden; overflow-wrap: anywhere; color: var(--problem-soft); }
+.problem-page-v2 .execution-workspace-run-result-container { display: flex; min-width: 0; min-height: 0; flex: 1 1 auto; flex-direction: column; gap: 12px; overflow: hidden; }
+.problem-page-v2 .execution-workspace-run-result-container.has-ai-response { flex: 0 0 auto; overflow: visible; }
+.problem-page-v2 .execution-workspace-run-ai { min-width: 0; flex: 0 0 auto; overflow-wrap: anywhere; }
+.problem-page-v2 .execution-workspace-run-ai.has-ai-response { min-height: 0; overflow: visible; }
+.problem-page-v2 .execution-workspace-run-result-scroll { min-width: 0; min-height: 0; flex: 1 1 auto; overflow: visible; overflow-wrap: anywhere; }
+.problem-page-v2 .execution-workspace-run-result-container.has-ai-response .execution-workspace-run-result-scroll { flex: 0 0 auto; }
+.problem-page-v2 .execution-workspace-run-result { display: flex; min-width: 0; min-height: 0; height: 100%; box-sizing: border-box; flex-direction: column; gap: 8px; border: 1px solid var(--problem-border-strong); border-radius: 8px; padding: 12px; background: var(--problem-surface); overflow-y: auto; overflow-x: hidden; overflow-wrap: anywhere; }
+.problem-page-v2 .execution-workspace-run-result-container.has-ai-response .execution-workspace-run-result { height: auto; }
+.problem-page-v2 .execution-workspace-submit-result-container { display: flex; min-width: 0; min-height: 0; flex: 1 1 auto; flex-direction: column; gap: 12px; overflow: hidden; }
+.problem-page-v2 .execution-workspace.is-submit .execution-workspace-panel.is-full-height { height: 100%; min-height: 100%; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; overflow: visible; }
+.problem-page-v2 .execution-workspace.is-submit .execution-workspace-submit-result-container { overflow: visible; }
+.problem-page-v2 .execution-workspace-submit-result-container.has-ai-response { flex: 0 0 auto; overflow: visible; }
+.problem-page-v2 .execution-workspace-submit-ai { min-width: 0; flex: 0 0 auto; overflow-wrap: anywhere; }
+.problem-page-v2 .execution-workspace-submit-ai.has-ai-response { min-height: 0; overflow: visible; }
+.problem-page-v2 .execution-workspace-submit-result-scroll { min-width: 0; min-height: 0; flex: 1 1 auto; overflow: visible; overflow-wrap: anywhere; }
+.problem-page-v2 .execution-workspace-submit-result-scroll { display: flex; min-height: 120px; overflow: hidden; }
+.problem-page-v2 .execution-workspace-submit-result-container.has-ai-response .execution-workspace-submit-result-scroll { flex: 0 0 120px; }
+.problem-page-v2 .execution-workspace-submit-result { display: flex; min-width: 0; min-height: 120px; height: 100%; box-sizing: border-box; flex: 1 1 auto; flex-direction: column; gap: 8px; border: 1px solid var(--problem-border-strong); border-radius: 8px; padding: 12px; background: var(--problem-surface); overflow-y: auto; overflow-x: hidden; overflow-wrap: anywhere; color: var(--problem-soft); }
+.problem-page-v2 .execution-workspace-submit-result-container.has-ai-response .execution-workspace-submit-result { height: 100%; max-height: 100%; }
+.problem-page-v2 .execution-workspace-status { margin: 0 0 12px; font-weight: 800; }
+.problem-page-v2 .execution-workspace-run-result .execution-workspace-status { flex: 0 0 auto; color: var(--problem-text); }
+.problem-page-v2 .execution-workspace-run-result .execution-workspace-status .is-passed { color: #58d68d; }
+.problem-page-v2 .execution-workspace-run-result .execution-workspace-status .is-failed { color: #ff6b81; }
+.problem-page-v2 .execution-workspace-submit-result .execution-workspace-status { color: var(--problem-text); }
+.problem-page-v2 .execution-workspace-submit-result .execution-workspace-status .is-passed { color: #58d68d; }
+.problem-page-v2 .execution-workspace-submit-result .execution-workspace-status .is-failed { color: #ff6b81; }
+.problem-page-v2 .execution-workspace-submit-result .execution-workspace-status .is-error { color: #ff6b81; }
+.problem-page-v2 .execution-workspace-test-cards { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.problem-page-v2 .execution-workspace-test-card { min-width: 66px; box-sizing: border-box; padding: 7px 10px; border: 1px solid; border-radius: 7px; background: var(--problem-surface); color: var(--problem-text); font-size: .75rem; font-weight: 750; text-align: center; }
+.problem-page-v2 .execution-workspace-test-card.is-passed { border-color: #3aa96b; }
+.problem-page-v2 .execution-workspace-test-card.is-failed { border-color: #d94b63; }
+.problem-page-v2 .execution-workspace-test-card.is-neutral { border-color: #ffffff; }
+.problem-page-v2 .execution-workspace-ai-content { min-width: 0; }
+.problem-page-v2 .execution-workspace-ai-action { display: flex; justify-content: flex-end; margin: 0 0 8px; }
+.problem-page-v2 .execution-workspace-ai-button { border: 1px solid var(--problem-border-strong); border-radius: 7px; padding: 6px 10px; background: transparent; color: var(--problem-soft); font: inherit; font-size: .78rem; cursor: pointer; }
+.problem-page-v2 .execution-workspace-ai-button:hover, .problem-page-v2 .execution-workspace-ai-button:focus-visible { border-color: var(--green); color: var(--green); }
+.problem-page-v2 .execution-workspace-ai-status { margin: 0 0 8px; color: var(--problem-soft); font-size: .8rem; text-align: right; }
+.problem-page-v2 .execution-workspace-ai-result { margin: 0 0 10px; padding: 8px 10px; border: 1px solid var(--problem-border); border-radius: 7px; background: var(--problem-surface); color: var(--problem-soft); font-size: .8rem; }
+.problem-page-v2 .execution-workspace-run-ai.has-ai-response .execution-workspace-ai-result { height: var(--execution-ai-response-height); max-height: var(--execution-ai-response-height); box-sizing: border-box; margin-bottom: 0; overflow-y: auto; overflow-x: hidden; overflow-wrap: anywhere; }
+.problem-page-v2 .execution-workspace-submit-ai.has-ai-response .execution-workspace-ai-result { height: var(--execution-ai-response-height); max-height: var(--execution-ai-response-height); box-sizing: border-box; margin-bottom: 0; overflow-y: auto; overflow-x: hidden; overflow-wrap: anywhere; }
+.problem-page-v2 .execution-workspace-ai-summary { margin: 0 0 6px; color: var(--problem-text); }
+.problem-page-v2 .execution-workspace-ai-result ul { margin: 0; padding-left: 18px; }
+.problem-page-v2 .execution-workspace-run-error { min-width: 0; color: var(--problem-soft); overflow-wrap: anywhere; }
+.problem-page-v2 .execution-workspace-run-error p { margin: 4px 0; color: var(--problem-text); font-weight: 800; }
+.problem-page-v2 .execution-workspace-run-error div { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; word-break: break-word; }
+.problem-page-v2 .execution-workspace-submit-error { min-width: 0; overflow-wrap: anywhere; color: var(--problem-soft); }
+.problem-page-v2 .execution-workspace-submit-error p { margin: 4px 0; color: var(--problem-text); font-weight: 800; }
+.problem-page-v2 .execution-workspace-submit-error div { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; word-break: break-word; }
+.problem-page-v2 .execution-workspace.is-custom { overflow: hidden; }
+.problem-page-v2 .execution-workspace-custom-panel { display: flex; height: 100%; min-width: 0; min-height: 0; box-sizing: border-box; flex-direction: column; padding: 8px 12px 12px; }
+.problem-page-v2 .execution-workspace-custom-toolbar { display: flex; flex: 0 0 40px; min-height: 40px; align-items: flex-start; justify-content: flex-end; }
+.problem-page-v2 .execution-workspace-custom-run { display: flex; width: fit-content; height: 32px; min-width: 0; min-height: 32px; box-sizing: border-box; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 6px; margin: 0; padding: 0 12px; color: var(--problem-text); font-size: .82rem; font-weight: 750; line-height: 1; white-space: nowrap; }
+.problem-page-v2 .execution-workspace-custom-run .execution-workspace-run-icon { display: block; width: 14px; height: 14px; flex: 0 0 14px; fill: none; stroke: currentColor; stroke-linejoin: round; stroke-width: 1.8; }
+.problem-page-v2 .execution-workspace-custom-panes { display: grid; min-width: 0; min-height: 0; flex: 1 1 auto; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.problem-page-v2 .execution-workspace-custom-pane { display: flex; min-width: 0; min-height: 0; flex-direction: column; }
+.problem-page-v2 .execution-workspace-custom-pane h3 { flex: 0 0 auto; margin: 0 0 6px; color: var(--problem-text); font-size: .75rem; font-weight: 800; }
+.problem-page-v2 .execution-workspace-custom-pane textarea, .problem-page-v2 .execution-workspace-custom-output { display: block; width: 100%; min-width: 0; min-height: 0; height: auto; flex: 1 1 auto; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; overflow-wrap: anywhere; word-break: break-word; white-space: pre-wrap; border: 1px solid var(--problem-border-strong); border-radius: 8px; background: var(--problem-surface); color: var(--problem-soft); font: .9rem/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.problem-page-v2 .execution-workspace-custom-pane textarea { resize: none; padding: 12px; }
+.problem-page-v2 .execution-workspace-custom-output { padding: 12px; }
+.problem-page-v2 .execution-workspace-custom-error { margin-top: 8px; color: #ff6b81; }
+.problem-page-v2 .execution-workspace-custom-error div { margin-top: 4px; white-space: pre-wrap; }
+.problem-page-v2 .execution-workspace-custom-output .execution-workspace-ai-content { margin-top: 8px; }
+.problem-page-v2 .execution-workspace-custom-output > .execution-workspace-ai-content:first-child { margin-top: 0; }
+.problem-page-v2 .execution-workspace-custom-output .execution-workspace-ai-action { justify-content: flex-end; }
+.problem-page-v2 .execution-workspace-custom-output .execution-workspace-ai-result { margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--problem-border-strong); border-radius: 7px; background: var(--problem-panel); overflow: visible; overflow-wrap: anywhere; word-break: break-word; }
+.problem-page-v2 .execution-workspace.is-submit { overflow-y: auto; overflow-x: hidden; }
+.problem-page-v2 .execution-workspace.is-submit .execution-workspace-panel.is-full-height { height: auto; min-height: 100%; flex: 0 0 auto; overflow: visible; }
+.problem-page-v2 .execution-workspace.is-submit .execution-workspace-submit-result-container { flex: 0 0 auto; overflow: visible; }
+.problem-page-v2 .execution-workspace.is-submit .execution-workspace-submit-result-scroll { flex: 0 0 auto; min-height: 120px; overflow: visible; }
+.problem-page-v2 .execution-workspace.is-submit .execution-workspace-submit-ai.has-ai-response .execution-workspace-ai-result { height: auto; max-height: none; overflow: visible; overflow-wrap: anywhere; word-break: break-word; }
+.problem-page-v2 .execution-workspace.is-submit .execution-workspace-submit-result-container, .problem-page-v2 .execution-workspace.is-submit .execution-workspace-submit-ai, .problem-page-v2 .execution-workspace.is-submit .execution-workspace-submit-result-scroll, .problem-page-v2 .execution-workspace.is-submit .execution-workspace-submit-result { width: 100%; min-width: 0; }
+.problem-page-v2 .execution-workspace.is-submit .execution-workspace-submit-ai.has-ai-response .execution-workspace-ai-result { width: 100%; min-width: 0; min-height: var(--execution-ai-response-height); height: auto; max-height: none; overflow: visible; overflow-wrap: anywhere; word-break: break-word; }
+.problem-page-v2 .execution-workspace.is-submit .execution-workspace-submit-result { width: 100%; min-width: 0; min-height: 120px; height: auto; max-height: none; flex: 0 0 auto; }
+.problem-page-v2 .execution-workspace.is-submit:not(:has(.execution-workspace-submit-ai.has-ai-response)):has(.execution-workspace-submit-result .execution-workspace-status .is-passed) .execution-workspace-panel.is-full-height { height: 100%; min-height: 0; flex: 0 0 auto; }
+.problem-page-v2 .execution-workspace.is-submit:not(:has(.execution-workspace-submit-ai.has-ai-response)):has(.execution-workspace-submit-result .execution-workspace-status .is-passed) .execution-workspace-submit-result-container { flex: 1 1 auto; min-height: 0; }
+.problem-page-v2 .execution-workspace.is-submit:not(:has(.execution-workspace-submit-ai.has-ai-response)):has(.execution-workspace-submit-result .execution-workspace-status .is-passed) .execution-workspace-submit-result-scroll { flex: 1 1 auto; min-height: 0; }
+.problem-page-v2 .execution-workspace.is-submit:not(:has(.execution-workspace-submit-ai.has-ai-response)):has(.execution-workspace-submit-result .execution-workspace-status .is-passed) .execution-workspace-submit-result-scroll .execution-workspace-submit-result { height: 100%; flex: 1 1 auto; }
+.problem-page-v2 .execution-workspace.is-submit:not(:has(.execution-workspace-submit-ai.has-ai-response)):has(.execution-workspace-submit-result .execution-workspace-status :is(.is-failed, .is-error)) .execution-workspace-panel.is-full-height { height: 100%; min-height: 0; flex: 0 0 auto; }
+.problem-page-v2 .execution-workspace.is-submit:not(:has(.execution-workspace-submit-ai.has-ai-response)):has(.execution-workspace-submit-result .execution-workspace-status :is(.is-failed, .is-error)) .execution-workspace-submit-result-container { flex: 1 1 auto; min-height: 0; }
+.problem-page-v2 .execution-workspace.is-submit:not(:has(.execution-workspace-submit-ai.has-ai-response)):has(.execution-workspace-submit-result .execution-workspace-status :is(.is-failed, .is-error)) .execution-workspace-submit-result-scroll { flex: 1 1 auto; min-height: 0; }
+.problem-page-v2 .execution-workspace.is-submit:not(:has(.execution-workspace-submit-ai.has-ai-response)):has(.execution-workspace-submit-result .execution-workspace-status :is(.is-failed, .is-error)) .execution-workspace-submit-result-scroll .execution-workspace-submit-result { height: 100%; flex: 1 1 auto; }
 .problem-page-v2 .modal .primary-button { border-color: var(--problem-blue); background: var(--problem-blue); color: #07111f; }
 .problem-page-v2 .modal .primary-button:hover, .problem-page-v2 .modal .primary-button:focus-visible { border-color: #82b9ff; background: #82b9ff; color: #07111f; }

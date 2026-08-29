@@ -1,0 +1,3237 @@
+{
+  "schema": "module-8-canonical-problem-data-v0",
+  "source_spec": "canonical-problem-spec-v0.md",
+  "starter_code": {
+    "included": false,
+    "reason": "Trusted references are not user-facing starter code; starter code remains a separate seed decision."
+  },
+  "topics": [
+    {
+      "slug": "arrays",
+      "name": "Arrays",
+      "display_order": 1
+    },
+    {
+      "slug": "strings",
+      "name": "Strings",
+      "display_order": 2
+    },
+    {
+      "slug": "linked-list",
+      "name": "Linked List",
+      "display_order": 3
+    },
+    {
+      "slug": "stack-queue",
+      "name": "Stack & Queue",
+      "display_order": 4
+    },
+    {
+      "slug": "dynamic-programming",
+      "name": "Dynamic Programming",
+      "display_order": 5
+    }
+  ],
+  "problems": [
+    {
+      "identifier": "A1",
+      "slug": "arrays-two-sum",
+      "title": "Two Sum",
+      "topic": "Arrays",
+      "difficulty": "Easy",
+      "tags": [
+        "Hash Map",
+        "Complement Lookup",
+        "Index Tracking"
+      ],
+      "statement": "Given an array and a target, exactly one pair of distinct elements sums to the target. Output their zero-based indices in ascending order.",
+      "input_format": "`n target`, then `a1 ... an`.",
+      "output_format": "`i j`.",
+      "constraints": "`2≤n≤100000`, `-10^9≤ai,target≤10^9`; exactly one pair.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "4 9\n2 7 11 15",
+          "output": "0 1",
+          "explanation": "`2+7=9`, and the indices are ascending."
+        },
+        {
+          "example_number": 2,
+          "input": "4 6\n3 3 1 4",
+          "output": "0 1",
+          "explanation": "The equal values at indices 0 and 1 are the unique valid pair."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "../reference/arrays/two-sum.py",
+        "cpp": "canonical-problem-spec-v0.md#A1"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "4 9\n2 7 11 15",
+          "expected_output": "0 1",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "4 6\n3 3 1 4",
+          "expected_output": "0 1",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "2 0\n-5 5",
+          "expected_output": "0 1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "5 10\n1 2 3 4 9",
+          "expected_output": "0 4",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "6 -3\n4 -7 8 1 -2 9",
+          "expected_output": "0 1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "6 14\n9 8 5 7 1 12",
+          "expected_output": "0 2",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "7 1000000000\n-1 100 999999900 4 8 12 16",
+          "expected_output": "1 2",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "8 5\n0 0 0 1 2 4 -2 9",
+          "expected_output": "3 5",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "9 -10\n3 7 -4 -6 8 2 1 20 5",
+          "expected_output": "2 3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "10 28\n1 4 6 8 10 12 13 14 16 7",
+          "expected_output": "5 8",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "A2",
+      "slug": "arrays-best-time-stock",
+      "title": "Best Time to Buy and Sell Stock",
+      "topic": "Arrays",
+      "difficulty": "Easy",
+      "tags": [
+        "Greedy",
+        "Prefix Minimum",
+        "Array Scan"
+      ],
+      "statement": "Choose at most one buy day followed by a later sell day. Return the maximum non-negative profit.",
+      "input_format": "`n`, then `p1 ... pn`.",
+      "output_format": "One integer `maximum_profit`.",
+      "constraints": "`1≤n≤100000`, `0≤pi≤100000`.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "6\n7 1 5 3 6 4",
+          "output": "5",
+          "explanation": "Buy at 1 and sell at 6."
+        },
+        {
+          "example_number": 2,
+          "input": "5\n7 6 4 3 1",
+          "output": "0",
+          "explanation": "No later price is higher than an earlier price."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "../reference/arrays/best-time-to-buy-and-sell-stock.py",
+        "cpp": "canonical-problem-spec-v0.md#A2"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "6\n7 1 5 3 6 4",
+          "expected_output": "5",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "5\n7 6 4 3 1",
+          "expected_output": "0",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1\n9",
+          "expected_output": "0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "2\n1 10",
+          "expected_output": "9",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "6\n2 2 2 2 2 2",
+          "expected_output": "0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "6\n10 1 2 3 4 5",
+          "expected_output": "4",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "5\n1 2 3 4 100",
+          "expected_output": "99",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "7\n100000 0 99999 1 99998 2 3",
+          "expected_output": "99999",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "6\n5 4 3 2 8 1",
+          "expected_output": "6",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "8\n3 8 2 5 1 7 0 6",
+          "expected_output": "6",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "A3",
+      "slug": "arrays-contains-duplicate",
+      "title": "Contains Duplicate",
+      "topic": "Arrays",
+      "difficulty": "Easy",
+      "tags": [
+        "Hash Set",
+        "Membership Testing",
+        "Deduplication"
+      ],
+      "statement": "Report whether any value occurs at least twice.",
+      "input_format": "`n`, then `a1 ... an`.",
+      "output_format": "`true` or `false`.",
+      "constraints": "`1≤n≤100000`, `-10^9≤ai≤10^9`.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "4\n1 2 3 1",
+          "output": "true",
+          "explanation": "The value 1 occurs twice."
+        },
+        {
+          "example_number": 2,
+          "input": "4\n1 2 3 4",
+          "output": "false",
+          "explanation": "Every value occurs exactly once."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "../reference/arrays/contains-duplicate.py",
+        "cpp": "canonical-problem-spec-v0.md#A3"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "4\n1 2 3 1",
+          "expected_output": "true",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "4\n1 2 3 4",
+          "expected_output": "false",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1\n-7",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "2\n5 5",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "6\n0 0 0 0 0 0",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "6\n-1 -2 -3 -4 -5 -6",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "7\n1 2 3 4 5 6 1",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "8\n1000000000 0 -1000000000 3 4 5 6 7",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "9\n2 4 6 8 10 12 14 16 18",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "10\n9 8 7 6 5 4 3 2 1 9",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "A4",
+      "slug": "arrays-product-except-self",
+      "title": "Product of Array Except Self",
+      "topic": "Arrays",
+      "difficulty": "Medium",
+      "tags": [
+        "Prefix Product",
+        "Suffix Product",
+        "Zero Handling"
+      ],
+      "statement": "For each position output the product of every input value except the value at that position.",
+      "input_format": "`n`, then `a1 ... an`.",
+      "output_format": "`n` signed 64-bit integers `b1 ... bn`.",
+      "constraints": "`2≤n≤18`, `-10≤ai≤10`; division is prohibited; results fit signed 64-bit.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "4\n1 2 3 4",
+          "output": "24 12 8 6",
+          "explanation": "Each output is the product of the other three values."
+        },
+        {
+          "example_number": 2,
+          "input": "4\n-1 1 0 -3",
+          "output": "0 0 3 0",
+          "explanation": "Every product except the zero position includes a zero."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "../reference/arrays/product-of-array-except-self.py",
+        "cpp": "canonical-problem-spec-v0.md#A4"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "4\n1 2 3 4",
+          "expected_output": "24 12 8 6",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "4\n-1 1 0 -3",
+          "expected_output": "0 0 3 0",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "2\n5 -2",
+          "expected_output": "-2 5",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "3\n0 0 7",
+          "expected_output": "0 0 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "5\n1 0 2 0 4",
+          "expected_output": "0 0 0 0 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "3\n-2 -3 -4",
+          "expected_output": "12 8 6",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "6\n-1 2 -3 4 -5 6",
+          "expected_output": "720 -360 240 -180 144 -120",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "18\n10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10",
+          "expected_output": "100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000 100000000000000000",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "4\n-10 -10 1 1",
+          "expected_output": "-10 -10 100 100",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "7\n2 3 0 4 5 6 7",
+          "expected_output": "0 0 5040 0 0 0 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "A5",
+      "slug": "arrays-maximum-subarray",
+      "title": "Maximum Subarray",
+      "topic": "Arrays",
+      "difficulty": "Medium",
+      "tags": [
+        "Kadane Scan",
+        "Running Maximum",
+        "Contiguous Range"
+      ],
+      "statement": "Output the largest sum among all non-empty contiguous subarrays.",
+      "input_format": "`n`, then `a1 ... an`.",
+      "output_format": "One signed integer.",
+      "constraints": "`1≤n≤100000`, `-10^4≤ai≤10^4`.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "9\n-2 1 -3 4 -1 2 1 -5 4",
+          "output": "6",
+          "explanation": "The subarray `4 -1 2 1` has the greatest sum."
+        },
+        {
+          "example_number": 2,
+          "input": "5\n-8 -3 -6 -2 -5",
+          "output": "-2",
+          "explanation": "The best non-empty subarray is the single value -2."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "../reference/arrays/maximum-subarray.py",
+        "cpp": "canonical-problem-spec-v0.md#A5"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "9\n-2 1 -3 4 -1 2 1 -5 4",
+          "expected_output": "6",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "5\n-8 -3 -6 -2 -5",
+          "expected_output": "-2",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1\n7",
+          "expected_output": "7",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "6\n1 2 3 4 5 6",
+          "expected_output": "21",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "6\n0 -1 0 -2 0 3",
+          "expected_output": "3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "7\n-5 -1 -8 -2 -3 -4 -6",
+          "expected_output": "-1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "8\n5 -10 6 7 -2 3 -20 4",
+          "expected_output": "14",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "5\n10000 10000 -1 10000 10000",
+          "expected_output": "39999",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "7\n-4 6 -1 2 -7 5 5",
+          "expected_output": "10",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "10\n-1 -2 10 -3 4 -20 8 1 1 -1",
+          "expected_output": "11",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "S1",
+      "slug": "strings-valid-anagram",
+      "title": "Valid Anagram",
+      "topic": "Strings",
+      "difficulty": "Easy",
+      "tags": [
+        "Frequency Counting",
+        "Character Multiset",
+        "Hash Table"
+      ],
+      "statement": "Determine whether the two input strings contain exactly the same multiset of letters.",
+      "input_format": "Two lowercase strings `s` and `t` on one line.",
+      "output_format": "`true` or `false`.",
+      "constraints": "`1≤|s|,|t|≤100000`; both inputs contain only lowercase English letters.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "anagram nagaram",
+          "output": "true",
+          "explanation": "Both strings have identical letter counts."
+        },
+        {
+          "example_number": 2,
+          "input": "rat car",
+          "output": "false",
+          "explanation": "Their character multisets differ."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#S1",
+        "cpp": "canonical-problem-spec-v0.md#S1"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "anagram nagaram",
+          "expected_output": "true",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "rat car",
+          "expected_output": "false",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "a a",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "ab ba",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "aab aba",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "aab abb",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "abc abcd",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "zzzz zzzz",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "listen silent",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "algorithm logarithm",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "S2",
+      "slug": "strings-valid-palindrome",
+      "title": "Valid Palindrome",
+      "topic": "Strings",
+      "difficulty": "Easy",
+      "tags": [
+        "Two Pointers",
+        "Symmetry Check",
+        "String Scan"
+      ],
+      "statement": "Determine whether the lowercase string reads identically from both directions.",
+      "input_format": "One lowercase string `s`.",
+      "output_format": "`true` or `false`.",
+      "constraints": "`1≤|s|≤100000`; `s` contains only lowercase English letters.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "racecar",
+          "output": "true",
+          "explanation": "The string equals its reverse."
+        },
+        {
+          "example_number": 2,
+          "input": "hello",
+          "output": "false",
+          "explanation": "The first and last characters do not match symmetrically."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#S2",
+        "cpp": "canonical-problem-spec-v0.md#S2"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "racecar",
+          "expected_output": "true",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "hello",
+          "expected_output": "false",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "a",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "aa",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "ab",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "abba",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "abcba",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "abcca",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "zzzzzz",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "algorithm",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "S3",
+      "slug": "strings-longest-unique-substring",
+      "title": "Longest Substring Without Repeating Characters",
+      "topic": "Strings",
+      "difficulty": "Medium",
+      "tags": [
+        "Sliding Window",
+        "Last-Seen Index",
+        "Distinct Characters"
+      ],
+      "statement": "Output the maximum length of a contiguous substring containing no repeated character.",
+      "input_format": "One lowercase string `s`.",
+      "output_format": "One integer.",
+      "constraints": "`1≤|s|≤100000`; `s` contains only lowercase English letters.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "abcabcbb",
+          "output": "3",
+          "explanation": "`abc` is a longest substring without repetition."
+        },
+        {
+          "example_number": 2,
+          "input": "bbbbb",
+          "output": "1",
+          "explanation": "Any valid substring contains only one `b`."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#S3",
+        "cpp": "canonical-problem-spec-v0.md#S3"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "abcabcbb",
+          "expected_output": "3",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "bbbbb",
+          "expected_output": "1",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "a",
+          "expected_output": "1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "abcdef",
+          "expected_output": "6",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "pwwkew",
+          "expected_output": "3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "abca",
+          "expected_output": "3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "dvdf",
+          "expected_output": "3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "aab",
+          "expected_output": "2",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "abba",
+          "expected_output": "2",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "abcdefghijklmnopqrstuvwxyz",
+          "expected_output": "26",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "S4",
+      "slug": "strings-group-anagrams",
+      "title": "Group Anagrams",
+      "topic": "Strings",
+      "difficulty": "Medium",
+      "tags": [
+        "Canonical Key",
+        "Sorting",
+        "Deterministic Grouping"
+      ],
+      "statement": "Group anagrams and print groups deterministically. Sort words within each group and sort groups by their first word; print each group on one line, words separated by spaces.",
+      "input_format": "`n`, followed by `n` lowercase words.",
+      "output_format": "One deterministic line per group.",
+      "constraints": "`1≤n≤1000`; total word length is at most 100000; every word has length at least 1 and contains only lowercase English letters.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "6\nneat tea tan ate nat bat",
+          "output": "ate tea\nbat\nnat tan\nneat",
+          "explanation": "Words share a group exactly when their sorted-letter keys match."
+        },
+        {
+          "example_number": 2,
+          "input": "3\nabc bca cab",
+          "output": "abc bca cab",
+          "explanation": "All three words belong to one sorted group."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#S4",
+        "cpp": "canonical-problem-spec-v0.md#S4"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "6\nneat tea tan ate nat bat",
+          "expected_output": "ate tea\nbat\nnat tan\nneat",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "3\nabc bca cab",
+          "expected_output": "abc bca cab",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1\nsolo",
+          "expected_output": "solo",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "4\na a a a",
+          "expected_output": "a a a a",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "5\nab ba abc cba xyz",
+          "expected_output": "ab ba\nabc cba\nxyz",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "4\nbat tab eat tea",
+          "expected_output": "bat tab\neat tea",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "6\nlisten silent enlist google gogole inlets",
+          "expected_output": "enlist inlets listen silent\ngogole google",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "2\na bb",
+          "expected_output": "a\nbb",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "7\nab ba ab ba abc cba abc",
+          "expected_output": "ab ab ba ba\nabc abc cba",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "5\nzzz z zzz zz z",
+          "expected_output": "z z\nzz\nzzz zzz",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "S5",
+      "slug": "strings-longest-palindromic-substring",
+      "title": "Longest Palindromic Substring",
+      "topic": "Strings",
+      "difficulty": "Medium",
+      "tags": [
+        "Center Expansion",
+        "Palindrome",
+        "Tie Breaking"
+      ],
+      "statement": "Output the longest palindromic substring. If several have the same maximum length, output the one with the smallest starting index.",
+      "input_format": "One lowercase string `s`.",
+      "output_format": "The selected substring.",
+      "constraints": "`1≤|s|≤2000`; `s` contains only lowercase English letters.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "babad",
+          "output": "bab",
+          "explanation": "`bab` and `aba` tie, so the earliest start wins."
+        },
+        {
+          "example_number": 2,
+          "input": "cbbd",
+          "output": "bb",
+          "explanation": "The longest palindrome has even length."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#S5",
+        "cpp": "canonical-problem-spec-v0.md#S5"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "babad",
+          "expected_output": "bab",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "cbbd",
+          "expected_output": "bb",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "a",
+          "expected_output": "a",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "aaaa",
+          "expected_output": "aaaa",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "abc",
+          "expected_output": "a",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "racecarx",
+          "expected_output": "racecar",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "abccba",
+          "expected_output": "abccba",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "forgeeksskeegfor",
+          "expected_output": "geeksskeeg",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "aacabdkacaa",
+          "expected_output": "aca",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "noonabbad",
+          "expected_output": "noon",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "L1",
+      "slug": "linked-list-reverse",
+      "title": "Reverse Linked List",
+      "topic": "Linked List",
+      "difficulty": "Easy",
+      "tags": [
+        "Pointer Reversal",
+        "Iteration",
+        "In-Place Update"
+      ],
+      "statement": "Reverse the serialized singly linked list and print its values.",
+      "input_format": "`n`, then `n` integers; `0≤n≤100`.",
+      "output_format": "Reversed values on one line; empty input list produces an empty line.",
+      "constraints": "`0≤n≤100`; each list value is a signed 32-bit integer.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "5\n1 2 3 4 5",
+          "output": "5 4 3 2 1",
+          "explanation": "Each next link is reversed."
+        },
+        {
+          "example_number": 2,
+          "input": "3\n7 7 -1",
+          "output": "-1 7 7",
+          "explanation": "Values are preserved while order reverses."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#L1",
+        "cpp": "canonical-problem-spec-v0.md#L1"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "5\n1 2 3 4 5",
+          "expected_output": "5 4 3 2 1",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "3\n7 7 -1",
+          "expected_output": "-1 7 7",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "0",
+          "expected_output": "",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "1\n4",
+          "expected_output": "4",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "2\n-5 8",
+          "expected_output": "8 -5",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "6\n0 0 0 0 0 0",
+          "expected_output": "0 0 0 0 0 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "4\n10 -10 20 -20",
+          "expected_output": "-20 20 -10 10",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "7\n1 2 1 2 1 2 1",
+          "expected_output": "1 2 1 2 1 2 1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "3\n1000000000 0 -1000000000",
+          "expected_output": "-1000000000 0 1000000000",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "8\n8 1 6 2 7 3 5 4",
+          "expected_output": "4 5 3 7 2 6 1 8",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "L2",
+      "slug": "linked-list-merge-sorted",
+      "title": "Merge Two Sorted Lists",
+      "topic": "Linked List",
+      "difficulty": "Easy",
+      "tags": [
+        "Two Pointers",
+        "Stable Merge",
+        "Sorted Inputs"
+      ],
+      "statement": "Merge two nondecreasing serialized lists and print the resulting nondecreasing list.",
+      "input_format": "`n m`, then list A, then list B; `0≤n,m≤100`.",
+      "output_format": "All merged values, or an empty line.",
+      "constraints": "`0≤n,m≤100`; both serialized lists are nondecreasing; each value is a signed 32-bit integer.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "3 3\n1 2 4\n1 3 4",
+          "output": "1 1 2 3 4 4",
+          "explanation": "Select the smaller current head repeatedly."
+        },
+        {
+          "example_number": 2,
+          "input": "0 3\n\n2 5 6",
+          "output": "2 5 6",
+          "explanation": "Merging with an empty list returns the other list."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#L2",
+        "cpp": "canonical-problem-spec-v0.md#L2"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "3 3\n1 2 4\n1 3 4",
+          "expected_output": "1 1 2 3 4 4",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "0 3\n\n2 5 6",
+          "expected_output": "2 5 6",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "0 0",
+          "expected_output": "",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "1 0\n-1\n",
+          "expected_output": "-1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "4 4\n0 0 2 9\n0 1 2 8",
+          "expected_output": "0 0 0 1 2 2 8 9",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "3 2\n-5 -2 0\n-9 -8",
+          "expected_output": "-9 -8 -5 -2 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "2 4\n10 20\n1 2 3 4",
+          "expected_output": "1 2 3 4 10 20",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "3 3\n1 1 1\n1 1 1",
+          "expected_output": "1 1 1 1 1 1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "5 1\n-4 -3 -2 -1 0\n-10",
+          "expected_output": "-10 -4 -3 -2 -1 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "4 5\n2 4 6 8\n1 3 5 7 9",
+          "expected_output": "1 2 3 4 5 6 7 8 9",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "L3",
+      "slug": "linked-list-cycle",
+      "title": "Linked List Cycle",
+      "topic": "Linked List",
+      "difficulty": "Easy",
+      "tags": [
+        "Fast Slow Pointers",
+        "Cycle Detection",
+        "Index Encoding"
+      ],
+      "statement": "The serialized list has values followed by a cycle entry index. `-1` means the tail points to null; otherwise the tail points to that index. Output whether a cycle exists.",
+      "input_format": "`n entry`, then `n` values; `0≤n≤100`, `-1≤entry<n`.",
+      "output_format": "`true` or `false`.",
+      "constraints": "`0≤n≤100`; `-1≤entry<n`; values are signed 32-bit integers; `-1` means the tail points to null.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "4 1\n3 2 0 -4",
+          "output": "true",
+          "explanation": "The tail points back to index 1."
+        },
+        {
+          "example_number": 2,
+          "input": "2 -1\n1 2",
+          "output": "false",
+          "explanation": "The tail points to null."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#L3",
+        "cpp": "canonical-problem-spec-v0.md#L3"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "4 1\n3 2 0 -4",
+          "expected_output": "true",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "2 -1\n1 2",
+          "expected_output": "false",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "0 -1",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "1 0\n7",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "1 -1\n7",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "5 0\n1 2 3 4 5",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "5 4\n1 2 3 4 5",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "6 2\n0 0 0 0 0 0",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "3 -1\n-1 -1 -1",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "8 3\n8 1 6 2 7 3 5 4",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "L4",
+      "slug": "linked-list-remove-nth-from-end",
+      "title": "Remove Nth Node From End",
+      "topic": "Linked List",
+      "difficulty": "Medium",
+      "tags": [
+        "Two Pointers",
+        "Dummy Head",
+        "In-Place Deletion"
+      ],
+      "statement": "Remove the `n`th node counted from the tail. The input always has `1≤n≤length`; print the remaining list.",
+      "input_format": "`length n`, then `length` values; `1≤length≤100`, `1≤n≤length`.",
+      "output_format": "Remaining values, or an empty line.",
+      "constraints": "`1≤length≤100`; `1≤n≤length`; each value is a signed 32-bit integer.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "5 2\n1 2 3 4 5",
+          "output": "1 2 3 5",
+          "explanation": "The second node from the tail is removed."
+        },
+        {
+          "example_number": 2,
+          "input": "2 1\n1 2",
+          "output": "1",
+          "explanation": "The tail is removed."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#L4",
+        "cpp": "canonical-problem-spec-v0.md#L4"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "5 2\n1 2 3 4 5",
+          "expected_output": "1 2 3 5",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "2 1\n1 2",
+          "expected_output": "1",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1 1\n9",
+          "expected_output": "",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "4 4\n1 2 3 4",
+          "expected_output": "2 3 4",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "4 1\n1 2 3 4",
+          "expected_output": "1 2 3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "6 3\n0 0 0 0 0 0",
+          "expected_output": "0 0 0 0 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "5 3\n-5 -4 -3 -2 -1",
+          "expected_output": "-5 -4 -2 -1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "7 5\n1 2 3 4 5 6 7",
+          "expected_output": "1 2 4 5 6 7",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "3 2\n1000000000 0 -1000000000",
+          "expected_output": "1000000000 -1000000000",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "8 6\n8 1 6 2 7 3 5 4",
+          "expected_output": "8 1 2 7 3 5 4",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "L5",
+      "slug": "linked-list-add-two-numbers",
+      "title": "Add Two Numbers",
+      "topic": "Linked List",
+      "difficulty": "Medium",
+      "tags": [
+        "Carry Propagation",
+        "Digit Lists",
+        "Synchronized Traversal"
+      ],
+      "statement": "Each list stores one non-negative integer in reverse digit order. Add the two numbers and print the result in reverse digit order.",
+      "input_format": "`n m`, then `n` digits and `m` digits; `1≤n,m≤100`, digits 0–9.",
+      "output_format": "Result digits, least significant first; omit leading zeroes except that zero is printed as `0`.",
+      "constraints": "`1≤n,m≤100`; every list value is a decimal digit `0..9`; each list is reverse-digit order.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "3 3\n2 4 3\n5 6 4",
+          "output": "7 0 8",
+          "explanation": "The represented numbers are 342 and 465, totaling 807."
+        },
+        {
+          "example_number": 2,
+          "input": "2 1\n9 9\n1",
+          "output": "0 0 1",
+          "explanation": "99+1=100, represented least-significant digit first."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#L5",
+        "cpp": "canonical-problem-spec-v0.md#L5"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "3 3\n2 4 3\n5 6 4",
+          "expected_output": "7 0 8",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "2 1\n9 9\n1",
+          "expected_output": "0 0 1",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1 1\n0\n0",
+          "expected_output": "0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "1 1\n9\n1",
+          "expected_output": "0 1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "4 2\n9 9 9 9\n1 0",
+          "expected_output": "0 0 0 0 1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "3 5\n1 2 3\n9 9 9 9 9",
+          "expected_output": "0 2 3 0 0 1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "5 5\n0 0 0 0 1\n0 0 0 0 2",
+          "expected_output": "0 0 0 0 3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "2 3\n5 4\n5 4 3",
+          "expected_output": "0 9 3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "6 1\n8 7 6 5 4 3\n2",
+          "expected_output": "0 8 6 5 4 3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "4 4\n1 0 0 1\n9 9 9 0",
+          "expected_output": "0 0 0 2",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "Q1",
+      "slug": "stack-valid-parentheses",
+      "title": "Valid Parentheses",
+      "topic": "Stack & Queue",
+      "difficulty": "Easy",
+      "tags": [
+        "Stack Matching",
+        "Delimiters",
+        "Nesting"
+      ],
+      "statement": "Determine whether every bracket in the string is correctly opened, nested, and closed. Alphabet is `()[]{}` only.",
+      "input_format": "One non-empty bracket string; `1≤length≤100000`.",
+      "output_format": "`true` or `false`.",
+      "constraints": "`1≤length≤100000`; every character is one of `()[]{}`; the input is non-empty.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "()[]{}",
+          "output": "true",
+          "explanation": "Every opening delimiter closes in the correct order."
+        },
+        {
+          "example_number": 2,
+          "input": "(]",
+          "output": "false",
+          "explanation": "The closing bracket does not match the opening bracket."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#Q1",
+        "cpp": "canonical-problem-spec-v0.md#Q1"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "()[]{}",
+          "expected_output": "true",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "(]",
+          "expected_output": "false",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "(",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "[]",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "([{}])",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "([)]",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "]",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "{}{}[]",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "(((())))",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "{[()]}]",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "Q2",
+      "slug": "stack-min-stack",
+      "title": "Min Stack",
+      "topic": "Stack & Queue",
+      "difficulty": "Easy",
+      "tags": [
+        "Stack Invariant",
+        "Minimum Tracking",
+        "Query Processing"
+      ],
+      "statement": "Process operations on an initially empty stack. `push x`, `pop`, `top`, and `min` are given; queries are valid. Print one answer per `top` or `min` operation.",
+      "input_format": "`q`, then q operation lines; `1≤q≤100000`.",
+      "output_format": "Query answers, one per line.",
+      "constraints": "`1≤q≤100000`; `push` values satisfy `-10^9≤x≤10^9`; every `pop`, `top`, and `min` operates on a non-empty stack.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "6\npush 3\npush 1\nmin\npop\ntop\nmin",
+          "output": "1\n3\n3",
+          "explanation": "The minimum changes when the value 1 is removed."
+        },
+        {
+          "example_number": 2,
+          "input": "4\npush -2\ntop\nmin\npop",
+          "output": "-2\n-2",
+          "explanation": "Both queries observe the only stack value."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#Q2",
+        "cpp": "canonical-problem-spec-v0.md#Q2"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "6\npush 3\npush 1\nmin\npop\ntop\nmin",
+          "expected_output": "1\n3\n3",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "4\npush -2\ntop\nmin\npop",
+          "expected_output": "-2\n-2",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "2\npush 0\nmin",
+          "expected_output": "0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "7\npush 5\npush 5\nmin\npop\nmin\ntop\npop",
+          "expected_output": "5\n5\n5",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "8\npush 4\npush 2\npush 3\nmin\npop\nmin\npop\ntop",
+          "expected_output": "2\n2\n4",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "6\npush -1\npush -5\nmin\npop\ntop\nmin",
+          "expected_output": "-5\n-1\n-1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "5\npush 9\ntop\npop\npush 1\nmin",
+          "expected_output": "9\n1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "5\npush 1000000000\npush -1000000000\nmin\npop\ntop",
+          "expected_output": "-1000000000\n1000000000",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "8\npush 3\npush 1\npush 2\nmin\npop\nmin\npop\nmin",
+          "expected_output": "1\n1\n3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "5\npush 7\ntop\npop\npush 8\ntop",
+          "expected_output": "7\n8",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "Q3",
+      "slug": "stack-evaluate-rpn",
+      "title": "Evaluate Reverse Polish Notation",
+      "topic": "Stack & Queue",
+      "difficulty": "Medium",
+      "tags": [
+        "Operand Stack",
+        "Postfix Evaluation",
+        "Truncating Division"
+      ],
+      "statement": "Evaluate an integer expression in reverse Polish notation. Tokens are integers or `+ - * /`; division truncates toward zero. The expression is valid and has no division by zero.",
+      "input_format": "`n`, then n space-separated tokens; `1≤n≤1000`.",
+      "output_format": "One integer.",
+      "constraints": "`1≤n≤1000`; tokens are integers or `+ - * /`; the expression is valid, leaves one result, and never divides by zero; intermediate results fit signed 64-bit.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "5\n2 1 + 3 *",
+          "output": "9",
+          "explanation": "`(2+1)*3=9` in postfix order."
+        },
+        {
+          "example_number": 2,
+          "input": "5\n4 13 5 / +",
+          "output": "6",
+          "explanation": "`13/5` truncates toward zero before adding 4."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#Q3",
+        "cpp": "canonical-problem-spec-v0.md#Q3"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "5\n2 1 + 3 *",
+          "expected_output": "9",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "5\n4 13 5 / +",
+          "expected_output": "6",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1\n7",
+          "expected_output": "7",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "3\n5 2 -",
+          "expected_output": "3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "3\n2 5 /",
+          "expected_output": "0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "3\n-7 2 /",
+          "expected_output": "-3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "13\n10 6 9 3 + -11 * / * 17 + 5 +",
+          "expected_output": "22",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "7\n3 4 + 2 * 7 /",
+          "expected_output": "2",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "5\n-3 -2 * 5 +",
+          "expected_output": "11",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "9\n8 2 / 3 - 4 2 * +",
+          "expected_output": "9",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "Q4",
+      "slug": "stack-daily-temperatures",
+      "title": "Daily Temperatures",
+      "topic": "Stack & Queue",
+      "difficulty": "Medium",
+      "tags": [
+        "Monotonic Stack",
+        "Next Greater Element",
+        "Deferred Resolution"
+      ],
+      "statement": "For each temperature, output the number of days until a warmer temperature; output 0 if none exists.",
+      "input_format": "`n`, then n integer temperatures; `1≤n≤100000`.",
+      "output_format": "n space-separated integers.",
+      "constraints": "`1≤n≤100000`; `-100≤temperature[i]≤100`.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "8\n73 74 75 71 69 72 76 73",
+          "output": "1 1 4 2 1 1 0 0",
+          "explanation": "Each value reports the wait for its next warmer day."
+        },
+        {
+          "example_number": 2,
+          "input": "5\n30 40 50 60 70",
+          "output": "1 1 1 1 0",
+          "explanation": "Every day waits exactly one day except the last."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#Q4",
+        "cpp": "canonical-problem-spec-v0.md#Q4"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "8\n73 74 75 71 69 72 76 73",
+          "expected_output": "1 1 4 2 1 1 0 0",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "5\n30 40 50 60 70",
+          "expected_output": "1 1 1 1 0",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1\n10",
+          "expected_output": "0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "5\n70 60 50 40 30",
+          "expected_output": "0 0 0 0 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "5\n20 20 20 20 20",
+          "expected_output": "0 0 0 0 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "6\n10 11 9 12 8 13",
+          "expected_output": "1 2 1 2 1 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "4\n-10 -5 -6 0",
+          "expected_output": "1 2 1 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "7\n1 3 2 4 3 5 0",
+          "expected_output": "1 2 1 2 1 0 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "6\n0 -1 -2 1 -3 2",
+          "expected_output": "3 2 1 2 1 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "8\n5 4 3 2 6 1 7 0",
+          "expected_output": "4 3 2 1 2 1 0 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "Q5",
+      "slug": "queue-sliding-window-maximum",
+      "title": "Sliding Window Maximum",
+      "topic": "Stack & Queue",
+      "difficulty": "Medium",
+      "tags": [
+        "Monotonic Deque",
+        "Sliding Window",
+        "Expiring Indices"
+      ],
+      "statement": "Output the maximum value in every contiguous window of width k.",
+      "input_format": "`n k`, then n integers; `1≤k≤n≤100000`.",
+      "output_format": "`n-k+1` space-separated integers.",
+      "constraints": "`1≤k≤n≤100000`; every array value is a signed 32-bit integer.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "8 3\n1 3 -1 -3 5 3 6 7",
+          "output": "3 3 5 5 6 7",
+          "explanation": "The deque keeps the maximum candidate for each width-three window."
+        },
+        {
+          "example_number": 2,
+          "input": "1 1\n9",
+          "output": "9",
+          "explanation": "A width-one window contains its only element."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#Q5",
+        "cpp": "canonical-problem-spec-v0.md#Q5"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "8 3\n1 3 -1 -3 5 3 6 7",
+          "expected_output": "3 3 5 5 6 7",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "1 1\n9",
+          "expected_output": "9",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "5 1\n4 -1 2 7 0",
+          "expected_output": "4 -1 2 7 0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "5 5\n4 -1 2 7 0",
+          "expected_output": "7",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "6 2\n1 1 1 1 1 1",
+          "expected_output": "1 1 1 1 1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "5 2\n-5 -2 -8 -1 -3",
+          "expected_output": "-2 -2 -1 -1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "7 4\n9 3 5 1 6 2 8",
+          "expected_output": "9 6 6 8",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "6 3\n10 9 8 7 6 5",
+          "expected_output": "10 9 8 7",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "6 3\n1 5 2 5 3 5",
+          "expected_output": "5 5 5 5",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "8 5\n0 4 2 9 1 3 8 7",
+          "expected_output": "9 9 9 9",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "D1",
+      "slug": "dp-climbing-stairs",
+      "title": "Climbing Stairs",
+      "topic": "Dynamic Programming",
+      "difficulty": "Easy",
+      "tags": [
+        "Fibonacci Recurrence",
+        "State Compression",
+        "Counting"
+      ],
+      "statement": "Count ways to reach stair n when each move climbs one or two stairs. The order of moves matters.",
+      "input_format": "One integer n; `1≤n≤45`.",
+      "output_format": "Number of ways.",
+      "constraints": "`1≤n≤45`; each move advances exactly one or two stairs.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "2",
+          "output": "2",
+          "explanation": "The two sequences are 1+1 and 2."
+        },
+        {
+          "example_number": 2,
+          "input": "5",
+          "output": "8",
+          "explanation": "The recurrence counts all one-step/two-step sequences."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#D1",
+        "cpp": "canonical-problem-spec-v0.md#D1"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "2",
+          "expected_output": "2",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "5",
+          "expected_output": "8",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1",
+          "expected_output": "1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "3",
+          "expected_output": "3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "4",
+          "expected_output": "5",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "10",
+          "expected_output": "89",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "20",
+          "expected_output": "10946",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "30",
+          "expected_output": "1346269",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "44",
+          "expected_output": "1134903170",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "45",
+          "expected_output": "1836311903",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "D2",
+      "slug": "dp-house-robber",
+      "title": "House Robber",
+      "topic": "Dynamic Programming",
+      "difficulty": "Easy",
+      "tags": [
+        "Non-Adjacent Selection",
+        "Rolling DP",
+        "Optimal Substructure"
+      ],
+      "statement": "Houses in a line contain non-negative amounts. Rob no two adjacent houses; output the maximum amount.",
+      "input_format": "`n`, then n amounts; `1≤n≤100000`, `0≤amount≤10000`.",
+      "output_format": "One integer.",
+      "constraints": "`1≤n≤100000`; `0≤amount[i]≤10000` for every house.",
+      "time_limit_ms": 1000,
+      "memory_limit_mb": 128,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "4\n1 2 3 1",
+          "output": "4",
+          "explanation": "Rob houses 0 and 2."
+        },
+        {
+          "example_number": 2,
+          "input": "5\n2 7 9 3 1",
+          "output": "12",
+          "explanation": "Rob houses containing 2, 9, and 1."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#D2",
+        "cpp": "canonical-problem-spec-v0.md#D2"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "4\n1 2 3 1",
+          "expected_output": "4",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "5\n2 7 9 3 1",
+          "expected_output": "12",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1\n10",
+          "expected_output": "10",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "5\n0 0 0 0 0",
+          "expected_output": "0",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "6\n5 1 1 5 1 1",
+          "expected_output": "11",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "7\n2 10 2 10 2 10 2",
+          "expected_output": "30",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "3\n10000 1 10000",
+          "expected_output": "20000",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "6\n1 2 3 4 5 6",
+          "expected_output": "12",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "8\n8 7 6 5 4 3 2 1",
+          "expected_output": "20",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "5\n4 1 1 4 1",
+          "expected_output": "8",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "D3",
+      "slug": "dp-coin-change",
+      "title": "Coin Change",
+      "topic": "Dynamic Programming",
+      "difficulty": "Medium",
+      "tags": [
+        "Unbounded Knapsack",
+        "Minimum Count",
+        "Bottom-Up DP"
+      ],
+      "statement": "Given coin denominations and a target amount, output the fewest coins needed, or -1 if impossible. Each denomination may be reused.",
+      "input_format": "`m amount`, then m positive coin values; `1≤m≤20`, `1≤amount≤10000`.",
+      "output_format": "Minimum count or `-1`.",
+      "constraints": "`1≤m≤20`; `1≤amount≤10000`; every coin denomination is a positive integer; coins may be reused.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "3 11\n1 2 5",
+          "output": "3",
+          "explanation": "11 uses 5+5+1."
+        },
+        {
+          "example_number": 2,
+          "input": "2 3\n2 4",
+          "output": "-1",
+          "explanation": "No combination of 2 and 4 makes 3."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#D3",
+        "cpp": "canonical-problem-spec-v0.md#D3"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "3 11\n1 2 5",
+          "expected_output": "3",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "2 3\n2 4",
+          "expected_output": "-1",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1 1\n1",
+          "expected_output": "1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "1 7\n7",
+          "expected_output": "1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "3 6\n1 3 4",
+          "expected_output": "2",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "2 10\n6 4",
+          "expected_output": "2",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "4 27\n2 5 10 20",
+          "expected_output": "3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "3 8\n3 5 7",
+          "expected_output": "2",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "5 30\n1 6 7 13 20",
+          "expected_output": "5",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "4 9\n2 3 4 8",
+          "expected_output": "3",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "D4",
+      "slug": "dp-longest-increasing-subsequence",
+      "title": "Longest Increasing Subsequence",
+      "topic": "Dynamic Programming",
+      "difficulty": "Medium",
+      "tags": [
+        "Patience Sorting",
+        "Lower Bound",
+        "Subsequence Length"
+      ],
+      "statement": "Output the length of a strictly increasing subsequence.",
+      "input_format": "`n`, then n integers; `1≤n≤100000`, `-10^9≤ai≤10^9`.",
+      "output_format": "One integer.",
+      "constraints": "`1≤n≤100000`; `-10^9≤ai≤10^9`; increasing means strictly increasing by index.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "8\n10 9 2 5 3 7 101 18",
+          "output": "4",
+          "explanation": "One LIS is 2,3,7,101."
+        },
+        {
+          "example_number": 2,
+          "input": "6\n0 1 0 3 2 3",
+          "output": "4",
+          "explanation": "One LIS is 0,1,2,3."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#D4",
+        "cpp": "canonical-problem-spec-v0.md#D4"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "8\n10 9 2 5 3 7 101 18",
+          "expected_output": "4",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "6\n0 1 0 3 2 3",
+          "expected_output": "4",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "1\n5",
+          "expected_output": "1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "5\n1 2 3 4 5",
+          "expected_output": "5",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "5\n5 4 3 2 1",
+          "expected_output": "1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "6\n2 2 2 2 2 2",
+          "expected_output": "1",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "7\n-5 -1 -3 0 2 -2 4",
+          "expected_output": "5",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "8\n8 1 2 3 0 4 5 6",
+          "expected_output": "6",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "6\n1000000000 -1 0 1 2 3",
+          "expected_output": "5",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "9\n3 10 2 1 20 4 6 7 8",
+          "expected_output": "5",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    },
+    {
+      "identifier": "D5",
+      "slug": "dp-word-break",
+      "title": "Word Break",
+      "topic": "Dynamic Programming",
+      "difficulty": "Medium",
+      "tags": [
+        "Prefix DP",
+        "Dictionary Matching",
+        "Reusable Words"
+      ],
+      "statement": "Given a string and a dictionary, determine whether the string can be split into one or more dictionary words. Words may be reused.",
+      "input_format": "String `s`, then integer m, then m lowercase dictionary words; `1≤|s|≤100`, `1≤m≤50`, word lengths≤20.",
+      "output_format": "`true` or `false`.",
+      "constraints": "`1≤|s|≤100`; `1≤m≤50`; dictionary words have length `1..20`; all characters are lowercase English letters; words may be reused.",
+      "time_limit_ms": 1500,
+      "memory_limit_mb": 256,
+      "examples": [
+        {
+          "example_number": 1,
+          "input": "leetcode 2\nleet code",
+          "output": "true",
+          "explanation": "The string splits as leet + code."
+        },
+        {
+          "example_number": 2,
+          "input": "catsandog 5\ncats dog sand and cat",
+          "output": "false",
+          "explanation": "The final `og` cannot be covered."
+        }
+      ],
+      "trusted_reference_sources": {
+        "python": "canonical-problem-spec-v0.md#D5",
+        "cpp": "canonical-problem-spec-v0.md#D5"
+      },
+      "test_cases": [
+        {
+          "case_key": "P1",
+          "input": "leetcode 2\nleet code",
+          "expected_output": "true",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 1
+        },
+        {
+          "case_key": "P2",
+          "input": "catsandog 5\ncats dog sand and cat",
+          "expected_output": "false",
+          "run_enabled": true,
+          "submit_enabled": true,
+          "is_sample": true,
+          "display_order": 2
+        },
+        {
+          "case_key": "H1",
+          "input": "a 1\na",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 3
+        },
+        {
+          "case_key": "H2",
+          "input": "aaaaaaa 2\na aa",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 4
+        },
+        {
+          "case_key": "H3",
+          "input": "applepenapple 2\napple pen",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 5
+        },
+        {
+          "case_key": "H4",
+          "input": "catsanddog 5\ncat cats and sand dog",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 6
+        },
+        {
+          "case_key": "H5",
+          "input": "cars 3\ncar ca rs",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 7
+        },
+        {
+          "case_key": "H6",
+          "input": "aaaaab 2\na aa",
+          "expected_output": "false",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 8
+        },
+        {
+          "case_key": "H7",
+          "input": "book 2\nbo ok",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 9
+        },
+        {
+          "case_key": "H8",
+          "input": "abcd 3\nab abc cd",
+          "expected_output": "true",
+          "run_enabled": false,
+          "submit_enabled": true,
+          "is_sample": false,
+          "display_order": 10
+        }
+      ]
+    }
+  ]
+}
