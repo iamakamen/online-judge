@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './PrimarySidebar.css'
 
 export function LoomMark() {
@@ -57,7 +57,7 @@ function ProfileIcon() {
   )
 }
 
-function SidebarItem({ label, icon, active = false, onClick, href }) {
+function SidebarItem({ label, icon, active = false, onClick, href, onContextMenu }) {
   const className = `practice-sidebar-item${active ? ' is-active' : ''}`
 
   if (href) {
@@ -66,6 +66,7 @@ function SidebarItem({ label, icon, active = false, onClick, href }) {
         href={href}
         className={className}
         aria-current={active ? 'page' : undefined}
+        onContextMenu={onContextMenu}
         onClick={(event) => {
           if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
           event.preventDefault()
@@ -93,11 +94,75 @@ function SidebarItem({ label, icon, active = false, onClick, href }) {
 
 export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate, onV2Click, activeItem = 'Practice' }) {
   const isPointerInside = useRef(false)
-  const sidebarRef = useRef(null)
+  const contextMenuRef = useRef(null)
+  const [contextMenu, setContextMenu] = useState(null)
+
+  useEffect(() => {
+    if (!contextMenu || !contextMenuRef.current) return undefined
+    const menuElement = contextMenuRef.current
+    const handleOutsideClick = (event) => {
+      if (!menuElement.contains(event.target)) setContextMenu(null)
+    }
+    const bounds = menuElement.getBoundingClientRect()
+    const left = Math.max(0, Math.min(contextMenu.left, window.innerWidth - bounds.width))
+    const top = Math.max(0, Math.min(contextMenu.top, window.innerHeight - bounds.height))
+    if (left !== contextMenu.left || top !== contextMenu.top) {
+      setContextMenu((current) => current ? { ...current, left, top } : current)
+    }
+    menuElement.querySelector('[role="menuitem"]')?.focus()
+    window.addEventListener('click', handleOutsideClick)
+    return () => window.removeEventListener('click', handleOutsideClick)
+  }, [contextMenu])
 
   const handleNavigate = (path) => {
     onCollapse()
     navigate(path)
+  }
+
+  const handleContextMenu = (event, path) => {
+    event.preventDefault()
+    setContextMenu({ path, left: event.clientX, top: event.clientY })
+  }
+
+  const contextMenuItems = [
+    { label: 'Open in New Tab', action: 'tab' },
+    { label: 'Copy Link', action: 'copy' },
+  ]
+
+  const closeContextMenu = () => setContextMenu(null)
+
+  const handleContextMenuAction = async (action) => {
+    if (!contextMenu) return
+    const destination = new URL(contextMenu.path, window.location.href).href
+    closeContextMenu()
+    onCollapse()
+    if (action === 'copy') {
+      try {
+        await navigator.clipboard.writeText(destination)
+      } catch {
+        // Clipboard access may be unavailable; leave unrelated state unchanged.
+      }
+      return
+    }
+    window.open(destination, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleContextMenuKeyDown = (event) => {
+    const items = contextMenuRef.current?.querySelectorAll('[role="menuitem"]')
+    const currentIndex = [...(items || [])].indexOf(document.activeElement)
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      closeContextMenu()
+    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      const nextIndex = event.key === 'ArrowDown'
+        ? (currentIndex + 1) % contextMenuItems.length
+        : (currentIndex - 1 + contextMenuItems.length) % contextMenuItems.length
+      items?.[nextIndex]?.focus()
+    } else if (event.key === 'Enter' && currentIndex >= 0) {
+      event.preventDefault()
+      handleContextMenuAction(contextMenuItems[currentIndex].action)
+    }
   }
 
   const handleMouseEnter = () => {
@@ -107,36 +172,36 @@ export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate, onV
 
   const handleMouseLeave = () => {
     isPointerInside.current = false
-    if (!sidebarRef.current?.contains(document.activeElement)) {
-      onCollapse()
-    }
+    if (contextMenu) return
+    onCollapse()
   }
 
   return (
     <aside
-      ref={sidebarRef}
       className={`practice-sidebar${isExpanded ? ' is-expanded' : ''}`}
       aria-label="Primary navigation"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onFocus={onExpand}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget) && !isPointerInside.current) onCollapse()
-      }}
     >
-      <button
-        type="button"
+      <a
+        href="/dashboard"
         className="practice-sidebar-brand"
         aria-label="Go to Dashboard"
         title="Dashboard"
-        onClick={() => handleNavigate('/dashboard')}
+        onClick={(event) => {
+          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+          event.preventDefault()
+          handleNavigate('/dashboard')
+        }}
+        onContextMenu={(event) => handleContextMenu(event, '/dashboard')}
       >
         <LoomMark />
         <span className="practice-sidebar-wordmark">encode</span>
-      </button>
+      </a>
 
       <nav className="practice-sidebar-nav">
-        <SidebarItem label="Practice" icon={<PracticeIcon />} active={activeItem === 'Practice'} href="/practice" onClick={() => handleNavigate('/practice')} />
+        <SidebarItem label="Practice" icon={<PracticeIcon />} active={activeItem === 'Practice'} href="/practice" onClick={() => handleNavigate('/practice')} onContextMenu={(event) => handleContextMenu(event, '/practice')} />
         <SidebarItem label="Learn" icon={<LearnIcon />} active={activeItem === 'Learn'} onClick={() => onV2Click?.('Learn')} />
         <SidebarItem label="Contest" icon={<ContestIcon />} active={activeItem === 'Contest'} onClick={() => onV2Click?.('Contest')} />
         <SidebarItem label="Forum" icon={<ForumIcon />} active={activeItem === 'Forum'} onClick={() => onV2Click?.('Forum')} />
@@ -145,6 +210,26 @@ export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate, onV
       <div className="practice-sidebar-profile">
         <SidebarItem label="Profile" icon={<ProfileIcon />} active={activeItem === 'Profile'} onClick={() => onV2Click?.('Profile')} />
       </div>
+      {contextMenu && (
+        <div
+          ref={contextMenuRef}
+          className="practice-sidebar-context-menu"
+          role="menu"
+          aria-label={`${contextMenu.path === '/dashboard' ? 'Dashboard' : 'Practice'} actions`}
+          style={{ left: contextMenu.left, top: contextMenu.top }}
+          tabIndex={-1}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) closeContextMenu()
+          }}
+          onKeyDown={handleContextMenuKeyDown}
+        >
+          {contextMenuItems.map((item) => (
+            <button key={item.action} type="button" role="menuitem" onClick={() => handleContextMenuAction(item.action)}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
     </aside>
   )
 }
