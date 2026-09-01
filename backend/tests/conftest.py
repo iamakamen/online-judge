@@ -18,6 +18,7 @@ from backend.app.db.base import Base
 from backend.app.db.session import engine, get_db
 from backend.app.main import app
 from backend.app.models.problem import Problem
+from backend.app.models.accepted_solution import AcceptedSolution
 from backend.app.models.submission import Submission
 from backend.app.models.submission_result import SubmissionResult
 from backend.app.models.refresh_session import RefreshSession
@@ -49,6 +50,7 @@ def db() -> Generator[Session, None, None]:
 
 @pytest.fixture(autouse=True)
 def clean_database(db: Session) -> Generator[None, None, None]:
+    db.execute(delete(AcceptedSolution))
     db.execute(delete(SubmissionResult))
     db.execute(delete(Submission))
     db.execute(delete(UserProblemProgress))
@@ -62,6 +64,7 @@ def clean_database(db: Session) -> Generator[None, None, None]:
     yield
 
     db.rollback()
+    db.execute(delete(AcceptedSolution))
     db.execute(delete(SubmissionResult))
     db.execute(delete(Submission))
     db.execute(delete(UserProblemProgress))

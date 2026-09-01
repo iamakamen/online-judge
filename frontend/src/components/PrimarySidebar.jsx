@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import './PrimarySidebar.css'
 
-export function LoomMark() {
+export function LoomMark({ viewBox = '0 0 32 32' }) {
   return (
-    <svg viewBox="0 0 32 32" aria-hidden="true" className="practice-sidebar-logo">
+    <svg viewBox={viewBox} aria-hidden="true" className="practice-sidebar-logo">
       <path d="M8 7.5c3.7 0 6.5 1.7 8 4.8 1.5-3.1 4.3-4.8 8-4.8" />
       <path d="M8 24.5c3.7 0 6.5-1.7 8-4.8 1.5 3.1 4.3 4.8 8 4.8" />
       <path d="M7.5 8c0 3.7 1.7 6.5 4.8 8-3.1 1.5-4.8 4.3-4.8 8" />
@@ -134,8 +135,10 @@ export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate, onV
   const handleContextMenuAction = async (action) => {
     if (!contextMenu) return
     const destination = new URL(contextMenu.path, window.location.href).href
-    closeContextMenu()
-    onCollapse()
+    flushSync(() => {
+      closeContextMenu()
+      onCollapse()
+    })
     if (action === 'copy') {
       try {
         await navigator.clipboard.writeText(destination)

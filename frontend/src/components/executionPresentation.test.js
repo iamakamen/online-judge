@@ -51,6 +51,17 @@ test('keeps unexecuted Run tests neutral and exposes exactly two Run cases', () 
   assert.deepEqual(runResultTestCases({ results: [{ status: 'failed' }] }), [{ status: 'failed' }, null])
 })
 
+test('keeps accepted-solution loading errors separate from problem loading errors', () => {
+  const acceptedRequest = problemSource.slice(
+    problemSource.indexOf('const saved = await requestAuthenticated'),
+    problemSource.indexOf('      })\n      .catch((requestError)', problemSource.indexOf('const saved = await requestAuthenticated')),
+  )
+  assert.match(acceptedRequest, /catch \{/)
+  assert.match(acceptedRequest, /setAcceptedSolutions\(null\)/)
+  assert.match(problemSource, /getProblemBySlug\(accessToken, slug\)/)
+  assert.match(problemSource, /notFound: requestError instanceof ApiError && requestError.status === 404/)
+})
+
 test('maps the three fail-fast Run outcomes to card states', () => {
   const states = (result) => runResultTestCases(result).map(runTestState)
   assert.deepEqual(states({ status: 'failed', results: [{ status: 'failed' }] }), ['is-failed', 'is-neutral'])

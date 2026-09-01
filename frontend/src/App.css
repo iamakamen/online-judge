@@ -33,9 +33,13 @@ button { cursor: pointer; }
 .app-shell { min-height: 100svh; }
 
 .topbar { display: flex; min-height: 76px; box-sizing: border-box; align-items: center; justify-content: space-between; padding: 0 5vw; border-bottom: 1px solid var(--border); background: var(--sidebar); }
+.dashboard-topbar { border-bottom: 0; background: transparent; }
 .brand { display: inline-grid; width: 44px; height: 44px; place-items: center; border: 0; border-radius: var(--radius-md); background: transparent; color: var(--green); }
 .brand:hover, .brand:focus-visible { background: var(--panel-raised); }
 .brand .practice-sidebar-logo { width: 30px; height: 30px; }
+.dashboard-brand { display: flex; width: max-content; height: 60px; align-items: center; gap: 8px; color: var(--blue); }
+.dashboard-brand .practice-sidebar-logo { width: 52px; height: 52px; flex: 0 0 52px; stroke-width: 1.9; }
+.dashboard-brand > span { display: flex; height: 52px; align-items: center; color: var(--text); font-size: 1.7rem; font-weight: 800; letter-spacing: 1px; line-height: 1; }
 .account-nav { display: flex; align-items: center; gap: var(--space-4); }
 .icon-button, .text-button, .link-button { border: 0; background: transparent; color: inherit; }
 .icon-button { display: inline-grid; place-items: center; padding: 8px; border-radius: 999px; }
@@ -44,7 +48,7 @@ button { cursor: pointer; }
 .text-button, .link-button { color: var(--green); }
 .text-button:hover, .link-button:hover { color: #d5ffa1; }
 
-.dashboard-page { width: min(100%, 1180px); box-sizing: border-box; margin: 0 auto; padding: 72px 32px 56px; }
+.dashboard-page { display: flex; width: min(100%, 1180px); min-height: calc(100svh - 76px); box-sizing: border-box; margin: 0 auto; flex-direction: column; justify-content: center; padding: 32px; }
 .dashboard-intro h1 { margin: 10px 0 14px; font-size: clamp(2.6rem, 6vw, 5.2rem); letter-spacing: -.065em; line-height: .98; }
 .eyebrow { margin: 0; color: var(--green); font-size: .72rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
 .muted, .stat-card span, .action-card small { color: var(--text-muted); }
@@ -54,12 +58,23 @@ button { cursor: pointer; }
 .stat-card { display: flex; min-height: 132px; flex-direction: column; gap: var(--space-2); justify-content: center; padding: var(--space-4); }
 .stat-card strong { color: var(--text); font-size: 2.25rem; }
 .dashboard-actions { grid-template-columns: repeat(4, 1fr); }
-.action-card { display: flex; min-height: 148px; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: var(--space-4); color: var(--text); text-align: left; }
+.action-card { display: flex; min-height: 148px; box-sizing: border-box; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: var(--space-4); color: var(--text); text-align: left; text-decoration: none; }
 .action-card:hover, .action-card:focus-visible { border-color: var(--border-strong); background: var(--panel-raised); }
 .action-card span { font-size: 1.25rem; font-weight: 750; }
-.primary-action { border-color: var(--green); background: var(--green); color: #10170d; }
-.primary-action:hover, .primary-action:focus-visible { border-color: #d5ffa1; background: #c9fa91; }
-.primary-action small { color: #304221; }
+/* Dashboard uses the application's blue accent without changing semantic colors elsewhere. */
+.dashboard-shell .eyebrow,
+.dashboard-shell .text-button,
+.dashboard-shell .link-button { color: var(--blue); }
+.dashboard-shell button:focus-visible { outline-color: var(--blue); }
+.dashboard-shell .text-button:hover,
+.dashboard-shell .link-button:hover { color: #b9d8ff; }
+.dashboard-shell .primary-action { border-color: var(--blue); background: var(--blue); color: #07111f; }
+.dashboard-shell .primary-action:hover,
+.dashboard-shell .primary-action:focus-visible { border-color: #b9d8ff; background: #9bc9ff; }
+.dashboard-shell .primary-action small { color: #183657; }
+.dashboard-shell .primary-button { border-color: var(--blue); background: var(--blue); color: #07111f; }
+.dashboard-shell .primary-button:hover,
+.dashboard-shell .primary-button:focus-visible { background: #b9d8ff; }
 
 .auth-page, .placeholder-page, .loading-page, .error-page { min-height: 100svh; display: grid; box-sizing: border-box; place-items: center; padding: var(--space-4); background: var(--page); color: var(--text); }
 .auth-card { width: min(100%, 440px); box-sizing: border-box; padding: 40px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--panel); }
@@ -73,11 +88,73 @@ button { cursor: pointer; }
 .primary-button:disabled { cursor: wait; opacity: .65; }
 .auth-footer { margin: 24px 0 0; color: var(--text-muted); text-align: center; }
 .error-message { color: var(--danger); }
+.success-message { color: var(--green); }
+.text-button { margin-top: 18px; padding: 0; border: 0; background: transparent; color: var(--blue); text-decoration: underline; }
+.text-button:disabled { cursor: wait; opacity: .65; }
+.signup-page { --signup-page: #060b14; --signup-left: #0a1424; --signup-right: #0b1624; --signup-input: #08121e; --signup-border: #29415f; --signup-blue: #4d8fe8; --signup-blue-hover: #65a0ed; --signup-text: #edf3fb; --signup-muted: #91a1b7; --signup-success: #79aa72; min-height: 100svh; display: grid; box-sizing: border-box; place-items: center; padding: 24px; background: var(--signup-page); color: var(--signup-text); }
+.signup-layout { display: grid; width: min(100%, 1160px); height: min(calc(100svh - 48px), 820px); min-height: 0; box-sizing: border-box; grid-template-columns: minmax(300px, 46%) minmax(0, 54%); border: 1px solid var(--signup-border); border-radius: 12px; background: var(--signup-right); }
+.signup-intro { display: flex; min-width: 0; box-sizing: border-box; flex-direction: column; padding: clamp(28px, 4vw, 52px); border-right: 1px solid var(--signup-border); border-radius: 11px 0 0 11px; background: var(--signup-left); }
+.signup-brand { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 3px; color: var(--signup-blue); }
+.signup-brand svg { width: 60px; height: 60px; flex: 0 0 60px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.signup-brand span { color: var(--signup-text); font-size: clamp(2.2rem, 3.5vw, 3rem); font-weight: 800; letter-spacing: .01em; line-height: 1; transform: translateY(-5px); }
+.signup-illustration-wrap { display: grid; width: min(100%, 360px); box-sizing: border-box; align-self: center; place-items: center; margin: auto 0; }
+.signup-illustration { display: block; width: min(100%, 350px); height: auto; filter: brightness(0) saturate(100%) invert(34%) sepia(31%) saturate(1100%) hue-rotate(174deg) brightness(88%) contrast(89%); }
+.signup-panel { width: min(calc(100% - 48px), 610px); min-width: 0; justify-self: center; box-sizing: border-box; align-self: center; margin: 24px auto; padding: clamp(22px, 2.6vw, 32px); border: 1px solid var(--signup-border); border-radius: 10px; background: var(--signup-right); }
+.signup-panel h1 { margin: 0; color: var(--signup-text); font-size: clamp(2rem, 3vw, 2.45rem); font-weight: 800; letter-spacing: -.04em; line-height: 1.1; text-align: center; }
+.signup-form { display: grid; gap: clamp(7px, 1svh, 11px); margin-top: clamp(18px, 2.6svh, 26px); }
+.signup-row { display: grid; gap: clamp(12px, 2vw, 24px); }
+.signup-row-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.signup-row-email { grid-template-columns: minmax(0, 1fr); }
+.signup-email-group { display: grid; grid-template-columns: minmax(0, 1fr) 126px; align-items: end; }
+.signup-email-group .signup-field input { border-radius: 7px 0 0 7px; }
+.signup-email-group .secondary-button { width: 126px; min-width: 126px; border-left: 0; border-radius: 0 7px 7px 0; }
+.signup-row-otp { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 2vw, 24px); }
+.signup-otp-group { display: grid; grid-template-columns: minmax(0, 1fr) 112px; align-items: end; }
+.signup-otp-group .signup-field input { border-radius: 7px 0 0 7px; }
+.signup-otp-group .signup-verify-button { border-left: 0; border-radius: 0 7px 7px 0; }
+.signup-field { display: grid; min-width: 0; gap: 5px; color: var(--signup-text); font-size: clamp(.78rem, 1.1vw, .95rem); font-weight: 600; line-height: 1.15; }
+.signup-field input { width: 100%; height: 44px; box-sizing: border-box; border: 1px solid var(--signup-border); border-radius: 7px; padding: 0 13px; background: var(--signup-input); color: var(--signup-text); font-size: clamp(.84rem, 1.15vw, 1rem); }
+.signup-field input::placeholder { color: var(--signup-muted); opacity: 1; }
+.signup-field input:focus { outline: 1px solid #55708f; outline-offset: 1px; border-color: #55708f; }
+.signup-field input:disabled { cursor: not-allowed; opacity: .46; }
+.signup-username-input { position: relative; display: block; }
+.signup-username-input input { padding-right: 48px; }
+.signup-username-indicator { position: absolute; top: 50%; right: 13px; display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; color: #fff; font-size: 16px; font-weight: 800; line-height: 1; transform: translateY(-50%); }
+.signup-username-indicator.is-available { background: #278a4b; }
+.signup-username-indicator.is-taken { background: #bd3d4d; }
+.signup-username-indicator:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.secondary-button, .signup-submit, .signup-signin { height: 44px; box-sizing: border-box; border-radius: 7px; padding: 0 17px; font-size: clamp(.82rem, 1.1vw, .98rem); font-weight: 650; }
+.secondary-button { min-width: 126px; border: 1px solid var(--signup-border); background: transparent; color: var(--signup-blue); }
+.secondary-button:hover { border-color: var(--signup-blue); background: #102137; }
+.secondary-button:focus-visible, .signup-submit:focus-visible, .signup-signin:focus-visible, .signup-icon-button:focus-visible { outline: 1px solid #55708f; outline-offset: 2px; }
+.secondary-button:disabled { cursor: not-allowed; opacity: .48; }
+.signup-verify-button.is-verified { border-color: var(--signup-border); color: var(--signup-success); }
+.signup-verify-button { display: inline-flex; width: 112px; align-items: center; justify-content: center; }
+.signup-input-with-icon { position: relative; display: block; }
+.signup-input-with-icon input { padding-right: 56px; }
+.signup-icon-button { position: absolute; top: 50%; right: 13px; display: grid; width: 34px; height: 34px; place-items: center; border: 0; border-radius: 50%; background: transparent; color: #a7b6ca; transform: translateY(-50%); }
+.signup-icon-button:hover, .signup-icon-button:focus-visible { color: var(--signup-blue); }
+.signup-icon-button:disabled { cursor: not-allowed; opacity: .48; }
+.signup-eye-icon { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.signup-submit { width: 180px; border: 1px solid var(--signup-blue); background: var(--signup-blue); color: #07111f; }
+.signup-submit:hover { border-color: var(--signup-blue-hover); background: var(--signup-blue-hover); }
+.signup-submit:disabled { cursor: wait; opacity: .65; }
+.signup-signin { width: 180px; border: 1px solid var(--signup-border); background: transparent; color: var(--signup-blue); }
+.signup-signin:hover { border-color: var(--signup-blue); background: #102137; }
+.signup-actions { display: flex; align-items: center; justify-content: center; gap: 28px; margin-top: 0; }
+.signup-or { color: var(--signup-muted); font-size: .85rem; }
+.signup-message-region { display: flex; height: 42px; align-items: center; justify-content: center; padding: 0 8px; text-align: center; }
+.signup-form .error-message, .signup-form .success-message { margin: 0; color: var(--signup-muted); font-size: .95rem; line-height: 1.2; }
+.signup-form .error-message { color: var(--danger); }
+.signup-form .success-message.is-verified { color: var(--signup-success); }
 .placeholder-page, .error-page { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding-left: 10vw; padding-right: 10vw; }
 
 .modal-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: var(--space-4); background: rgb(3 7 14 / 82%); }
-.modal { width: min(100%, 380px); padding: 32px; border: 1px solid var(--border-strong); border-radius: var(--radius-lg); background: var(--panel-raised); box-shadow: 0 24px 80px rgb(0 0 0 / 45%); }
-.modal h2 { margin: 10px 0; color: var(--text); }
+.modal { width: min(100%, 380px); padding: 32px; border: 1px solid var(--border-strong); border-radius: var(--radius-lg); background: var(--panel-raised); box-shadow: 0 24px 80px rgb(0 0 0 / 45%); text-align: center; }
+.modal-feature-logo { width: 52px; height: 52px; fill: none; stroke: var(--blue); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.modal h2 { margin: 18px 0 8px; color: var(--text); }
+.modal .muted { margin: 0; }
+.work-progress-illustration { display: block; width: 180px; height: 110px; margin: 24px auto 4px; fill: none; stroke: var(--blue); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .modal .primary-button { margin-top: 20px; }
 
 /* Shared navigation rail */
@@ -129,18 +206,18 @@ button { cursor: pointer; }
 .practice-catalog { max-width: none; margin: 30px 0 0; display: grid; gap: 16px; }
 .practice-topic-section { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--panel); }
 .practice-topic-section.is-complete { border-color: #567641; }
-.practice-topic-heading { display: flex; width: 100%; min-height: 78px; box-sizing: border-box; align-items: center; justify-content: space-between; border: 0; border-radius: 0; padding: 18px 22px; background: transparent; color: inherit; text-align: left; }
+.practice-topic-heading { display: flex; width: 100%; min-height: 78px; box-sizing: border-box; align-items: center; justify-content: space-between; border: 0; border-radius: 0; padding: 18px 22px; background: var(--panel-raised); color: inherit; text-align: left; }
 .practice-topic-heading:hover, .practice-topic-heading:focus-visible { background: var(--panel-raised); }
-.practice-topic-heading h2 { margin: 0; font-size: 1.2rem; letter-spacing: -.02em; }
+.practice-topic-heading h2 { margin: 0; color: var(--text); font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em; }
 .practice-topic-summary { display: flex; align-items: center; gap: var(--space-3); color: var(--text-muted); font-size: .85rem; }
 .practice-topic-chevron { position: relative; display: inline-block; width: 10px; height: 10px; flex: 0 0 10px; box-sizing: border-box; border-right: 2px solid var(--text-muted); border-bottom: 2px solid var(--text-muted); transform: rotate(-45deg); transition: transform 140ms ease; }
 .practice-topic-chevron.is-expanded { transform: rotate(45deg); }
 .practice-topic-body { border-top: 1px solid var(--border); }
 .practice-problem-list { display: grid; }
-.practice-problem-row { display: grid; grid-template-columns: minmax(180px, 1.5fr) 36px 90px minmax(180px, 1fr); width: 100%; min-height: 64px; box-sizing: border-box; align-items: center; gap: 12px; border: 0; border-bottom: 1px solid var(--border); padding: 10px 22px; background: transparent; color: var(--text); text-align: left; text-decoration: none; }
+.practice-problem-row { display: grid; grid-template-columns: minmax(180px, 1.5fr) 36px 90px minmax(180px, 1fr); width: 100%; min-height: 64px; box-sizing: border-box; align-items: center; gap: 12px; border: 0; border-bottom: 1px solid var(--border); padding: 10px 22px 10px 36px; background: var(--surface); color: var(--text-soft); text-align: left; text-decoration: none; }
 .practice-problem-row:last-child { border-bottom: 0; }
 .practice-problem-row:hover, .practice-problem-row:focus-visible { background: var(--panel-raised); }
-.practice-problem-title { min-width: 0; overflow: hidden; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.practice-problem-title { min-width: 0; overflow: hidden; color: color-mix(in srgb, var(--text) 82%, var(--text-soft)); font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
 .practice-problem-status { color: var(--text-muted); font-size: 1rem; text-align: center; }
 .practice-problem-status.is-solved { color: var(--green); font-weight: 900; }
 .practice-problem-difficulty { font-size: .72rem; font-weight: 800; letter-spacing: .06em; }
@@ -227,10 +304,58 @@ button { cursor: pointer; }
   .coding-pane { border-top: 1px solid var(--border); border-left: 0; }
 }
 
+@media (min-width: 761px) and (max-height: 720px) {
+  .signup-page { padding: 16px; }
+  .signup-layout { width: min(calc(100vw - 32px), 1500px); height: calc(100svh - 32px); }
+  .signup-intro { padding: 24px 28px; }
+  .signup-brand svg { width: 54px; height: 54px; }
+  .signup-brand span { font-size: 2.35rem; }
+  .signup-illustration-wrap { height: auto; }
+  .signup-panel { margin: 16px 18px 17px 19px; padding: 24px 26px; }
+  .signup-panel h1 { font-size: 2rem; }
+  .signup-form { gap: 11px; margin-top: 18px; }
+  .signup-row { gap: 18px; }
+  .signup-field { gap: 4px; font-size: .95rem; }
+  .signup-field input { min-height: 43px; padding-inline: 12px; font-size: .95rem; }
+  .secondary-button, .signup-submit, .signup-signin { min-height: 44px; padding-inline: 16px; font-size: .95rem; }
+  .secondary-button { min-width: 112px; }
+  .signup-verify-button { width: 112px; }
+  .signup-actions { gap: 28px; margin-top: 12px; }
+  .signup-submit { width: 150px; }
+  .signup-signin { width: 145px; }
+  .signup-or { margin: 0; }
+  .signup-form .error-message, .signup-form .success-message { font-size: .9rem; }
+}
+
 @media (max-width: 760px) {
+  .signup-page { padding: 0; align-items: start; }
+  .signup-layout { display: block; width: 100%; height: auto; min-height: 100svh; overflow: visible; border: 0; border-radius: 0; }
+  .signup-intro { min-height: 210px; padding: 28px 24px 20px; border-right: 0; border-bottom: 1px solid var(--signup-border); border-radius: 0; }
+  .signup-brand svg { width: 50px; height: 50px; }
+  .signup-brand span { font-size: 2.35rem; }
+  .signup-illustration-wrap { display: none; }
+  .signup-panel { margin: 0; padding: 32px 24px 40px; border: 0; border-radius: 0; overflow: visible; }
+  .signup-panel h1 { font-size: 2.25rem; }
+  .signup-form { gap: 18px; margin-top: 28px; }
+  .signup-row-two { grid-template-columns: 1fr; }
+  .signup-row-email, .signup-row-otp { grid-template-columns: 1fr; align-items: stretch; }
+  .signup-email-group, .signup-otp-group { grid-template-columns: 1fr; gap: 18px; }
+  .signup-email-group .signup-field input, .signup-otp-group .signup-field input { border-radius: 7px; }
+  .signup-email-group .secondary-button, .signup-otp-group .signup-verify-button { width: 150px; min-width: 150px; border-left: 1px solid var(--signup-border); border-radius: 7px; }
+  .signup-row { gap: 18px; }
+  .signup-field { font-size: 1rem; }
+  .signup-field input { min-height: 54px; font-size: 1rem; }
+  .secondary-button, .signup-submit, .signup-signin { min-height: 56px; font-size: 1rem; }
+  .secondary-button { min-width: 125px; padding-inline: 15px; }
+  .signup-verify-button { width: 150px; justify-self: start; }
+  .signup-actions { gap: 10px; margin-top: 10px; }
+  .signup-submit, .signup-signin { width: auto; flex: 1 1 0; }
+  .signup-or { margin: 0; }
   .stat-grid, .dashboard-actions { grid-template-columns: 1fr; }
-  .dashboard-page { padding: 48px 20px 40px; }
+  .dashboard-page { min-height: auto; padding: 48px 20px 40px; }
   .topbar { padding-inline: 20px; }
+  .dashboard-brand .practice-sidebar-logo { width: 42px; height: 42px; flex-basis: 42px; }
+  .dashboard-brand > span { height: 42px; font-size: 1.35rem; }
   .practice-sidebar { width: 66px; padding-inline: 9px; }
   .practice-sidebar.is-expanded { width: 214px; }
   .practice-sidebar.is-expanded .practice-sidebar-item { width: 188px; }

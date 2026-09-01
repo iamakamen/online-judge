@@ -34,6 +34,7 @@ from backend.app.services.execution.run_service import (
     _outputs_match,
 )
 from backend.app.services.problem import get_problem
+from backend.app.services.accepted_solution import upsert_accepted_solution
 from backend.app.services.test_case import list_submit_test_cases_for_problem
 
 
@@ -444,6 +445,14 @@ class SubmissionJudgeService:
                     db,
                     user_id=submission.user_id,
                     problem_id=submission.problem_id,
+                    now=now,
+                )
+                upsert_accepted_solution(
+                    db,
+                    user_id=submission.user_id,
+                    problem_id=submission.problem_id,
+                    language=submission.language,
+                    source_code=submission.source_code,
                     now=now,
                 )
             db.commit()

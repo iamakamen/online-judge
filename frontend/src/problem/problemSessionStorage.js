@@ -2,6 +2,25 @@ export const PROBLEM_SESSION_TTL_MS = 30 * 60 * 1000
 export const PROBLEM_SESSION_SCHEMA_VERSION = 1
 export const PROBLEM_SESSION_KEY_PREFIX = 'oj:problem-session:'
 
+export function selectInitialLanguage(localSession, acceptedSolutions) {
+  if (localSession?.selectedLanguage === 'python' || localSession?.selectedLanguage === 'cpp') {
+    return localSession.selectedLanguage
+  }
+  const hasAcceptedPython = typeof acceptedSolutions?.python === 'string'
+  const hasAcceptedCpp = typeof acceptedSolutions?.cpp === 'string'
+  return hasAcceptedPython || !hasAcceptedCpp ? 'python' : 'cpp'
+}
+
+export function contentWithAcceptedFallback(contents, starterCode, acceptedSolutions) {
+  const next = { ...contents }
+  for (const language of ['python', 'cpp']) {
+    const accepted = acceptedSolutions?.[language]
+    const starter = typeof starterCode?.[language] === 'string' ? starterCode[language] : ''
+    if (typeof accepted === 'string' && next[language] === starter) next[language] = accepted
+  }
+  return next
+}
+
 const TERMINAL_RUN_STATUSES = new Set([
   'passed',
   'failed',

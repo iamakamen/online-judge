@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   createProblemSession,
+  contentWithAcceptedFallback,
   PROBLEM_SESSION_TTL_MS,
   readProblemSession,
+  selectInitialLanguage,
   writeProblemSession,
 } from './problemSessionStorage'
 
 const EDITOR_WRITE_DELAY_MS = 250
 
-export function useProblemSession({ userId, problemSlug, starterCode, enabled }) {
+export function useProblemSession({ userId, problemSlug, starterCode, acceptedSolutions, enabled }) {
   const key = enabled && userId !== null && userId !== undefined
     ? `${userId}:${problemSlug}`
     : null
@@ -29,7 +31,16 @@ export function useProblemSession({ userId, problemSlug, starterCode, enabled })
     if (!key) return undefined
 
     const cached = readProblemSession(userId, problemSlug)
-    const nextSession = cached || createProblemSession(userId, problemSlug, starterCode)
+    const nextSession = cached
+      ? { ...cached, editorContents: contentWithAcceptedFallback(cached.editorContents, starterCode, acceptedSolutions) }
+      : {
+        ...createProblemSession(userId, problemSlug, {
+          ...starterCode,
+          python: acceptedSolutions?.python ?? starterCode?.python,
+          cpp: acceptedSolutions?.cpp ?? starterCode?.cpp,
+        }),
+        selectedLanguage: selectInitialLanguage(null, acceptedSolutions),
+      }
     sessionRef.current = nextSession
     setInitialSession(nextSession)
     setHydrated(true)
@@ -38,7 +49,7 @@ export function useProblemSession({ userId, problemSlug, starterCode, enabled })
       if (timerRef.current !== null) window.clearTimeout(timerRef.current)
       timerRef.current = null
     }
-  }, [key, problemSlug, starterCode, userId])
+  }, [acceptedSolutions, key, problemSlug, starterCode, userId])
 
   const persist = useCallback((patch, immediate = false) => {
     const expectedKey = key

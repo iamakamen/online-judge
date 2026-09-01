@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   ApiError,
   createSubmission,
+  getAcceptedSolutions,
   getProblemBySlug,
   getSubmission,
   requestAiHelp,
@@ -106,6 +107,7 @@ function createExecutionId() {
 export function ProblemPage({ slug, navigate }) {
   const { requestAuthenticated, userId } = useAuth()
   const [problem, setProblem] = useState(null)
+  const [acceptedSolutions, setAcceptedSolutions] = useState(undefined)
   const [error, setError] = useState(null)
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
   const [v2Feature, setV2Feature] = useState(null)
@@ -135,13 +137,15 @@ export function ProblemPage({ slug, navigate }) {
     userId,
     problemSlug: slug,
     starterCode: problem?.starter_code,
-    enabled: problem !== null,
+    acceptedSolutions,
+    enabled: problem !== null && acceptedSolutions !== undefined,
   })
 
   useEffect(() => {
     let active = true
 
     setProblem(null)
+    setAcceptedSolutions(undefined)
     setError(null)
     setExecutionView(null)
     setExecutionMode(null)
@@ -165,8 +169,18 @@ export function ProblemPage({ slug, navigate }) {
     restoredSessionKeyRef.current = null
 
     requestAuthenticated((accessToken) => getProblemBySlug(accessToken, slug))
-      .then((response) => {
-        if (active) setProblem(response)
+      .then(async (response) => {
+        if (!active) return
+        setProblem(response)
+        try {
+          const saved = await requestAuthenticated((accessToken) => (
+            getAcceptedSolutions(accessToken, response.id)
+          ))
+          if (active) setAcceptedSolutions(saved.solutions)
+        } catch {
+          // Accepted solutions are optional; keep the valid problem usable.
+          if (active) setAcceptedSolutions(null)
+        }
       })
       .catch((requestError) => {
         if (!active) return
@@ -250,6 +264,12 @@ export function ProblemPage({ slug, navigate }) {
             ))
           } else {
             setAiHelpRequest(null)
+            if (result.verdict === 'accepted' && submissionContext) {
+              setAcceptedSolutions((current) => ({
+                ...(current || { python: null, cpp: null }),
+                [submissionContext.language]: submissionContext.sourceCode,
+              }))
+            }
           }
           setAiHelpState(idleAiHelpState())
           setSubmissionId(null)

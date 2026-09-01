@@ -14,6 +14,13 @@ OTP_LIFETIME_MINUTES = 5
 OTP_MAX_ATTEMPTS = 5
 OTP_REQUEST_LIMIT = 3
 OTP_REQUEST_WINDOW_MINUTES = 10
+OTP_RESEND_COOLDOWN_MINUTES = 2
+
+
+class OTPRequestPolicyError(ValueError):
+    def __init__(self, message: str, retry_after: int | None = None):
+        super().__init__(message)
+        self.retry_after = retry_after
 
 
 def generate_otp() -> str:

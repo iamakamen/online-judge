@@ -14,6 +14,7 @@ from backend.app.schemas.problem import (
     ProblemListResponse,
     ProblemUpdate,
 )
+from backend.app.schemas.accepted_solution import AcceptedSolutionsResponse
 from backend.app.services.problem import (
     ProblemListResult,
     create_problem,
@@ -22,6 +23,10 @@ from backend.app.services.problem import (
     get_problem_by_slug,
     list_problems,
     update_problem,
+)
+from backend.app.services.accepted_solution import (
+    get_accepted_solutions,
+    require_problem,
 )
 
 
@@ -125,6 +130,26 @@ def get_problem_by_slug_route(
     except ValueError as exc:
         raise _problem_error(exc) from exc
     return _problem_detail_response(problem, test_cases)
+
+
+@router.get(
+    "/{problem_id}/accepted-solutions",
+    response_model=AcceptedSolutionsResponse,
+)
+def get_accepted_solutions_route(
+    problem_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        require_problem(db, problem_id)
+    except ValueError as exc:
+        raise _problem_error(exc) from exc
+    return AcceptedSolutionsResponse(
+        solutions=get_accepted_solutions(
+            db, user_id=current_user.id, problem_id=problem_id
+        )
+    )
 
 
 @router.get("/{problem_id}", response_model=ProblemDetailResponse)

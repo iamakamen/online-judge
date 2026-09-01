@@ -49,6 +49,13 @@ def login(
     if not user.email_verified:
         raise ValueError("Email verification required")
 
+    return create_authenticated_session(db, user)
+
+
+def create_authenticated_session(
+    db: Session,
+    user: User,
+) -> tuple[str, str]:
     refresh_token = create_refresh_token()
 
     refresh_session = RefreshSession(

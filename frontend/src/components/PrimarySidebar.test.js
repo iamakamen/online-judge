@@ -51,8 +51,11 @@ test('provides the required actions, destinations, dismissal, keyboard, and view
   assert.match(sidebarSource, /Copy Link/)
   assert.doesNotMatch(sidebarSource, /Open in New Window/)
   assert.doesNotMatch(sidebarSource, /popup/)
-  assert.match(sidebarSource, /closeContextMenu\(\)\s*onCollapse\(\)/)
+  assert.match(sidebarSource, /import \{ flushSync \} from 'react-dom'/)
+  assert.match(sidebarSource, /flushSync\(\(\) => \{\s*closeContextMenu\(\)\s*onCollapse\(\)\s*\}\)\s*if \(action === 'copy'\)/)
   assert.match(sidebarSource, /new URL\(contextMenu\.path, window\.location\.href\)/)
+  assert.match(sidebarSource, /flushSync\([\s\S]*?\}\)\s*if \(action === 'copy'[\s\S]*?return\s*\}\s*window\.open\(destination, '_blank', 'noopener,noreferrer'\)/)
+  assert.doesNotMatch(sidebarSource, /setTimeout|setInterval|requestAnimationFrame/)
   assert.match(sidebarSource, /navigator\.clipboard\.writeText\(destination\)/)
   assert.match(sidebarSource, /event\.key === 'Escape'/)
   assert.match(sidebarSource, /event\.key === 'ArrowDown'/)
@@ -62,4 +65,15 @@ test('provides the required actions, destinations, dismissal, keyboard, and view
   assert.match(sidebarSource, /window\.innerWidth/)
   assert.match(sidebarSource, /window\.innerHeight/)
   assert.match(sidebarSource, /!menuElement\.contains\(event\.target\)/)
+})
+
+test('keeps sidebar collapse shared by Practice and ProblemPage callers', () => {
+  const practiceSource = readFileSync(fileURLToPath(new URL('../pages/Practice.jsx', import.meta.url)), 'utf8')
+  const problemPageSource = readFileSync(fileURLToPath(new URL('../pages/ProblemPage.jsx', import.meta.url)), 'utf8')
+
+  for (const callerSource of [practiceSource, problemPageSource]) {
+    assert.match(callerSource, /<PrimarySidebar[\s\S]*onCollapse=\{\(\) => setIsSidebarExpanded\(false\)\}/)
+  }
+  assert.equal((practiceSource.match(/<PrimarySidebar/g) || []).length, 1)
+  assert.equal((problemPageSource.match(/<PrimarySidebar/g) || []).length, 1)
 })

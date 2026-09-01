@@ -19,6 +19,7 @@ from backend.app.models.test_case import TestCase
 from backend.app.models.user_problem_progress import UserProblemProgress
 from backend.app.models.submission import Submission
 from backend.app.models.submission_result import SubmissionResult
+from backend.app.models.accepted_solution import AcceptedSolution
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

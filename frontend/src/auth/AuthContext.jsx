@@ -27,6 +27,8 @@ export function AuthProvider({ children }) {
     return updateTokens(await loginRequest(identifier, password))
   }, [updateTokens])
 
+  const authenticate = useCallback((payload) => updateTokens(payload), [updateTokens])
+
   const refreshSession = useCallback(async () => {
     if (refreshInFlightRef.current) return refreshInFlightRef.current
     const currentTokens = getTokens()
@@ -125,9 +127,10 @@ export function AuthProvider({ children }) {
     userId,
     isLoading,
     login,
+    authenticate,
     logout,
     requestAuthenticated,
-  }), [isLoading, login, logout, requestAuthenticated, tokens, userId])
+  }), [authenticate, isLoading, login, logout, requestAuthenticated, tokens, userId])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

@@ -10,6 +10,7 @@ from backend.app.models.submission import (
     SubmissionStatus,
     SubmissionVerdict,
 )
+from backend.app.models.accepted_solution import AcceptedSolution
 from backend.app.models.submission_result import (
     SubmissionResult,
     SubmissionResultStatus,
@@ -139,6 +140,36 @@ def test_all_passes_are_accepted_and_persisted(db, normal_user):
         problem_id=problem.id,
     ).one()
     assert progress.solved is True
+    saved = db.query(AcceptedSolution).filter_by(
+        user_id=normal_user.id,
+        problem_id=problem.id,
+        language="python",
+    ).one()
+    assert saved.source_code == submission.source_code
+
+
+def test_non_accepted_submission_does_not_replace_accepted_solution(
+    db, normal_user
+):
+    problem = create_problem(db)
+    create_case(db, problem, display_order=1, input_text="first")
+    first = create_submission(db, normal_user, problem)
+    SubmissionJudgeService({"python": FakeRunner([passed()])}).execute(
+        db, first.id
+    )
+
+    second = create_submission(db, normal_user, problem)
+    second.source_code = "print('failed')"
+    db.commit()
+    result = SubmissionJudgeService({
+        "python": FakeRunner([passed("wrong")])
+    }).execute(db, second.id)
+
+    assert result.verdict is SubmissionVerdict.WRONG_ANSWER
+    saved = db.query(AcceptedSolution).filter_by(
+        user_id=normal_user.id, problem_id=problem.id, language="python"
+    ).one()
+    assert saved.source_code == first.source_code
 
 
 def test_accepted_marks_existing_unsolved_progress_solved(db, normal_user):

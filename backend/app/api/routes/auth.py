@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from redis import Redis
+from redis.exceptions import RedisError
 from sqlalchemy.orm import Session
 
 from backend.app.db.session import get_db
@@ -12,6 +14,7 @@ from backend.app.schemas.auth import (
     VerifyOTPRequest,
 )
 from backend.app.services.authentication import (
+    create_authenticated_session,
     login,
     logout,
     refresh_access_token,
@@ -20,9 +23,32 @@ from backend.app.services.registration import (
     complete_registration,
     start_registration,
     verify_registration_otp,
+    username_is_available,
 )
+from backend.app.api.dependencies import get_redis
+from backend.app.services.otp import OTPRequestPolicyError
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
+
+USERNAME_AVAILABILITY_LIMIT = 30
+USERNAME_AVAILABILITY_WINDOW_SECONDS = 60
+
+
+def enforce_username_availability_rate_limit(request: Request, redis: Redis) -> None:
+    client_host = request.client.host if request.client else "unknown"
+    key = f"auth:username-availability:{client_host}"
+    try:
+        count = redis.incr(key)
+        if count == 1:
+            redis.expire(key, USERNAME_AVAILABILITY_WINDOW_SECONDS)
+    except RedisError as exc:
+        raise HTTPException(status_code=503, detail="Availability check unavailable") from exc
+    if count > USERNAME_AVAILABILITY_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many username availability checks",
+            headers={"Retry-After": str(redis.ttl(key))},
+        )
 
 
 
@@ -113,6 +139,13 @@ def register_start(
             last_name=request.last_name,
             email=request.email,
         )
+    except OTPRequestPolicyError as exc:
+        headers = {"Retry-After": str(exc.retry_after)} if exc.retry_after else None
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=str(exc),
+            headers=headers,
+        ) from exc
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -122,6 +155,21 @@ def register_start(
     return {
         "status": "otp_sent",
         "message": "Verification code sent to your email.",
+    }
+
+
+@router.get("/register/username-availability")
+def register_username_availability(
+    request: Request,
+    username: str = Query(min_length=1, max_length=100),
+    db: Session = Depends(get_db),
+    redis: Redis = Depends(get_redis),
+):
+    enforce_username_availability_rate_limit(request, redis)
+    normalized_username = username.strip().lower()
+    return {
+        "username": normalized_username,
+        "available": username_is_available(db, normalized_username),
     }
 
 
@@ -160,6 +208,7 @@ def register_complete(
             username=request.username,
             password=request.password,
         )
+        access_token, refresh_token = create_authenticated_session(db, user)
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -168,6 +217,9 @@ def register_complete(
 
     return {
         "status": "registration_complete",
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
         "user": {
             "id": user.id,
             "username": user.username,

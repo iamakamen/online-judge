@@ -3,6 +3,12 @@ import './PracticeFilters.css'
 import { getProblems, getTopics } from '../api/client'
 import { useAuth } from '../auth/useAuth'
 import { PrimarySidebar } from '../components/PrimarySidebar'
+import {
+  DIFFICULTY_OPTIONS,
+  formatDifficultyLabel,
+  formatTagLabel,
+  getPracticeAnalytics,
+} from './practiceFilterPresentation'
 
 function ProblemRow({ problem, navigate }) {
   return (
@@ -73,7 +79,7 @@ function TopicSection({ topic, problems, actualProblems, isFiltered, isExpanded,
   )
 }
 
-function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags, onDifficultyChange, onTagToggle, onClear }) {
+function PracticeFilters({ tags, selectedDifficulty, selectedTags, onDifficultyChange, onTagToggle, onClear }) {
   const [isDifficultyMenuOpen, setIsDifficultyMenuOpen] = useState(false)
   const [isTagMenuOpen, setIsTagMenuOpen] = useState(false)
   const [tagSearch, setTagSearch] = useState('')
@@ -119,13 +125,13 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
             setIsTagMenuOpen(false)
           }}
         >
-          <span>{selectedDifficulty}</span>
+          <span>{formatDifficultyLabel(selectedDifficulty)}</span>
           <span className={`practice-filter-chevron${isDifficultyMenuOpen ? ' is-open' : ''}`} aria-hidden="true" />
         </button>
 
         {isDifficultyMenuOpen && (
           <div className="practice-filter-menu practice-difficulty-menu" role="listbox" aria-label="Difficulty">
-            {difficulties.map((difficulty) => (
+            {DIFFICULTY_OPTIONS.map((difficulty) => (
               <button
                 key={difficulty}
                 type="button"
@@ -134,7 +140,7 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
                 aria-selected={selectedDifficulty === difficulty}
                 onClick={() => handleDifficultyChange(difficulty)}
               >
-                {difficulty}
+                {formatDifficultyLabel(difficulty)}
               </button>
             ))}
           </div>
@@ -147,7 +153,7 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
           <div className="practice-tag-pills" aria-label="Selected tags">
             {visibleSelectedTags.map((tag) => (
               <span key={tag} className="practice-selected-tag">
-                <span>{tag.toLowerCase()}</span>
+                <span>{formatTagLabel(tag)}</span>
                 <button
                   type="button"
                   className="practice-selected-tag-remove"
@@ -208,7 +214,7 @@ function PracticeFilters({ difficulties, tags, selectedDifficulty, selectedTags,
                       checked={checked}
                       onChange={() => onTagToggle(tag)}
                     />
-                    <span>{tag.toLowerCase()}</span>
+                    <span>{formatTagLabel(tag)}</span>
                   </label>
                 )
               })}
@@ -284,16 +290,12 @@ export function Practice({ navigate }) {
     }
   }, [requestAuthenticated])
 
-  const difficulties = useMemo(() => {
-    const difficultyOrder = { EASY: 0, MEDIUM: 1, HARD: 2 }
-    return [...new Set(problems.map((problem) => problem.difficulty))]
-      .sort((a, b) => (difficultyOrder[a] ?? Number.MAX_SAFE_INTEGER) - (difficultyOrder[b] ?? Number.MAX_SAFE_INTEGER))
-  }, [problems])
-
   const tags = useMemo(() => (
     [...new Set(problems.flatMap((problem) => problem.tags))]
       .sort((a, b) => a.localeCompare(b))
   ), [problems])
+
+  const analytics = useMemo(() => getPracticeAnalytics(problems), [problems])
 
   const isFiltered = Boolean(selectedDifficulty) || selectedTags.length > 0
 
@@ -337,7 +339,6 @@ export function Practice({ navigate }) {
   if (error) {
     return (
       <main className="error-page">
-        <p className="eyebrow">Practice</p>
         <h1>Unable to load Practice</h1>
         <p className="error-message" role="alert">{error}</p>
       </main>
@@ -354,15 +355,34 @@ export function Practice({ navigate }) {
       />
       <main className="practice-main">
         <header className="practice-header">
-          <div>
-            <p className="eyebrow">Practice</p>
-            <h1>Problem Solving</h1>
+          <div className="practice-hero-content">
+            <h1>Practice</h1>
             <p className="muted">Build consistency by working through problems topic by topic.</p>
+          </div>
+          <div className="practice-analytics-card" aria-label="Practice progress">
+            <div className="practice-analytics-summary">
+              <p><span>Completed</span><strong>{analytics.completed}</strong></p>
+              <p><span>Remaining</span><strong>{analytics.remaining}</strong></p>
+            </div>
+            <div
+              className="practice-analytics-progress"
+              role="img"
+              aria-label={`${analytics.percentage}% solved`}
+              style={{ '--practice-progress-offset': 194.78 - ((194.78 * analytics.percentage) / 100) }}
+            >
+              <svg viewBox="0 0 76 76" aria-hidden="true">
+                <circle className="practice-analytics-track" cx="38" cy="38" r="31" />
+                <circle className="practice-analytics-value" cx="38" cy="38" r="31" />
+              </svg>
+              <div className="practice-analytics-progress-label">
+                <strong>{analytics.percentage}%</strong>
+                <span>Solved</span>
+              </div>
+            </div>
           </div>
         </header>
 
         <PracticeFilters
-          difficulties={difficulties}
           tags={tags}
           selectedDifficulty={selectedDifficulty}
           selectedTags={selectedTags}

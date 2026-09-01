@@ -5,6 +5,7 @@ import { useAuth } from './auth/useAuth'
 import { Dashboard } from './pages/Dashboard'
 import { Practice } from './pages/Practice'
 import { ProblemPage } from './pages/ProblemPage'
+import { RegisterPage } from './pages/RegisterPage'
 
 function usePathname() {
   const [pathname, setPathname] = useState(window.location.pathname)
@@ -92,26 +93,8 @@ function LoginPage({ navigate }) {
           </button>
         </form>
         <p className="auth-footer">
-          Need an account? <LinkButton href="/register" navigate={navigate}>Register</LinkButton>
+          Need an account? <LinkButton href="/register" navigate={navigate}>Sign up</LinkButton>
         </p>
-      </section>
-    </main>
-  )
-}
-
-function RegisterPage({ navigate }) {
-  return (
-    <main className="auth-page">
-      <section className="auth-card" aria-labelledby="register-title">
-        <p className="eyebrow">Online Judge</p>
-        <h1 id="register-title">Create an account</h1>
-        <p className="muted">
-          Registration is handled by the existing email verification flow.
-        </p>
-        <p className="muted">
-          The Dashboard module does not change that backend flow.
-        </p>
-        <LinkButton href="/login" navigate={navigate} className="primary-button">Back to sign in</LinkButton>
       </section>
     </main>
   )
