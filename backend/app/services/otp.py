@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 import secrets
 
 from pwdlib import PasswordHash
-from sqlalchemy import func, select, text, update
+from sqlalchemy import select, text, update
 from sqlalchemy.orm import Session
 
 from backend.app.models.otp_code import OTPCode
@@ -12,15 +12,24 @@ password_hash = PasswordHash.recommended()
 
 OTP_LIFETIME_MINUTES = 5
 OTP_MAX_ATTEMPTS = 5
-OTP_REQUEST_LIMIT = 3
-OTP_REQUEST_WINDOW_MINUTES = 10
+OTP_REQUEST_LIMIT = 5
+OTP_REQUEST_WINDOW_MINUTES = 20
 OTP_RESEND_COOLDOWN_MINUTES = 2
+OTP_VERIFICATION_ATTEMPT_LIMIT = 10
+OTP_VERIFICATION_WINDOW_MINUTES = 20
 
 
 class OTPRequestPolicyError(ValueError):
-    def __init__(self, message: str, retry_after: int | None = None):
+    def __init__(self, code: str, message: str, retry_after: int | None = None):
         super().__init__(message)
+        self.code = code
         self.retry_after = retry_after
+
+
+class OTPVerificationError(ValueError):
+    def __init__(self, code: str, message: str):
+        super().__init__(message)
+        self.code = code
 
 
 def generate_otp() -> str:
@@ -38,10 +47,8 @@ def verify_otp(otp: str, hashed_otp: str) -> bool:
 def issue_otp(db: Session, email: str) -> str:
     email = email.strip().lower()
     now = datetime.now(timezone.utc)
-    window_start = now - timedelta(minutes=OTP_REQUEST_WINDOW_MINUTES)
-
     # Serialize OTP issuance for the same email so concurrent requests
-    # cannot bypass the request limit.
+    # cannot race OTP replacement. RegistrationSession owns request quota.
     db.execute(
         text(
             "SELECT pg_advisory_xact_lock("
@@ -50,18 +57,6 @@ def issue_otp(db: Session, email: str) -> str:
         ),
         {"email": email},
     )
-
-    recent_requests = db.scalar(
-        select(func.count())
-        .select_from(OTPCode)
-        .where(
-            OTPCode.email == email,
-            OTPCode.created_at >= window_start,
-        )
-    )
-
-    if recent_requests >= OTP_REQUEST_LIMIT:
-        raise ValueError("OTP request limit exceeded")
 
     db.execute(
         update(OTPCode)
@@ -89,8 +84,8 @@ def issue_otp(db: Session, email: str) -> str:
     return otp
 
 
-def verify_otp_code(db: Session, email: str, otp: str) -> bool:
-    email = email.strip().lower()
+def verify_otp_code(db: Session, session, otp: str) -> bool:
+    email = session.email.strip().lower()
     now = datetime.now(timezone.utc)
 
     # Serialize verification for the same email so concurrent attempts
@@ -104,43 +99,99 @@ def verify_otp_code(db: Session, email: str, otp: str) -> bool:
         {"email": email},
     )
 
-    record = db.scalar(
-        select(OTPCode)
-        .where(
-            OTPCode.email == email,
-            OTPCode.invalidated_at.is_(None),
+    if (
+        session.otp_verification_window_started_at is not None
+        and now - session.otp_verification_window_started_at
+        >= timedelta(minutes=OTP_VERIFICATION_WINDOW_MINUTES)
+    ):
+        session.otp_verification_attempt_count = 0
+        session.otp_verification_window_started_at = None
+
+    if session.otp_verification_attempt_count >= OTP_VERIFICATION_ATTEMPT_LIMIT:
+        db.rollback()
+        raise OTPVerificationError(
+            "verification_attempt_limit",
+            "Registration verification attempt limit exceeded",
         )
+
+    records = db.scalars(
+        select(OTPCode)
+        .where(OTPCode.email == email)
         .order_by(OTPCode.created_at.desc())
         .with_for_update()
+    ).all()
+    record = next((item for item in records if item.invalidated_at is None), None)
+
+    def failed_verification() -> None:
+        if session.otp_verification_window_started_at is None:
+            session.otp_verification_window_started_at = now
+        session.otp_verification_attempt_count += 1
+
+    matching_record = next(
+        (item for item in records if verify_otp(otp, item.code_hash)),
+        None,
     )
+    matching_index = records.index(matching_record) if matching_record is not None else None
 
     if record is None:
-        db.rollback()
-        raise ValueError("Invalid OTP")
+        failed_verification()
+        db.commit()
+        if matching_record is not None:
+            if matching_record.expires_at <= now:
+                raise OTPVerificationError("otp_expired", "OTP expired")
+            if matching_record.attempts >= OTP_MAX_ATTEMPTS:
+                raise OTPVerificationError(
+                    "otp_attempt_limit",
+                    "OTP attempt limit exceeded",
+                )
+            if matching_index and matching_index > 0:
+                raise OTPVerificationError(
+                    "otp_superseded",
+                    "OTP superseded by newer OTP",
+                )
+            raise OTPVerificationError("otp_invalid", "Invalid OTP")
+        raise OTPVerificationError("otp_invalid", "Invalid OTP")
 
     if record.expires_at <= now:
         record.invalidated_at = now
+        failed_verification()
         db.commit()
-        raise ValueError("OTP expired")
+        raise OTPVerificationError("otp_expired", "OTP expired")
+
+    if matching_record is not None and matching_record is not record:
+        failed_verification()
+        db.commit()
+        if matching_record.expires_at <= now:
+            raise OTPVerificationError("otp_expired", "OTP expired")
+        if matching_record.attempts >= OTP_MAX_ATTEMPTS:
+            raise OTPVerificationError(
+                "otp_attempt_limit",
+                "OTP attempt limit exceeded",
+            )
+        raise OTPVerificationError(
+            "otp_superseded",
+            "OTP superseded by newer OTP",
+        )
 
     if record.attempts >= OTP_MAX_ATTEMPTS:
         record.invalidated_at = now
         db.commit()
-        raise ValueError("OTP attempt limit exceeded")
+        raise OTPVerificationError("otp_attempt_limit", "OTP attempt limit exceeded")
 
-    if not verify_otp(otp, record.code_hash):
+    if matching_record is not record:
         record.attempts += 1
-
-        if record.attempts >= OTP_MAX_ATTEMPTS:
+        failed_verification()
+        reached_limit = record.attempts >= OTP_MAX_ATTEMPTS
+        if reached_limit:
             record.invalidated_at = now
-
-        # Persist the failed attempt before raising.
         db.commit()
+        if reached_limit:
+            raise OTPVerificationError(
+                "otp_attempt_limit",
+                "OTP attempt limit exceeded",
+            )
+        raise OTPVerificationError("otp_invalid", "Invalid OTP")
 
-        raise ValueError("Invalid OTP")
-
-    # OTP is single-use. Invalidate it immediately after successful use.
     record.invalidated_at = now
     db.commit()
-
     return True

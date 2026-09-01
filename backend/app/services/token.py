@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 JWT_ALGORITHM = "HS256"
+REGISTRATION_PROOF_EXPIRE_MINUTES = 10
 
 password_hash = PasswordHash.recommended()
 
@@ -105,6 +106,55 @@ def decode_access_token(token: str) -> dict:
 
     payload["sub"] = user_id
 
+    return payload
+
+
+def create_registration_verification_proof(
+    email: str,
+    session_id: int,
+    session_expires_at: datetime,
+) -> str:
+    now = datetime.now(timezone.utc)
+    expires_at = min(
+        now + timedelta(minutes=REGISTRATION_PROOF_EXPIRE_MINUTES),
+        session_expires_at,
+    )
+    if expires_at <= now:
+        raise ValueError("Registration session expired")
+    return jwt.encode(
+        {
+            "sub": email.strip().lower(),
+            "sid": str(session_id),
+            "flow": "registration",
+            "type": "registration_verification",
+            "aud": "registration-complete",
+            "iat": now,
+            "exp": expires_at,
+        },
+        _get_jwt_secret(),
+        algorithm=JWT_ALGORITHM,
+    )
+
+
+def decode_registration_verification_proof(token: str) -> dict:
+    try:
+        payload = jwt.decode(
+            token,
+            _get_jwt_secret(),
+            algorithms=[JWT_ALGORITHM],
+            audience="registration-complete",
+        )
+    except jwt.PyJWTError as exc:
+        raise ValueError("Invalid registration verification proof") from exc
+
+    if (
+        payload.get("type") != "registration_verification"
+        or payload.get("flow") != "registration"
+        or payload.get("aud") != "registration-complete"
+        or not payload.get("sub")
+        or not payload.get("sid")
+    ):
+        raise ValueError("Invalid registration verification proof")
     return payload
 
 

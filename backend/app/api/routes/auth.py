@@ -1,6 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from datetime import datetime, timezone
+import os
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from redis import Redis
 from redis.exceptions import RedisError
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.app.db.session import get_db
@@ -14,24 +18,72 @@ from backend.app.schemas.auth import (
     VerifyOTPRequest,
 )
 from backend.app.services.authentication import (
-    create_authenticated_session,
     login,
     logout,
     refresh_access_token,
 )
 from backend.app.services.registration import (
+    EmailAlreadyRegisteredError,
+    RegistrationEmailDeliveryError,
+    RegistrationSessionError,
+    RegistrationProofError,
+    REGISTRATION_SESSION_LIFETIME_MINUTES,
     complete_registration,
     start_registration,
     verify_registration_otp,
     username_is_available,
 )
+from backend.app.models.registration_session import RegistrationSession
 from backend.app.api.dependencies import get_redis
-from backend.app.services.otp import OTPRequestPolicyError
+from backend.app.services.otp import OTPRequestPolicyError, OTPVerificationError
+from backend.app.services.token import (
+    REGISTRATION_PROOF_EXPIRE_MINUTES,
+    decode_registration_verification_proof,
+)
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 USERNAME_AVAILABILITY_LIMIT = 30
 USERNAME_AVAILABILITY_WINDOW_SECONDS = 60
+REGISTRATION_PROOF_COOKIE = "registration_verification"
+REGISTRATION_PROOF_COOKIE_PATH = "/auth/register"
+REGISTRATION_PROOF_COOKIE_MAX_AGE = min(
+    REGISTRATION_PROOF_EXPIRE_MINUTES * 60,
+    REGISTRATION_SESSION_LIFETIME_MINUTES * 60,
+)
+
+
+def registration_proof_cookie_secure() -> bool:
+    configured = os.getenv("REGISTRATION_PROOF_COOKIE_SECURE")
+    if configured is not None:
+        return configured.strip().lower() in {"1", "true", "yes", "on"}
+    environment = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development"))
+    return environment.strip().lower() in {"production", "prod"}
+
+
+def set_registration_proof_cookie(response: Response, proof: str) -> None:
+    response.set_cookie(
+        key=REGISTRATION_PROOF_COOKIE,
+        value=proof,
+        max_age=REGISTRATION_PROOF_COOKIE_MAX_AGE,
+        httponly=True,
+        secure=registration_proof_cookie_secure(),
+        samesite="lax",
+        path=REGISTRATION_PROOF_COOKIE_PATH,
+    )
+
+
+def clear_registration_proof_cookie(response: Response) -> None:
+    response.delete_cookie(
+        key=REGISTRATION_PROOF_COOKIE,
+        path=REGISTRATION_PROOF_COOKIE_PATH,
+    )
+
+
+def registration_proof_cookie_clear_header() -> str:
+    response = Response()
+    clear_registration_proof_cookie(response)
+    return response.headers["set-cookie"]
 
 
 def enforce_username_availability_rate_limit(request: Request, redis: Redis) -> None:
@@ -133,7 +185,7 @@ def register_start(
     db: Session = Depends(get_db),
 ):
     try:
-        otp = start_registration(
+        result = start_registration(
             db=db,
             first_name=request.first_name,
             last_name=request.last_name,
@@ -143,18 +195,40 @@ def register_start(
         headers = {"Retry-After": str(exc.retry_after)} if exc.retry_after else None
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=str(exc),
+            detail={
+                "code": exc.code,
+                "message": (
+                    "Please wait before requesting another verification code."
+                    if exc.code == "request_cooldown"
+                    else "You've reached the maximum of 5 verification-code requests for this 20-minute window. Please try again later."
+                ),
+            },
             headers=headers,
+        ) from exc
+    except RegistrationEmailDeliveryError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "email_delivery_failed",
+                "message": "We couldn't send the verification code. Please try again.",
+            },
+        ) from exc
+    except EmailAlreadyRegisteredError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": exc.code, "message": "That email is already registered."},
         ) from exc
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            detail={"code": "registration_error", "message": "The registration request could not be completed."},
         ) from exc
 
     return {
         "status": "otp_sent",
         "message": "Verification code sent to your email.",
+        "cooldown_seconds": result["cooldown_seconds"],
+        "remaining_requests": result["remaining_requests"],
     }
 
 
@@ -176,45 +250,127 @@ def register_username_availability(
 @router.post("/register/verify-otp")
 def register_verify_otp(
     request: VerifyOTPRequest,
+    response: Response,
     db: Session = Depends(get_db),
 ):
     try:
-        verify_registration_otp(
+        verification_proof = verify_registration_otp(
             db=db,
             email=request.email,
             otp=request.otp,
         )
+    except OTPVerificationError as exc:
+        messages = {
+            "otp_invalid": "The verification code is incorrect.",
+            "otp_expired": "This verification code has expired. Please request a new code.",
+            "otp_superseded": "This verification code is no longer valid because a newer code was requested.",
+            "otp_attempt_limit": "Too many incorrect attempts. This verification code is no longer valid. Please request a new code.",
+            "verification_attempt_limit": "You've reached the maximum number of verification attempts for this registration window. Please try again later.",
+        }
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": exc.code, "message": messages[exc.code]},
+        ) from exc
+    except RegistrationSessionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": exc.code,
+                "message": "Your registration session is missing or expired.",
+            },
+        ) from exc
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            detail={"code": "registration_error", "message": "The verification request could not be completed."},
         ) from exc
 
+    set_registration_proof_cookie(response, verification_proof)
     return {
         "status": "email_verified",
         "message": "Email verified successfully.",
     }
 
 
+@router.get("/register/status")
+def register_status(
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+):
+    proof_token = request.cookies.get(REGISTRATION_PROOF_COOKIE)
+    if not proof_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"code": "registration_proof_missing", "message": "Email verification is required or has expired."},
+        )
+
+    try:
+        proof = decode_registration_verification_proof(proof_token)
+        session = db.scalar(
+            select(RegistrationSession).where(
+                RegistrationSession.id == int(proof["sid"]),
+                RegistrationSession.email == proof["sub"],
+            )
+        )
+        if session is None or session.registration_expires_at <= datetime.now(timezone.utc):
+            raise ValueError
+    except (ValueError, TypeError, KeyError):
+        clear_registration_proof_cookie(response)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"code": "registration_proof_invalid", "message": "Email verification is required or has expired."},
+            headers={"Set-Cookie": registration_proof_cookie_clear_header()},
+        ) from None
+
+    return {
+        "status": "email_verified",
+        "email": session.email,
+    }
+
+
 @router.post("/register/complete")
 def register_complete(
+    request_context: Request,
+    response: Response,
     request: RegisterCompleteRequest,
     db: Session = Depends(get_db),
 ):
+    verification_proof = request_context.cookies.get(REGISTRATION_PROOF_COOKIE)
+    if not verification_proof:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "registration_proof_missing", "message": "Email verification is required or has expired."},
+        )
     try:
-        user = complete_registration(
+        user, access_token, refresh_token = complete_registration(
             db=db,
             email=request.email,
             username=request.username,
             password=request.password,
+            verification_proof=verification_proof,
         )
-        access_token, refresh_token = create_authenticated_session(db, user)
+    except RegistrationProofError as exc:
+        clear_registration_proof_cookie(response)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": exc.code, "message": "Email verification is required or has expired."},
+            headers={"Set-Cookie": registration_proof_cookie_clear_header()},
+        ) from exc
+    except RegistrationSessionError as exc:
+        clear_registration_proof_cookie(response)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": exc.code, "message": "Your registration session is missing or expired."},
+            headers={"Set-Cookie": registration_proof_cookie_clear_header()},
+        ) from exc
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            detail="The registration request could not be completed.",
         ) from exc
 
+    clear_registration_proof_cookie(response)
     return {
         "status": "registration_complete",
         "access_token": access_token,

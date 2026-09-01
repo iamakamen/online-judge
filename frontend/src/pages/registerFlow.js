@@ -16,10 +16,18 @@ export const OTP_STATES = {
   maxRequestsReached: 'max-requests-reached',
 }
 
-export const OTP_REQUEST_LIMIT = 3
-export const OTP_COOLDOWN_SECONDS = 120
 export const PASSWORD_MIN_LENGTH = 12
-export const PASSWORD_MAX_LENGTH = 128
+export const PASSWORD_MAX_LENGTH = 24
+export const USERNAME_PATTERN = /^[A-Za-z0-9]{8,16}$/
+export const PASSWORD_PATTERN = /^[A-Za-z0-9!@#$%^&*()]{12,24}$/
+
+export function isUsernameValid(username) {
+  return USERNAME_PATTERN.test(username)
+}
+
+export function isPasswordValid(password) {
+  return PASSWORD_PATTERN.test(password)
+}
 
 export function createRegistrationState() {
   return {
@@ -54,10 +62,11 @@ export function validateOtp(otp) {
 
 export function validateCompletion({ username, password, confirmPassword }) {
   if (!username.trim()) return 'Username is required'
-  if (!/^[A-Za-z0-9_]{1,100}$/.test(username.trim())) return 'Username may contain only letters, numbers, and underscores'
+  if (!isUsernameValid(username)) return 'Username must be 8-16 characters using only letters and numbers'
   if (!password) return 'Password is required'
   if (password.length < PASSWORD_MIN_LENGTH) return 'Password must be at least 12 characters'
-  if (password.length > PASSWORD_MAX_LENGTH) return 'Password must not exceed 128 characters'
+  if (password.length > PASSWORD_MAX_LENGTH) return 'Password must not exceed 24 characters'
+  if (!isPasswordValid(password)) return 'Password contains invalid characters'
   if (!confirmPassword) return 'Confirm password is required'
   if (password !== confirmPassword) return 'Passwords do not match'
   return ''
@@ -65,4 +74,9 @@ export function validateCompletion({ username, password, confirmPassword }) {
 
 export function normalizeUsername(username) {
   return username.trim().toLowerCase()
+}
+
+export function formatOtpRequestMessage(remainingRequests) {
+  if (remainingRequests === 0) return 'Verification code sent. No more requests remaining.'
+  return `Verification code sent. ${remainingRequests} request${remainingRequests === 1 ? '' : 's'} remaining.`
 }

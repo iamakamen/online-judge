@@ -17,6 +17,9 @@ function getErrorMessage(payload) {
   if (Array.isArray(payload?.detail)) {
     return payload.detail.map((item) => item.msg).filter(Boolean).join('. ') || 'Request failed'
   }
+  if (payload?.detail && typeof payload.detail === 'object') {
+    return payload.detail.message || 'Request failed'
+  }
   return payload?.detail || payload?.message || 'Request failed'
 }
 
@@ -31,6 +34,7 @@ async function request(path, options = {}) {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...fetchOptions,
       headers,
+      credentials: 'include',
       body: fetchOptions.body === undefined ? undefined : JSON.stringify(fetchOptions.body),
     })
   } catch (error) {
@@ -50,6 +54,9 @@ async function request(path, options = {}) {
       getErrorMessage(payload),
       { endpoint: path, detail: payload?.detail ?? null, headers: responseHeaders },
     )
+    if (payload?.detail && typeof payload.detail === 'object') {
+      apiError.code = payload.detail.code || ''
+    }
     console.error('API request failed', {
       endpoint: path,
       status: apiError.status,
@@ -80,6 +87,10 @@ export function verifyRegistrationOtp(email, otp) {
     method: 'POST',
     body: { email, otp },
   })
+}
+
+export function getRegistrationStatus() {
+  return request('/auth/register/status')
 }
 
 export function completeRegistration(email, username, password, confirmPassword) {

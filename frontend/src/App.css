@@ -105,9 +105,11 @@ button { cursor: pointer; }
 .signup-row { display: grid; gap: clamp(12px, 2vw, 24px); }
 .signup-row-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .signup-row-email { grid-template-columns: minmax(0, 1fr); }
-.signup-email-group { display: grid; grid-template-columns: minmax(0, 1fr) 126px; align-items: end; }
+.signup-email-group { display: grid; grid-template-columns: minmax(0, 1fr) 126px; align-items: start; }
 .signup-email-group .signup-field input { border-radius: 7px 0 0 7px; }
 .signup-email-group .secondary-button { width: 126px; min-width: 126px; border-left: 0; border-radius: 0 7px 7px 0; }
+.signup-otp-request { display: grid; gap: 4px; align-self: start; padding-top: 22px; }
+.signup-otp-cooldown { margin: 0; color: var(--signup-muted); font-size: .75rem; line-height: 1.1; text-align: center; white-space: nowrap; }
 .signup-row-otp { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 2vw, 24px); }
 .signup-otp-group { display: grid; grid-template-columns: minmax(0, 1fr) 112px; align-items: end; }
 .signup-otp-group .signup-field input { border-radius: 7px 0 0 7px; }
@@ -119,10 +121,16 @@ button { cursor: pointer; }
 .signup-field input:disabled { cursor: not-allowed; opacity: .46; }
 .signup-username-input { position: relative; display: block; }
 .signup-username-input input { padding-right: 48px; }
-.signup-username-indicator { position: absolute; top: 50%; right: 13px; display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; color: #fff; font-size: 16px; font-weight: 800; line-height: 1; transform: translateY(-50%); }
-.signup-username-indicator.is-available { background: #278a4b; }
-.signup-username-indicator.is-taken { background: #bd3d4d; }
-.signup-username-indicator:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.signup-validation-control { position: relative; display: block; }
+.signup-validation-control.has-validation input { padding-right: 48px; }
+.signup-input-with-icon.signup-validation-control.has-validation input { padding-right: 92px; }
+.signup-validation-indicator { position: absolute; top: 50%; right: 13px; z-index: 1; display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; color: #fff; font-size: 16px; font-weight: 800; line-height: 1; transform: translateY(-50%); }
+.signup-input-with-icon .signup-validation-indicator { right: 51px; }
+.signup-validation-indicator.is-valid { background: #278a4b; }
+.signup-validation-indicator.is-invalid { background: #bd3d4d; }
+.signup-validation-indicator:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.signup-validation-tooltip { position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 5; width: max-content; max-width: min(320px, 70vw); box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--signup-border); border-radius: 6px; background: var(--signup-right); color: var(--signup-text); font-size: .78rem; font-weight: 500; line-height: 1.3; opacity: 0; pointer-events: none; visibility: hidden; }
+.signup-validation-control.has-guidance:hover .signup-validation-tooltip, .signup-validation-control.has-guidance:focus-within .signup-validation-tooltip, .signup-validation-indicator:focus .signup-validation-tooltip { opacity: 1; pointer-events: auto; visibility: visible; }
 .secondary-button, .signup-submit, .signup-signin { height: 44px; box-sizing: border-box; border-radius: 7px; padding: 0 17px; font-size: clamp(.82rem, 1.1vw, .98rem); font-weight: 650; }
 .secondary-button { min-width: 126px; border: 1px solid var(--signup-border); background: transparent; color: var(--signup-blue); }
 .secondary-button:hover { border-color: var(--signup-blue); background: #102137; }
@@ -340,6 +348,7 @@ button { cursor: pointer; }
   .signup-row-two { grid-template-columns: 1fr; }
   .signup-row-email, .signup-row-otp { grid-template-columns: 1fr; align-items: stretch; }
   .signup-email-group, .signup-otp-group { grid-template-columns: 1fr; gap: 18px; }
+  .signup-otp-request { padding-top: 0; }
   .signup-email-group .signup-field input, .signup-otp-group .signup-field input { border-radius: 7px; }
   .signup-email-group .secondary-button, .signup-otp-group .signup-verify-button { width: 150px; min-width: 150px; border-left: 1px solid var(--signup-border); border-radius: 7px; }
   .signup-row { gap: 18px; }

@@ -1,5 +1,8 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
+from backend.app.core.credentials import PASSWORD_PATTERN, USERNAME_PATTERN
+from backend.app.services.password import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH
+
 
 class RegisterStartRequest(BaseModel):
     first_name: str = Field(min_length=1, max_length=100)
@@ -24,17 +27,14 @@ class VerifyOTPRequest(BaseModel):
 
 class RegisterCompleteRequest(BaseModel):
     email: EmailStr
-    username: str = Field(min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_]+$")
-    password: str = Field(min_length=12, max_length=128)
-    confirm_password: str = Field(min_length=12, max_length=128)
+    username: str = Field(pattern=USERNAME_PATTERN)
+    password: str = Field(min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH, pattern=PASSWORD_PATTERN)
+    confirm_password: str = Field(min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH, pattern=PASSWORD_PATTERN)
 
     @field_validator("username")
     @classmethod
     def username_is_normalized(cls, value: str) -> str:
-        value = value.strip().lower()
-        if not value:
-            raise ValueError("Username is required")
-        return value
+        return value.lower()
 
     @model_validator(mode="after")
     def passwords_match(self):
