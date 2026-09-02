@@ -366,7 +366,7 @@ export function RegisterPage({ navigate }) {
             <div className="signup-actions">
               <button className="signup-submit" type="submit" disabled={submitting}>Sign up</button>
               <span className="signup-or" aria-hidden="true">or</span>
-              <button className="signup-signin" type="button" onClick={() => navigate('/login')}>Sign in</button>
+              <button className="signup-signin" type="button" onClick={() => navigate('/signin')}>Sign in</button>
             </div>
           </form>
         </section>

@@ -6,12 +6,16 @@ import { Dashboard } from './pages/Dashboard'
 import { Practice } from './pages/Practice'
 import { ProblemPage } from './pages/ProblemPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { LandingPage } from './pages/LandingPage'
+import { LoomMark } from './components/PrimarySidebar'
+import { V2PlaceholderModal } from './components/V2PlaceholderModal'
+import codingWorkshop from './assets/signup/coding-workshop-8429809.png'
 
 function usePathname() {
   const [pathname, setPathname] = useState(window.location.pathname)
 
-  const navigate = useCallback((path) => {
-    window.history.pushState({}, '', path)
+  const navigate = useCallback((path, { replace = false } = {}) => {
+    window.history[replace ? 'replaceState' : 'pushState']({}, '', path)
     setPathname(path)
   }, [])
 
@@ -24,16 +28,21 @@ function usePathname() {
   return { pathname, navigate }
 }
 
-function LinkButton({ children, href, navigate, className = '' }) {
+function EyeIcon() {
   return (
-    <button
-      type="button"
-      className={`link-button ${className}`}
-      onClick={() => navigate(href)}
-    >
-      {children}
-    </button>
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="signup-eye-icon">
+      <path d="M2.5 12s3.2-5 9.5-5 9.5 5 9.5 5-3.2 5-9.5 5-9.5-5-9.5-5Z" />
+      <circle cx="12" cy="12" r="2.5" />
+    </svg>
   )
+}
+
+function RouteRedirect({ navigate, to }) {
+  useEffect(() => {
+    navigate(to, { replace: true })
+  }, [navigate, to])
+
+  return <main className="loading-page">Redirecting…</main>
 }
 
 function LoginPage({ navigate }) {
@@ -42,6 +51,8 @@ function LoginPage({ navigate }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [passwordVisible, setPasswordVisible] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) navigate('/dashboard')
@@ -62,40 +73,66 @@ function LoginPage({ navigate }) {
   }
 
   return (
-    <main className="auth-page">
-      <section className="auth-card" aria-labelledby="login-title">
-        <p className="eyebrow">Online Judge</p>
-        <h1 id="login-title">Welcome back</h1>
-        <p className="muted">Sign in to continue to your dashboard.</p>
-        <form onSubmit={handleSubmit}>
-          <label>
-            Username or email
-            <input
-              value={identifier}
-              onChange={(event) => setIdentifier(event.target.value)}
-              autoComplete="username"
-              required
-            />
-          </label>
-          <label>
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete="current-password"
-              required
-            />
-          </label>
-          {error && <p className="error-message" role="alert">{error}</p>}
-          <button className="primary-button" type="submit" disabled={submitting}>
-            {submitting ? 'Signing in…' : 'Sign in'}
-          </button>
-        </form>
-        <p className="auth-footer">
-          Need an account? <LinkButton href="/register" navigate={navigate}>Sign up</LinkButton>
-        </p>
+    <main className="signup-page">
+      <section className="signup-layout" aria-labelledby="login-title">
+        <aside className="signup-intro">
+          <div className="signup-brand" aria-label="encode">
+            <LoomMark viewBox="6 6 20 20" />
+            <span>encode</span>
+          </div>
+          <div className="signup-illustration-wrap">
+            <img src={codingWorkshop} alt="Coding laptop and coffee cup" className="signup-illustration" />
+          </div>
+        </aside>
+
+        <section className="signup-panel">
+          <h1 id="login-title">Sign in</h1>
+          <form className="signup-form login-form" onSubmit={handleSubmit}>
+            <div className="signup-row signup-row-email">
+              <label className="signup-field">
+                <span>Username or Email</span>
+                <input
+                  value={identifier}
+                  onChange={(event) => setIdentifier(event.target.value)}
+                  autoComplete="username"
+                  required
+                />
+              </label>
+            </div>
+            <div className="signup-row signup-row-email">
+              <label className="signup-field">
+                <span>Password</span>
+                <span className="signup-input-with-icon">
+                  <input
+                    type={passwordVisible ? 'text' : 'password'}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    autoComplete="current-password"
+                    required
+                  />
+                  <button className="signup-icon-button" type="button" onClick={() => setPasswordVisible((visible) => !visible)} aria-label={passwordVisible ? 'Hide password' : 'Show password'}>
+                    <EyeIcon />
+                  </button>
+                </span>
+              </label>
+            </div>
+            <button className="login-forgot" type="button" onClick={() => setShowForgotPassword(true)}>Forgot Password?</button>
+            <div className="signup-message-region login-message-region" aria-live="polite">
+              {error && <p className="error-message" role="alert">{error}</p>}
+            </div>
+            <div className="signup-actions">
+              <button className="signup-submit" type="submit" disabled={submitting}>
+                {submitting ? 'Signing in…' : 'Sign in'}
+              </button>
+              <span className="signup-or" aria-hidden="true">or</span>
+              <button className="signup-signin" type="button" onClick={() => navigate('/signup')}>Sign up</button>
+            </div>
+          </form>
+        </section>
       </section>
+      {showForgotPassword && (
+        <V2PlaceholderModal feature="Forgot Password" onClose={() => setShowForgotPassword(false)} titleId="forgot-password-v2-title" theme="auth" />
+      )}
     </main>
   )
 }
@@ -104,7 +141,7 @@ function ProtectedRoute({ children, navigate }) {
   const { isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) navigate('/login')
+    if (!isLoading && !isAuthenticated) navigate('/signin')
   }, [isAuthenticated, isLoading, navigate])
 
   if (isLoading || !isAuthenticated) {
@@ -118,8 +155,11 @@ function AppRoutes() {
   const { pathname, navigate } = usePathname()
   const problemMatch = pathname.match(/^\/problems\/([^/]+)$/)
 
-  if (pathname === '/login' || pathname === '/') return <LoginPage navigate={navigate} />
-  if (pathname === '/register') return <RegisterPage navigate={navigate} />
+  if (pathname === '/') return <LandingPage navigate={navigate} />
+  if (pathname === '/login') return <RouteRedirect navigate={navigate} to="/signin" />
+  if (pathname === '/register') return <RouteRedirect navigate={navigate} to="/signup" />
+  if (pathname === '/signin') return <LoginPage navigate={navigate} />
+  if (pathname === '/signup') return <RegisterPage navigate={navigate} />
   if (pathname === '/practice') {
     return <ProtectedRoute navigate={navigate}><Practice navigate={navigate} /></ProtectedRoute>
   }
