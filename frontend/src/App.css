@@ -181,13 +181,13 @@ button { cursor: pointer; }
 .landing-header { display: flex; width: min(100%, 1280px); box-sizing: border-box; align-items: center; justify-content: space-between; gap: 24px; margin: 0 auto; }
 .landing-brand { display: flex; align-items: center; gap: 3px; color: var(--landing-blue); }
 .landing-brand svg { width: 52px; height: 52px; flex: 0 0 52px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-.landing-brand span { color: var(--text); font-size: clamp(1.7rem, 3vw, 2.35rem); font-weight: 800; letter-spacing: .01em; line-height: 1; transform: translateY(-4.5px); }
+.landing-brand span { color: var(--text); font-size: clamp(1.7rem, 3vw, 2.35rem); font-weight: 800; letter-spacing: .01em; line-height: 1; transform: translateY(-3px); }
 .landing-signin { border: 1px solid var(--landing-blue); border-radius: 7px; padding: 8px 14px; background: transparent; color: var(--landing-blue); font-size: clamp(.9rem, 1.3vw, 1.05rem); font-weight: 600; }
 .landing-signin:hover, .landing-signin:focus-visible { color: var(--landing-blue-hover); }
 .landing-signin:focus-visible { outline: 2px solid var(--landing-blue); outline-offset: 3px; }
-.landing-hero { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: clamp(32px, 5vh, 52px); padding: 24px 0 8vh; text-align: center; }
+.landing-hero { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: clamp(68px, 9vh, 96px); padding: 24px 0 8vh; text-align: center; }
 .landing-hero h1 { margin: 0; color: var(--text); font-size: clamp(2.6rem, 7vw, 6.5rem); font-weight: 600; letter-spacing: -.075em; line-height: .98; }
-.landing-cta { width: min(240px, 80vw); border-color: var(--landing-blue); background: var(--landing-blue); color: #07111f; }
+.landing-cta { position: relative; top: clamp(24px, 6vh, 64px); width: min(240px, 80vw); border-color: var(--landing-blue); background: var(--landing-blue); color: #07111f; }
 .landing-cta:hover, .landing-cta:focus-visible { border-color: var(--landing-blue-hover); background: var(--landing-blue-hover); }
 
 /* Shared navigation rail */
