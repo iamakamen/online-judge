@@ -15,6 +15,21 @@
   --green-deep: #203525;
   --blue: #82b9ff;
   --danger: #ff8b8b;
+  --color-bg-primary: var(--page);
+  --color-bg-surface: var(--panel);
+  --color-bg-elevated: var(--panel-raised);
+  --color-text-primary: var(--text);
+  --color-text-secondary: var(--text-soft);
+  --color-text-muted: var(--text-muted);
+  --color-accent-primary: var(--blue);
+  --color-accent-hover: #a9d0ff;
+  --color-accent-text: #07111f;
+  --color-border: var(--border);
+  --color-focus: var(--blue);
+  --color-success: var(--green);
+  --color-error: var(--danger);
+  --color-warning: #f2c667;
+  --color-info: var(--blue);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -187,6 +202,8 @@ button { cursor: pointer; }
 .landing-signin:focus-visible { outline: 2px solid var(--landing-blue); outline-offset: 3px; }
 .landing-hero { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: clamp(68px, 9vh, 96px); padding: 24px 0 8vh; text-align: center; }
 .landing-hero h1 { margin: 0; color: var(--text); font-size: clamp(2.6rem, 7vw, 6.5rem); font-weight: 600; letter-spacing: -.075em; line-height: .98; }
+.landing-hero h1 > span { display: block; }
+.landing-hero h1 > span + span { margin-top: clamp(6px, 1vw, 14px); }
 .landing-cta { position: relative; top: clamp(24px, 6vh, 64px); width: min(240px, 80vw); border-color: var(--landing-blue); background: var(--landing-blue); color: #07111f; }
 .landing-cta:hover, .landing-cta:focus-visible { border-color: var(--landing-blue-hover); background: var(--landing-blue-hover); }
 

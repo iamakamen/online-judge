@@ -27,7 +27,7 @@ test('renders the dedicated landing page with only intentional navigation', () =
   assert.match(appSource, /pathname === '\/signup'\) return <RegisterPage navigate=\{navigate\} \/>/)
   assert.match(landingSource, /className="landing-signin"[^>]*onClick=\{\(\) => navigate\('\/signin'\)\}/)
   assert.match(landingSource, /className="signup-submit landing-cta"[^>]*onClick=\{\(\) => navigate\('\/signup'\)\}/)
-  assert.match(landingSource, /Your next problem<br \/>awaits\./)
+  assert.match(landingSource, /<span>Your next problem<\/span><span>awaits<\/span>/)
   assert.match(appStyles, /\.landing-page[^}]*font-family: 'Space Grotesk'/)
   assert.match(appStyles, /\.landing-hero h1[^}]*font-weight: 600/)
   assert.doesNotMatch(appStyles, /\.landing-hero h1[^}]*font-weight: (?:700|800|900)/)

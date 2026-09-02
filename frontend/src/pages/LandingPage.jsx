@@ -12,7 +12,7 @@ export function LandingPage({ navigate }) {
       </header>
 
       <section className="landing-hero" aria-labelledby="landing-title">
-        <h1 id="landing-title">Your next problem<br />awaits.</h1>
+        <h1 id="landing-title"><span>Your next problem</span><span>awaits</span></h1>
         <button className="signup-submit landing-cta" type="button" onClick={() => navigate('/signup')}>Get started</button>
       </section>
     </main>
