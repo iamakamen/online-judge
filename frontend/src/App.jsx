@@ -76,10 +76,10 @@ function LoginPage({ navigate }) {
     <main className="signup-page">
       <section className="signup-layout" aria-labelledby="login-title">
         <aside className="signup-intro">
-          <div className="signup-brand" aria-label="encode">
+          <a className="signup-brand" href="/" aria-label="encode">
             <LoomMark viewBox="6 6 20 20" />
             <span>encode</span>
-          </div>
+          </a>
           <div className="signup-illustration-wrap">
             <img src={codingWorkshop} alt="Coding laptop and coffee cup" className="signup-illustration" />
           </div>

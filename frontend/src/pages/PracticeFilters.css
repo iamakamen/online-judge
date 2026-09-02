@@ -4,7 +4,7 @@
 
 .practice-main {
   --practice-accent: var(--blue);
-  --practice-accent-hover: #afd2ff;
+  --practice-accent-hover: var(--blue-hover);
 }
 
 .practice-header {
@@ -132,9 +132,9 @@
 
 .practice-difficulty-filter .practice-filter-trigger {
   min-height: 38px;
-  border-color: #343844;
+  border-color: var(--border-strong);
   border-radius: 8px;
-  background: #0f1117;
+  background: var(--surface);
   padding: 4px 8px;
   transition: border-color 140ms ease, box-shadow 140ms ease;
 }
@@ -160,7 +160,7 @@
   border-radius: 7px;
   background: transparent;
   padding: 0 9px;
-  color: #c2c6cf;
+  color: var(--text-soft);
   cursor: pointer;
   font: inherit;
   font-weight: 700;
@@ -169,8 +169,8 @@
 
 .practice-difficulty-option:hover,
 .practice-difficulty-option.is-selected {
-  background: #20232c;
-  color: #f4f5f7;
+  background: var(--panel-raised);
+  color: var(--text);
 }
 
 .practice-tag-control {
@@ -181,16 +181,16 @@
   box-sizing: border-box;
   align-items: center;
   gap: 8px;
-  border: 1px solid #343844;
+  border: 1px solid var(--border-strong);
   border-radius: 8px;
-  background: #0f1117;
+  background: var(--surface);
   padding: 4px 8px;
   transition: border-color 140ms ease, box-shadow 140ms ease;
 }
 
 .practice-tag-control:hover,
 .practice-tag-control.is-open {
-  border-color: #a9f15a;
+  border-color: var(--blue);
 }
 
 .practice-tag-pills {
@@ -210,11 +210,11 @@
   max-width: 170px;
   align-items: center;
   gap: 4px;
-  border: 1px solid #343844;
+  border: 1px solid var(--border-strong);
   border-radius: 999px;
-  background: #151821;
+  background: var(--panel);
   padding: 5px 8px;
-  color: #dfe2e8;
+  color: var(--text-soft);
   font-size: 12px;
   line-height: 1.35;
 }
@@ -225,7 +225,7 @@
 }
 
 .practice-selected-tag-more {
-  color: #9ca4b4;
+  color: var(--text-muted);
 }
 
 .practice-selected-tag-remove {
@@ -233,14 +233,14 @@
   border: 0;
   background: transparent;
   padding: 0 1px;
-  color: #9ca4b4;
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
 }
 
 .practice-selected-tag-remove:hover {
-  color: #f4f5f7;
+  color: var(--text);
 }
 
 .practice-add-tag {
@@ -250,7 +250,7 @@
   border: 0;
   background: transparent;
   padding: 5px 4px;
-  color: #a9f15a;
+  color: var(--blue);
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
@@ -258,7 +258,7 @@
 }
 
 .practice-add-tag:hover {
-  color: #d0ff9b;
+  color: var(--blue-hover);
 }
 
 .practice-tag-open-area {

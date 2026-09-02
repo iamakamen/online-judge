@@ -22,7 +22,7 @@ def test_authenticated_dashboard_returns_v1_statistics(
     assert response.json() == {
         "first_name": "Test",
         "solved_count": 0,
-        "day_streak": 0,
+        "day_streak": "N/A",
         "global_rank": "N/A",
     }
 

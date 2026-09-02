@@ -18,6 +18,6 @@ def get_dashboard(db: Session, current_user: User) -> DashboardResponse:
     return DashboardResponse(
         first_name=current_user.first_name,
         solved_count=solved_count,
-        day_streak=0,
+        day_streak="N/A",
         global_rank="N/A",
     )

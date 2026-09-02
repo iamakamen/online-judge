@@ -2,7 +2,7 @@
 .problem-page-v2 {
   --sidebar-collapsed: 78px;
   --sidebar-expanded: 174px;
-  --problem-brand-blue: #61a9ff;
+  --problem-brand-blue: var(--blue);
 }
 
 .practice-shell .practice-sidebar,
@@ -32,7 +32,7 @@
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  color: var(--problem-brand-blue);
+  color: var(--blue);
   text-decoration: none;
   overflow: visible;
 }
@@ -61,7 +61,7 @@
   height: 44px;
   flex: 0 0 44px;
   stroke-width: 1.9;
-  color: var(--problem-brand-blue);
+  color: var(--blue);
 }
 
 .practice-shell .practice-sidebar-wordmark,
@@ -163,7 +163,7 @@
 .practice-shell .practice-sidebar-item.is-active:focus-visible,
 .problem-page-v2 .practice-sidebar-item.is-active:hover,
 .problem-page-v2 .practice-sidebar-item.is-active:focus-visible {
-  border-color: var(--problem-brand-blue);
+  border-color: var(--blue);
   background: var(--panel-raised);
 }
 

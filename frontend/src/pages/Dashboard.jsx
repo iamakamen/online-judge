@@ -57,15 +57,15 @@ export function Dashboard({ navigate }) {
   return (
     <div className="app-shell dashboard-shell">
       <header className="topbar dashboard-topbar">
-        <div className="dashboard-brand">
-          <LoomMark />
+        <div className="dashboard-brand" aria-label="encode">
+          <LoomMark viewBox="6 6 20 20" />
           <span>encode</span>
         </div>
         <nav aria-label="Account navigation" className="account-nav">
           <button type="button" className="icon-button" aria-label="Profile" title="Profile" onClick={() => setModalItem('Profile')}>
             <ProfileIcon />
           </button>
-          <button type="button" className="text-button" onClick={handleLogout}>Sign out</button>
+          <button type="button" className="dashboard-signout" onClick={handleLogout}>Sign out</button>
         </nav>
       </header>
       <main className="dashboard-page">

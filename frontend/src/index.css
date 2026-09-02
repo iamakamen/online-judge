@@ -7,8 +7,8 @@
   --font-weight-bold: 700;
   --font-weight-extrabold: 800;
   font-family: var(--font-ui);
-  color: #f4f5f7;
-  background: #0c0d12;
+  color: var(--text);
+  background: var(--page);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -16,4 +16,4 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; }
-button:focus-visible { outline: 2px solid #a9f15a; outline-offset: 3px; }
+button:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }

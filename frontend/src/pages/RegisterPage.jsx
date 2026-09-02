@@ -286,10 +286,10 @@ export function RegisterPage({ navigate }) {
     <main className="signup-page">
       <section className="signup-layout" aria-labelledby="signup-title">
         <aside className="signup-intro">
-          <div className="signup-brand" aria-label="encode">
+          <a className="signup-brand" href="/" aria-label="encode">
             <LoomMark viewBox="6 6 20 20" />
             <span>encode</span>
-          </div>
+          </a>
           <SignupIllustration />
         </aside>
 
