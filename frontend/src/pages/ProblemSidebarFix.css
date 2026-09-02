@@ -14,7 +14,7 @@
   background: transparent;
   color: var(--problem-text);
   font-size: .82rem;
-  font-weight: 750;
+  font-weight: var(--font-weight-semibold);
 }
 
 .problem-page-v2 .problem-navigation-submissions:hover,

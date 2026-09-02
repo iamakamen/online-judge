@@ -238,7 +238,7 @@ test('lays out the Custom Input Run icon and label in one centered row', () => {
   assert.match(customRunRule, /white-space: nowrap/)
   assert.match(customRunRule, /width: fit-content/)
   assert.match(customRunRule, /font-size: \.82rem/)
-  assert.match(customRunRule, /font-weight: 750/)
+  assert.match(customRunRule, /font-weight: var\(--font-weight-semibold\)/)
   assert.match(customRunRule, /line-height: 1/)
   assert.match(customRunIconRule, /display: block/)
   assert.match(customRunIconRule, /flex: 0 0 14px/)

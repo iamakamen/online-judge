@@ -75,6 +75,7 @@
   visibility: hidden;
   box-sizing: border-box;
   color: #ffffff;
+  font-family: var(--font-display);
   font-size: 1.45rem;
   font-weight: 800;
   letter-spacing: 1px;

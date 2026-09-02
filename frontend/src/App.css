@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
 
 :root {
   --page: #080d16;
@@ -46,6 +46,10 @@
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 
+.app-shell, .practice-shell, .problem-shell, .problem-page-v2,
+.auth-page, .placeholder-page, .loading-page, .error-page, .signup-page {
+  font-family: var(--font-display);
+}
 .app-shell, .practice-shell, .problem-shell { min-height: 100svh; background: var(--page); color: var(--text); }
 .app-shell { min-height: 100svh; }
 
@@ -56,7 +60,7 @@ button { cursor: pointer; }
 .brand .practice-sidebar-logo { width: 30px; height: 30px; }
 .dashboard-brand { display: flex; width: max-content; height: 60px; align-items: center; gap: 8px; color: var(--blue); }
 .dashboard-brand .practice-sidebar-logo { width: 52px; height: 52px; flex: 0 0 52px; stroke-width: 1.9; }
-.dashboard-brand > span { display: flex; height: 52px; align-items: center; color: var(--text); font-size: 1.7rem; font-weight: 800; letter-spacing: 1px; line-height: 1; }
+.dashboard-brand > span { display: flex; height: 52px; align-items: center; color: var(--text); font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; letter-spacing: 1px; line-height: 1; }
 .account-nav { display: flex; align-items: center; gap: var(--space-4); }
 .icon-button, .text-button, .link-button { border: 0; background: transparent; color: inherit; }
 .icon-button { display: inline-grid; place-items: center; padding: 8px; border-radius: 999px; }
@@ -66,7 +70,7 @@ button { cursor: pointer; }
 .text-button:hover, .link-button:hover { color: #d5ffa1; }
 
 .dashboard-page { display: flex; width: min(100%, 1180px); min-height: calc(100svh - 76px); box-sizing: border-box; margin: 0 auto; flex-direction: column; justify-content: center; padding: 32px; }
-.dashboard-intro h1 { margin: 10px 0 14px; font-size: clamp(2.6rem, 6vw, 5.2rem); letter-spacing: -.065em; line-height: .98; }
+.dashboard-intro h1 { margin: 10px 0 14px; font-family: var(--font-display); font-size: clamp(2.6rem, 6vw, 5.2rem); letter-spacing: -.065em; line-height: .98; }
 .eyebrow { margin: 0; color: var(--green); font-size: .72rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
 .muted, .stat-card span, .action-card small { color: var(--text-muted); }
 .stat-grid, .dashboard-actions { display: grid; gap: var(--space-3); margin-top: 36px; }
@@ -77,7 +81,7 @@ button { cursor: pointer; }
 .dashboard-actions { grid-template-columns: repeat(4, 1fr); }
 .action-card { display: flex; min-height: 148px; box-sizing: border-box; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: var(--space-4); color: var(--text); text-align: left; text-decoration: none; }
 .action-card:hover, .action-card:focus-visible { border-color: var(--border-strong); background: var(--panel-raised); }
-.action-card span { font-size: 1.25rem; font-weight: 750; }
+.action-card span { font-size: 1.25rem; font-weight: var(--font-weight-semibold); }
 /* Dashboard uses the application's blue accent without changing semantic colors elsewhere. */
 .dashboard-shell .eyebrow,
 .dashboard-shell .text-button,
@@ -148,7 +152,7 @@ button { cursor: pointer; }
 .signup-validation-indicator:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .signup-validation-tooltip { position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 5; width: max-content; max-width: min(320px, 70vw); box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--signup-border); border-radius: 6px; background: var(--signup-right); color: var(--signup-text); font-size: .78rem; font-weight: 500; line-height: 1.3; opacity: 0; pointer-events: none; visibility: hidden; }
 .signup-validation-control.has-guidance:hover .signup-validation-tooltip, .signup-validation-control.has-guidance:focus-within .signup-validation-tooltip, .signup-validation-indicator:focus .signup-validation-tooltip { opacity: 1; pointer-events: auto; visibility: visible; }
-.secondary-button, .signup-submit, .signup-signin { height: 44px; box-sizing: border-box; border-radius: 7px; padding: 0 17px; font-size: clamp(.82rem, 1.1vw, .98rem); font-weight: 650; }
+.secondary-button, .signup-submit, .signup-signin { height: 44px; box-sizing: border-box; border-radius: 7px; padding: 0 17px; font-size: clamp(.82rem, 1.1vw, .98rem); font-weight: var(--font-weight-semibold); }
 .secondary-button { min-width: 126px; border: 1px solid var(--signup-border); background: transparent; color: var(--signup-blue); }
 .secondary-button:hover { border-color: var(--signup-blue); background: #102137; }
 .secondary-button:focus-visible, .signup-submit:focus-visible, .signup-signin:focus-visible, .signup-icon-button:focus-visible { outline: 1px solid #55708f; outline-offset: 2px; }
@@ -229,7 +233,7 @@ button { cursor: pointer; }
 .practice-main { min-height: 100svh; margin-left: var(--sidebar-collapsed); padding: 72px clamp(28px, 6vw, 96px) 96px; transition: margin-left 180ms ease; }
 .practice-shell.sidebar-expanded .practice-main { margin-left: var(--sidebar-expanded); }
 .practice-header { max-width: none; margin: 0; padding-bottom: 38px; border-bottom: 1px solid var(--border); }
-.practice-header h1 { margin: 10px 0 14px; font-size: clamp(2.6rem, 5vw, 4.8rem); letter-spacing: -.065em; line-height: .98; }
+.practice-header h1 { margin: 10px 0 14px; font-family: var(--font-display); font-size: clamp(2.6rem, 5vw, 4.8rem); letter-spacing: -.065em; line-height: .98; }
 .practice-filters { display: flex; max-width: none; margin: 28px 0 0; align-items: flex-end; gap: var(--space-3); flex-wrap: wrap; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--panel); }
 .practice-filter-group { position: relative; display: grid; gap: var(--space-1); color: var(--text-muted); font-size: .78rem; }
 .practice-filter-group label, .practice-filter-group legend, .practice-filter-label { padding: 0; color: var(--text-muted); font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
@@ -258,7 +262,7 @@ button { cursor: pointer; }
 .practice-topic-section.is-complete { border-color: #567641; }
 .practice-topic-heading { display: flex; width: 100%; min-height: 78px; box-sizing: border-box; align-items: center; justify-content: space-between; border: 0; border-radius: 0; padding: 18px 22px; background: var(--panel-raised); color: inherit; text-align: left; }
 .practice-topic-heading:hover, .practice-topic-heading:focus-visible { background: var(--panel-raised); }
-.practice-topic-heading h2 { margin: 0; color: var(--text); font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em; }
+.practice-topic-heading h2 { margin: 0; color: var(--text); font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em; }
 .practice-topic-summary { display: flex; align-items: center; gap: var(--space-3); color: var(--text-muted); font-size: .85rem; }
 .practice-topic-chevron { position: relative; display: inline-block; width: 10px; height: 10px; flex: 0 0 10px; box-sizing: border-box; border-right: 2px solid var(--text-muted); border-bottom: 2px solid var(--text-muted); transform: rotate(-45deg); transition: transform 140ms ease; }
 .practice-topic-chevron.is-expanded { transform: rotate(45deg); }
@@ -267,9 +271,9 @@ button { cursor: pointer; }
 .practice-problem-row { display: grid; grid-template-columns: minmax(180px, 1.5fr) 36px 90px minmax(180px, 1fr); width: 100%; min-height: 64px; box-sizing: border-box; align-items: center; gap: 12px; border: 0; border-bottom: 1px solid var(--border); padding: 10px 22px 10px 36px; background: var(--surface); color: var(--text-soft); text-align: left; text-decoration: none; }
 .practice-problem-row:last-child { border-bottom: 0; }
 .practice-problem-row:hover, .practice-problem-row:focus-visible { background: var(--panel-raised); }
-.practice-problem-title { min-width: 0; overflow: hidden; color: color-mix(in srgb, var(--text) 82%, var(--text-soft)); font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.practice-problem-title { min-width: 0; overflow: hidden; color: color-mix(in srgb, var(--text) 82%, var(--text-soft)); font-weight: var(--font-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
 .practice-problem-status { color: var(--text-muted); font-size: 1rem; text-align: center; }
-.practice-problem-status.is-solved { color: var(--green); font-weight: 900; }
+.practice-problem-status.is-solved { color: var(--green); font-weight: var(--font-weight-bold); }
 .practice-problem-difficulty { font-size: .72rem; font-weight: 800; letter-spacing: .06em; }
 .difficulty-easy { color: var(--green); }
 .difficulty-medium { color: #f2c667; }
@@ -289,7 +293,7 @@ button { cursor: pointer; }
 .problem-pane { padding: 34px clamp(28px, 4vw, 64px) 80px; }
 .coding-pane { display: flex; flex-direction: column; gap: 16px; padding: 24px clamp(20px, 3vw, 40px) 28px; border-left: 1px solid var(--border); background: var(--sidebar); }
 .problem-navigation { display: flex; min-height: 38px; align-items: center; justify-content: flex-end; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-.problem-navigation-back, .problem-navigation-submissions { border: 0; background: transparent; color: var(--green); font-weight: 750; }
+.problem-navigation-back, .problem-navigation-submissions { border: 0; background: transparent; color: var(--green); font-weight: var(--font-weight-semibold); }
 .problem-navigation-back:hover, .problem-navigation-back:focus-visible, .problem-navigation-submissions:hover, .problem-navigation-submissions:focus-visible { color: #d5ffa1; }
 .problem-header { padding-bottom: 28px; border-bottom: 1px solid var(--border); }
 .problem-header h1 { margin: 0 0 18px; font-size: clamp(2rem, 3.5vw, 3.4rem); letter-spacing: -.06em; line-height: 1.04; }
@@ -331,11 +335,11 @@ button { cursor: pointer; }
 .code-editor-actions button:first-child { justify-self: start; }
 .code-editor-actions button:nth-child(2) { justify-self: center; }
 .code-editor-actions button:last-child { justify-self: end; }
-.code-editor-actions .code-editor-button, .code-editor-actions .primary-button { min-height: 46px; padding-inline: 18px; font-weight: 750; }
+.code-editor-actions .code-editor-button, .code-editor-actions .primary-button { min-height: 46px; padding-inline: 18px; font-weight: var(--font-weight-semibold); }
 .action-icon { width: 18px; height: 18px; flex: 0 0 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.55; }
 .execution-workspace { flex: 0 0 auto; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--panel); overflow: hidden; }
 .execution-workspace-tabs { display: flex; gap: 6px; padding: 0 18px; border-bottom: 1px solid var(--border); }
-.execution-workspace-tab { border: 0; border-bottom: 2px solid transparent; padding: 13px 13px 11px; background: transparent; color: var(--text-muted); font-weight: 750; }
+.execution-workspace-tab { border: 0; border-bottom: 2px solid transparent; padding: 13px 13px 11px; background: transparent; color: var(--text-muted); font-weight: var(--font-weight-semibold); }
 .execution-workspace-tab:hover, .execution-workspace-tab:focus-visible { color: var(--text); }
 .execution-workspace-tab.is-active { border-bottom-color: var(--green); color: var(--green); }
 .execution-workspace-tab:focus-visible, .execution-workspace-input textarea:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }

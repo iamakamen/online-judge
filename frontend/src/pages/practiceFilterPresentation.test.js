@@ -121,7 +121,7 @@ test('keeps Practice topic and problem hierarchy within the blue theme', () => {
 })
 
 test('preserves Practice difficulty, tag, solved, and completion styling', () => {
-  assert.match(appCss, /\.practice-problem-status\.is-solved \{ color: var\(--green\); font-weight: 900; \}/)
+  assert.match(appCss, /\.practice-problem-status\.is-solved \{ color: var\(--green\); font-weight: var\(--font-weight-bold\); \}/)
   assert.match(appCss, /\.difficulty-easy \{ color: var\(--green\); \}/)
   assert.match(appCss, /\.difficulty-medium \{ color: #f2c667; \}/)
   assert.match(appCss, /\.difficulty-hard \{ color: #ff7777; \}/)
