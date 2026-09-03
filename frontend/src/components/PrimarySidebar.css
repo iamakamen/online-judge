@@ -35,14 +35,15 @@
 .practice-shell .practice-sidebar-brand,
 .problem-page-v2 .practice-sidebar-brand {
   display: flex;
-  width: max-content;
+  width: 50px;
   height: 52px;
   flex: 0 0 auto;
   align-items: center;
   justify-content: flex-start;
+  margin-left: 1px;
   gap: 1px;
   box-sizing: border-box;
-  padding: 0 3px;
+  padding: 0 0 0 8.25px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -54,9 +55,6 @@
 
 .practice-shell .practice-sidebar.is-expanded .practice-sidebar-brand,
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-brand {
-  width: max-content;
-  justify-content: flex-start;
-  padding: 0 2px;
   overflow: visible;
 }
 
@@ -88,7 +86,7 @@
   display: block;
   flex: 0 0 auto;
   width: max-content;
-  max-width: 88px;
+  max-width: 0;
   overflow: hidden;
   color: var(--text);
   font-family: var(--font-display);
@@ -105,6 +103,7 @@
 
 .practice-shell .practice-sidebar.is-expanded .practice-sidebar-wordmark,
 .problem-page-v2 .practice-sidebar.is-expanded .practice-sidebar-wordmark {
+  max-width: 88px;
   opacity: 1;
   visibility: visible;
 }
