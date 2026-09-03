@@ -61,10 +61,6 @@ button { cursor: pointer; }
 .brand { display: inline-grid; width: 44px; height: 44px; place-items: center; border: 0; border-radius: var(--radius-md); background: transparent; color: var(--blue); }
 .brand:hover, .brand:focus-visible { background: var(--panel-raised); }
 .brand .practice-sidebar-logo { width: 30px; height: 30px; }
-.dashboard-brand { display: flex; width: max-content; align-items: center; gap: 1px; color: var(--blue); text-decoration: none; }
-.dashboard-brand .practice-sidebar-logo { width: 32.5px; height: 32.5px; flex: 0 0 32.5px; stroke-width: 1.9; }
-.dashboard-brand > span { color: var(--text); font-family: var(--font-display); font-size: 1.5rem; font-weight: var(--font-weight-semibold); letter-spacing: .01em; line-height: 1; transform: translateY(-2.5px); }
-.dashboard-brand:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .account-nav { display: flex; align-items: center; gap: var(--space-4); }
 .icon-button, .text-button, .link-button { border: 0; background: transparent; color: inherit; }
 .icon-button { display: inline-grid; place-items: center; padding: 8px; border-radius: 999px; }
@@ -76,6 +72,10 @@ button { cursor: pointer; }
 .text-button:hover, .link-button:hover { color: var(--blue-hover); }
 
 .dashboard-page { display: flex; width: min(100%, 1180px); min-height: calc(100svh - 84px); box-sizing: border-box; margin: 0 auto; flex-direction: column; justify-content: center; padding: 32px; }
+.dashboard-brand { display: flex; width: max-content; align-items: center; gap: 1px; color: var(--blue); text-decoration: none; }
+.dashboard-brand .practice-sidebar-logo { width: 32.5px; height: 32.5px; flex: 0 0 32.5px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.dashboard-brand > span { color: var(--text); font-family: var(--font-display); font-size: 1.5rem; font-weight: var(--font-weight-semibold); letter-spacing: .01em; line-height: 1; transform: translateY(-2.5px); }
+.dashboard-brand:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .dashboard-intro h1 { margin: 10px 0 14px; font-family: var(--font-display); font-size: clamp(2.6rem, 6vw, 5.2rem); letter-spacing: -.065em; line-height: .98; }
 .eyebrow { margin: 0; color: var(--blue); font-size: .72rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
 .muted, .stat-card span, .action-card small { color: var(--text-muted); }
@@ -220,24 +220,6 @@ button { cursor: pointer; }
 .landing-hero h1 > span + span { margin-top: clamp(6px, 1vw, 14px); }
 .landing-cta { position: relative; top: clamp(24px, 6vh, 64px); width: min(240px, 80vw); border-color: var(--landing-blue); background: var(--landing-blue); color: #07111f; }
 .landing-cta:hover, .landing-cta:focus-visible { border-color: var(--landing-blue-hover); background: var(--landing-blue-hover); }
-
-/* Shared navigation rail */
-.practice-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 20; display: flex; width: var(--sidebar-collapsed); box-sizing: border-box; flex-direction: column; padding: 22px 14px; border-right: 1px solid var(--border); background: var(--sidebar); transition: width 180ms ease; overflow: hidden; }
-.practice-sidebar.is-expanded { width: var(--sidebar-expanded); }
-.practice-sidebar-brand { display: grid; width: 48px; height: 48px; flex: 0 0 auto; place-items: center; border: 1px solid transparent; border-radius: var(--radius-md); background: transparent; color: var(--blue); }
-.practice-sidebar-brand:hover, .practice-sidebar-brand:focus-visible { border-color: var(--border-strong); background: var(--panel-raised); }
-.practice-sidebar-logo { width: 31px; height: 31px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.practice-sidebar-nav, .practice-sidebar-profile { display: grid; gap: 10px; }
-.practice-sidebar-nav { margin-top: 34px; }
-.practice-sidebar-profile { margin-top: auto; }
-.practice-sidebar-item { display: flex; width: 50px; min-height: 52px; box-sizing: border-box; align-items: center; gap: 15px; border: 1px solid transparent; border-radius: var(--radius-md); padding: 0 13px; background: transparent; color: var(--text-muted); text-align: left; white-space: nowrap; }
-.practice-sidebar.is-expanded .practice-sidebar-item { width: 216px; }
-.practice-sidebar-item > span:last-child { overflow: hidden; max-width: 0; opacity: 0; visibility: hidden; transition: opacity 120ms ease, visibility 120ms ease; }
-.practice-sidebar.is-expanded .practice-sidebar-item > span:last-child { max-width: 150px; opacity: 1; visibility: visible; }
-.practice-sidebar-item:hover, .practice-sidebar-item:focus-visible { border-color: var(--border-strong); background: var(--panel-raised); color: var(--text); }
-.practice-sidebar-item.is-active { border-color: var(--blue); background: rgb(130 185 255 / 12%); color: var(--blue); }
-.practice-sidebar-item:disabled { cursor: default; opacity: .52; }
-.practice-sidebar-icon { width: 24px; height: 24px; flex: 0 0 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Practice and problem workspace shells */
 .practice-main { min-height: 100svh; margin-left: var(--sidebar-collapsed); padding: 72px clamp(28px, 6vw, 96px) 96px; transition: margin-left 180ms ease; }
@@ -417,13 +399,10 @@ button { cursor: pointer; }
   .stat-grid, .dashboard-actions { grid-template-columns: 1fr; }
   .dashboard-page { min-height: auto; padding: 48px 20px 40px; }
   .topbar { padding-inline: 20px; }
-  .practice-sidebar { width: 66px; padding-inline: 9px; }
-  .practice-sidebar.is-expanded { width: 214px; }
-  .practice-sidebar.is-expanded .practice-sidebar-item { width: 188px; }
-  .practice-main { margin-left: 66px; padding: 48px 20px 72px; }
-  .practice-shell.sidebar-expanded .practice-main { margin-left: 214px; }
-  .problem-main { margin-left: 66px; }
-  .problem-shell.sidebar-expanded .problem-main { margin-left: 214px; }
+  .practice-main { margin-left: var(--sidebar-collapsed); padding: 48px 20px 72px; }
+  .practice-shell.sidebar-expanded .practice-main { margin-left: var(--sidebar-expanded); }
+  .problem-main { margin-left: var(--sidebar-collapsed); }
+  .problem-shell.sidebar-expanded .problem-main { margin-left: var(--sidebar-expanded); }
   .problem-pane, .coding-pane { padding: 28px 20px 64px; }
   .problem-example-grid { grid-template-columns: 1fr; }
   .problem-limits { flex-direction: column; }

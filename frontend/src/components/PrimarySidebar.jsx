@@ -199,7 +199,7 @@ export function PrimarySidebar({ isExpanded, onExpand, onCollapse, navigate, onV
         }}
         onContextMenu={(event) => handleContextMenu(event, '/dashboard')}
       >
-        <LoomMark />
+        <LoomMark viewBox="6 6 20 20" />
         <span className="practice-sidebar-wordmark">encode</span>
       </a>
 
