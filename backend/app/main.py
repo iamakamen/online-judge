@@ -1,6 +1,11 @@
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+
+from backend.app.db.session import SessionLocal
+from backend.app.services.authentication import (
+    record_authenticated_activity as update_authenticated_activity,
+)
 
 from backend.app.api.routes.auth import router as auth_router
 from backend.app.api.routes.ai import router as ai_router
@@ -22,6 +27,31 @@ app = FastAPI(
     title="Online Judge API",
     version="0.1.0",
 )
+
+
+@app.middleware("http")
+async def record_authenticated_activity_middleware(
+    request: Request,
+    call_next,
+):
+    response = await call_next(request)
+    session_id = getattr(request.state, "auth_session_id", None)
+
+    if session_id is None or not 200 <= response.status_code < 300:
+        return response
+
+    db = SessionLocal()
+    try:
+        update_authenticated_activity(db, session_id)
+    except Exception:
+        db.rollback()
+        logging.getLogger(__name__).exception(
+            "Failed to record authenticated activity"
+        )
+    finally:
+        db.close()
+
+    return response
 
 app.include_router(auth_router)
 app.include_router(ai_router)

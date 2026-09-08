@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { AuthProvider } from './auth/AuthContext'
 import { useAuth } from './auth/useAuth'
@@ -10,22 +10,201 @@ import { LandingPage } from './pages/LandingPage'
 import { LoomMark } from './components/PrimarySidebar'
 import { V2PlaceholderModal } from './components/V2PlaceholderModal'
 import codingWorkshop from './assets/signup/coding-workshop-8429809.png'
+import {
+  createEntryId,
+  createProblemPaneScrollKey,
+  createScrollPositionStore,
+  getHistoryEntryId,
+  HISTORY_STATE_KEY,
+} from './scroll/scrollRestoration'
+
+function getLocation() {
+  return {
+    pathname: window.location.pathname,
+    search: window.location.search,
+    hash: window.location.hash,
+  }
+}
+
+function ensureHistoryEntryId() {
+  const entryId = getHistoryEntryId(window.history.state)
+  if (entryId) return entryId
+
+  const nextEntryId = createEntryId()
+  const currentState = window.history.state
+  const nextState = currentState && typeof currentState === 'object'
+    ? { ...currentState, [HISTORY_STATE_KEY]: { entryId: nextEntryId } }
+    : { [HISTORY_STATE_KEY]: { entryId: nextEntryId } }
+
+  window.history.replaceState(nextState, '', window.location.href)
+  return nextEntryId
+}
 
 function usePathname() {
-  const [pathname, setPathname] = useState(window.location.pathname)
+  const [location, setLocation] = useState(getLocation)
+  const [historyEntryId, setHistoryEntryId] = useState(null)
+  const [navigationType, setNavigationType] = useState('initial')
+  const currentEntryIdRef = useRef(null)
+  const windowPositionsRef = useRef(createScrollPositionStore())
+  const problemPanePositionsRef = useRef(createScrollPositionStore())
+  const problemPaneRef = useRef(null)
+
+  const captureWindowPosition = useCallback(() => {
+    const entryId = currentEntryIdRef.current
+    if (!entryId) return
+    windowPositionsRef.current.set(entryId, { x: window.scrollX, y: window.scrollY })
+  }, [])
+
+  const captureProblemPanePosition = useCallback(() => {
+    const registration = problemPaneRef.current
+    if (!registration || registration.entryId !== currentEntryIdRef.current) return
+    problemPanePositionsRef.current.set(
+      createProblemPaneScrollKey(registration.entryId, registration.slug),
+      { top: registration.element.scrollTop },
+    )
+  }, [])
+
+  const registerProblemPane = useCallback((element, slug, entryId) => {
+    if (!element || !slug || !entryId) return undefined
+    const registration = { element, slug, entryId }
+    problemPaneRef.current = registration
+
+    const onScroll = () => {
+      if (problemPaneRef.current !== registration || currentEntryIdRef.current !== entryId) return
+      problemPanePositionsRef.current.set(
+        createProblemPaneScrollKey(entryId, slug),
+        { top: element.scrollTop },
+      )
+    }
+    element.addEventListener('scroll', onScroll, { passive: true })
+
+    return () => {
+      element.removeEventListener('scroll', onScroll)
+      if (problemPaneRef.current === registration) problemPaneRef.current = null
+    }
+  }, [])
+
+  const getProblemPanePosition = useCallback((entryId, slug) => {
+    return problemPanePositionsRef.current.get(createProblemPaneScrollKey(entryId, slug))?.top ?? 0
+  }, [])
 
   const navigate = useCallback((path, { replace = false } = {}) => {
-    window.history[replace ? 'replaceState' : 'pushState']({}, '', path)
-    setPathname(path)
-  }, [])
+    captureWindowPosition()
+    captureProblemPanePosition()
+
+    const nextEntryId = replace ? currentEntryIdRef.current || createEntryId() : createEntryId()
+    const currentState = window.history.state
+    const nextState = currentState && typeof currentState === 'object'
+      ? { ...currentState, [HISTORY_STATE_KEY]: { entryId: nextEntryId } }
+      : { [HISTORY_STATE_KEY]: { entryId: nextEntryId } }
+
+    window.history[replace ? 'replaceState' : 'pushState'](nextState, '', path)
+    currentEntryIdRef.current = nextEntryId
+    setHistoryEntryId(nextEntryId)
+    setNavigationType(replace ? 'replace' : 'push')
+    setLocation(getLocation())
+  }, [captureProblemPanePosition, captureWindowPosition])
 
   useEffect(() => {
-    const onPopState = () => setPathname(window.location.pathname)
-    window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
-  }, [])
+    const previousScrollRestoration = window.history.scrollRestoration
+    window.history.scrollRestoration = 'manual'
 
-  return { pathname, navigate }
+    const entryId = ensureHistoryEntryId()
+    currentEntryIdRef.current = entryId
+    setHistoryEntryId(entryId)
+
+    const onScroll = () => captureWindowPosition()
+    const onPopState = (event) => {
+      captureWindowPosition()
+      captureProblemPanePosition()
+
+      const targetEntryId = getHistoryEntryId(event.state) || ensureHistoryEntryId()
+      currentEntryIdRef.current = targetEntryId
+      if (!windowPositionsRef.current.has(targetEntryId)) {
+        windowPositionsRef.current.set(targetEntryId, { x: 0, y: 0 })
+      }
+      setHistoryEntryId(targetEntryId)
+      setNavigationType('pop')
+      setLocation(getLocation())
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('popstate', onPopState)
+
+    return () => {
+      window.history.scrollRestoration = previousScrollRestoration
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('popstate', onPopState)
+    }
+  }, [captureProblemPanePosition, captureWindowPosition])
+
+  useEffect(() => {
+    if (!historyEntryId || navigationType === 'initial' || navigationType === 'replace') return undefined
+
+    let frameId = 0
+    let resizeObserver
+    let attempts = 0
+
+    const restoreHash = () => {
+      const targetElement = document.getElementById(decodeURIComponent(location.hash.slice(1)))
+      if (!targetElement) return false
+      targetElement.scrollIntoView()
+      return true
+    }
+
+    const restoreWindowPosition = () => {
+      attempts += 1
+      const target = windowPositionsRef.current.get(historyEntryId) ?? { x: 0, y: 0 }
+      window.scrollTo(target.x, target.y)
+      const reachedTarget = window.scrollX === target.x && window.scrollY === target.y
+      if (reachedTarget || attempts >= 60) {
+        resizeObserver?.disconnect()
+        return
+      }
+      frameId = requestAnimationFrame(restoreWindowPosition)
+    }
+
+    const restore = () => {
+      if (location.hash) {
+        if (restoreHash() || attempts >= 60) {
+          resizeObserver?.disconnect()
+          return
+        }
+        attempts += 1
+        frameId = requestAnimationFrame(restore)
+        return
+      }
+
+      if (navigationType === 'push') {
+        window.scrollTo(0, 0)
+        return
+      }
+      restoreWindowPosition()
+    }
+
+    frameId = requestAnimationFrame(restore)
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        if (navigationType === 'pop') restoreWindowPosition()
+      })
+      resizeObserver.observe(document.documentElement)
+    }
+
+    return () => {
+      cancelAnimationFrame(frameId)
+      resizeObserver?.disconnect()
+    }
+  }, [historyEntryId, location, navigationType])
+
+  return {
+    pathname: location.pathname,
+    hash: location.hash,
+    navigate,
+    historyEntryId,
+    navigationType,
+    registerProblemPane,
+    getProblemPanePosition,
+  }
 }
 
 function EyeIcon() {
@@ -137,22 +316,55 @@ function LoginPage({ navigate }) {
   )
 }
 
-function ProtectedRoute({ children, navigate }) {
-  const { isAuthenticated, isLoading } = useAuth()
+function AuthRestoringSurface({ pathname }) {
+  const routeKind = pathname === '/dashboard'
+    ? 'dashboard'
+    : pathname === '/practice'
+      ? 'practice'
+      : pathname.startsWith('/problems/')
+        ? 'problem'
+        : 'application'
+
+  return (
+    <main className={`auth-restoring-surface auth-restoring-surface-${routeKind}`} aria-busy="true" aria-label="Restoring session">
+      <LoomMark viewBox="6 6 20 20" />
+    </main>
+  )
+}
+
+function ProtectedRoute({ children, navigate, pathname }) {
+  const { authStatus, isAuthenticated, isLoading, retryAuthentication } = useAuth()
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) navigate('/signin')
-  }, [isAuthenticated, isLoading, navigate])
+    if (authStatus === 'unauthenticated') navigate('/signin')
+  }, [authStatus, navigate])
+
+  if (authStatus === 'temporarily_unavailable') {
+    return (
+      <main className="loading-page">
+        <p>Authentication is temporarily unavailable.</p>
+        <button type="button" className="primary-button" onClick={() => retryAuthentication().catch(() => {})}>Retry authentication</button>
+      </main>
+    )
+  }
 
   if (isLoading || !isAuthenticated) {
-    return <main className="loading-page">Checking authentication…</main>
+    return <AuthRestoringSurface pathname={pathname} />
   }
 
   return children
 }
 
 function AppRoutes() {
-  const { pathname, navigate } = usePathname()
+  const {
+    pathname,
+    hash,
+    navigate,
+    historyEntryId,
+    navigationType,
+    registerProblemPane,
+    getProblemPanePosition,
+  } = usePathname()
   const problemMatch = pathname.match(/^\/problems\/([^/]+)$/)
 
   if (pathname === '/') return <LandingPage navigate={navigate} />
@@ -161,17 +373,22 @@ function AppRoutes() {
   if (pathname === '/signin') return <LoginPage navigate={navigate} />
   if (pathname === '/signup') return <RegisterPage navigate={navigate} />
   if (pathname === '/practice') {
-    return <ProtectedRoute navigate={navigate}><Practice navigate={navigate} /></ProtectedRoute>
+    return <ProtectedRoute navigate={navigate} pathname={pathname}><Practice navigate={navigate} /></ProtectedRoute>
   }
   if (pathname === '/dashboard') {
-    return <ProtectedRoute navigate={navigate}><Dashboard navigate={navigate} /></ProtectedRoute>
+    return <ProtectedRoute navigate={navigate} pathname={pathname}><Dashboard navigate={navigate} /></ProtectedRoute>
   }
   if (problemMatch) {
     return (
-      <ProtectedRoute navigate={navigate}>
+      <ProtectedRoute navigate={navigate} pathname={pathname}>
         <ProblemPage
           slug={decodeURIComponent(problemMatch[1])}
           navigate={navigate}
+          hash={hash}
+          historyEntryId={historyEntryId}
+          navigationType={navigationType}
+          registerProblemPane={registerProblemPane}
+          getProblemPanePosition={getProblemPanePosition}
         />
       </ProtectedRoute>
     )

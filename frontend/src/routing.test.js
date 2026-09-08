@@ -6,6 +6,8 @@ const appSource = readFileSync(new URL('./App.jsx', import.meta.url), 'utf8')
 const landingSource = readFileSync(new URL('./pages/LandingPage.jsx', import.meta.url), 'utf8')
 const appStyles = readFileSync(new URL('./App.css', import.meta.url), 'utf8')
 const dashboardSource = readFileSync(new URL('./pages/Dashboard.jsx', import.meta.url), 'utf8')
+const practiceSource = readFileSync(new URL('./pages/Practice.jsx', import.meta.url), 'utf8')
+const problemSource = readFileSync(new URL('./pages/ProblemPage.jsx', import.meta.url), 'utf8')
 const registerSource = readFileSync(new URL('./pages/RegisterPage.jsx', import.meta.url), 'utf8')
 
 test('uses the new sign-in and sign-up frontend routes', () => {
@@ -44,4 +46,37 @@ test('keeps clean backward-compatible redirects for old auth URLs', () => {
   assert.match(appSource, /pathname === '\/register'.*RouteRedirect/s)
   assert.match(appSource, /to="\/signup"/)
   assert.match(appSource, /navigate\(to, \{ replace: true \}\)/)
+})
+
+test('keeps authentication restoration neutral without mounting protected pages', () => {
+  assert.match(appSource, /function AuthRestoringSurface\(/)
+  assert.match(appSource, /auth-restoring-surface/)
+  assert.doesNotMatch(appSource, /Checking authentication/)
+  assert.match(appSource, /authStatus === 'temporarily_unavailable'/)
+  assert.match(appSource, /authStatus === 'unauthenticated'/)
+})
+
+test('keeps Dashboard and Practice shells visible during initial data loading', () => {
+  assert.match(dashboardSource, /dashboard-shell.*aria-busy=\{loading\}/s)
+  assert.match(dashboardSource, /dashboard-loading-placeholder/)
+  assert.match(dashboardSource, /dashboard-loading-value/)
+  assert.doesNotMatch(dashboardSource, /Loading Dashboard/)
+
+  assert.match(practiceSource, /practice-header.*aria-busy=\{isLoading\}/s)
+  assert.match(practiceSource, /practice-loading-placeholder/)
+  assert.match(practiceSource, /practice-catalog-loading/)
+  assert.doesNotMatch(practiceSource, /Loading Practice/)
+})
+
+test('binds ProblemPage rendering to the current slug during loading and navigation', () => {
+  assert.match(problemSource, /loadedProblemSlug/)
+  assert.match(problemSource, /const displayedProblem = loadedProblemSlug === slug \? problem : null/)
+  assert.match(problemSource, /<ProblemDetails problem=\{displayedProblem\} \/>/)
+  assert.match(problemSource, /problem-loading-placeholder/)
+  assert.doesNotMatch(problemSource, /Loading Problem/)
+})
+
+test('passes the current route hash through to ProblemPage', () => {
+  assert.match(appSource, /const \{[\s\S]*?pathname,[\s\S]*?hash,[\s\S]*?\} = usePathname\(\)/)
+  assert.match(appSource, /<ProblemPage[\s\S]*hash=\{hash\}/)
 })

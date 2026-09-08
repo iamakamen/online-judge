@@ -40,7 +40,6 @@ export function Dashboard({ navigate }) {
     navigate('/signin')
   }
 
-  if (loading) return <main className="loading-page">Loading Dashboard…</main>
   if (error) {
     return (
       <main className="error-page">
@@ -55,7 +54,7 @@ export function Dashboard({ navigate }) {
   }
 
   return (
-    <div className="app-shell dashboard-shell">
+    <div className="app-shell dashboard-shell" aria-busy={loading}>
       <header className="topbar dashboard-topbar">
         <div className="dashboard-brand" aria-label="encode">
           <LoomMark viewBox="6 6 20 20" />
@@ -70,14 +69,18 @@ export function Dashboard({ navigate }) {
       </header>
       <main className="dashboard-page">
         <section className="dashboard-intro">
-          <h1>Welcome, {data.first_name.toLowerCase()}</h1>
+          <h1>
+            {data
+              ? <>Welcome, {data.first_name.toLowerCase()}</>
+              : <span className="dashboard-loading-placeholder" aria-label="Loading dashboard content" />}
+          </h1>
           <p className="muted">Keep building your problem-solving momentum.</p>
         </section>
 
         <section className="stat-grid" aria-label="Your progress">
-          <article className="stat-card"><span>Solved</span><strong>{data.solved_count}</strong></article>
-          <article className="stat-card"><span>Global Rank</span><strong>{data.global_rank}</strong></article>
-          <article className="stat-card"><span>Day Streak</span><strong>{data.day_streak}</strong></article>
+          <article className="stat-card"><span>Solved</span><strong>{data ? data.solved_count : <span className="dashboard-loading-value" aria-hidden="true" />}</strong></article>
+          <article className="stat-card"><span>Global Rank</span><strong>{data ? data.global_rank : <span className="dashboard-loading-value" aria-hidden="true" />}</strong></article>
+          <article className="stat-card"><span>Day Streak</span><strong>{data ? data.day_streak : <span className="dashboard-loading-value" aria-hidden="true" />}</strong></article>
         </section>
 
         <section className="dashboard-actions" aria-label="Learning areas">

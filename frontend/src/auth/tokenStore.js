@@ -3,9 +3,14 @@ const subscribers = new Set()
 const authChannel = typeof BroadcastChannel !== 'undefined'
   ? new BroadcastChannel('oj-authentication')
   : null
+let sessionMessagesEnabled = true
 
 function storedRefreshToken() {
   try { return window.sessionStorage.getItem(REFRESH_TOKEN_STORAGE_KEY) } catch { return null }
+}
+
+function removeStoredRefreshToken() {
+  try { window.sessionStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY) } catch { /* Browser storage is optional. */ }
 }
 
 function notify() {
@@ -22,12 +27,15 @@ if (authChannel) {
       authChannel.postMessage({ type: 'session', refreshToken: tokens.refreshToken })
       return
     }
-    if (event.data?.type === 'session' && event.data.refreshToken) {
+    if (event.data?.type === 'session' && event.data.refreshToken && sessionMessagesEnabled) {
       tokens = { accessToken: tokens?.accessToken || null, refreshToken: event.data.refreshToken }
+      try { window.sessionStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, event.data.refreshToken) } catch { /* Browser storage is optional. */ }
       notify()
     }
     if (event.data?.type === 'logout') {
       tokens = null
+      sessionMessagesEnabled = false
+      removeStoredRefreshToken()
       notify()
     }
   }
@@ -39,9 +47,10 @@ export function getTokens() {
 
 export function setTokens(nextTokens) {
   tokens = nextTokens
+  sessionMessagesEnabled = true
   try {
     if (nextTokens?.refreshToken) window.sessionStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, nextTokens.refreshToken)
-    else window.sessionStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY)
+    else removeStoredRefreshToken()
   } catch { /* Browser storage is optional. */ }
   if (authChannel && nextTokens?.refreshToken) {
     authChannel.postMessage({ type: 'session', refreshToken: nextTokens.refreshToken })
@@ -49,10 +58,11 @@ export function setTokens(nextTokens) {
   notify()
 }
 
-export function clearTokens() {
+export function clearTokens({ broadcast = true } = {}) {
   tokens = null
-  try { window.sessionStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY) } catch { /* Browser storage is optional. */ }
-  if (authChannel) authChannel.postMessage({ type: 'logout' })
+  if (broadcast) sessionMessagesEnabled = false
+  removeStoredRefreshToken()
+  if (broadcast && authChannel) authChannel.postMessage({ type: 'logout' })
   notify()
 }
 
@@ -61,8 +71,10 @@ export function subscribe(subscriber) {
   return () => subscribers.delete(subscriber)
 }
 
-export function requestSharedSession(timeoutMs = 300, previousRefreshToken = null) {
+export function requestSharedSession(timeoutMs = 1500, previousRefreshToken = null) {
   if (!authChannel) return Promise.resolve(false)
+  const currentRefreshToken = getTokens()?.refreshToken
+  if (currentRefreshToken && currentRefreshToken !== previousRefreshToken) return Promise.resolve(true)
   return new Promise((resolve) => {
     let settled = false
     const unsubscribe = subscribe(() => {

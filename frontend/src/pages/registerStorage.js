@@ -1,4 +1,5 @@
 export const REGISTER_DRAFT_STORAGE_KEY = 'encode.signup.draft'
+export const REGISTER_DRAFT_INACTIVITY_MS = 15 * 60 * 1000
 
 function getSessionStorage() {
   try {
@@ -26,11 +27,16 @@ function normalizeEmailState(state) {
   }
 }
 
-export function loadRegistrationDraft(storage = getSessionStorage()) {
+export function loadRegistrationDraft(storage = getSessionStorage(), now = Date.now()) {
   if (!storage) return null
   try {
     const parsed = JSON.parse(storage.getItem(REGISTER_DRAFT_STORAGE_KEY) || 'null')
     if (!parsed || !parsed.form) return null
+    const lastActivityAt = isFiniteNumber(parsed.lastActivityAt) ? parsed.lastActivityAt : now
+    if (now - lastActivityAt >= REGISTER_DRAFT_INACTIVITY_MS) {
+      storage.removeItem(REGISTER_DRAFT_STORAGE_KEY)
+      return null
+    }
     const emailStates = {}
     if (parsed.version === 2 && parsed.emailStates && typeof parsed.emailStates === 'object') {
       for (const [email, state] of Object.entries(parsed.emailStates)) {
@@ -46,6 +52,7 @@ export function loadRegistrationDraft(storage = getSessionStorage()) {
       return null
     }
     return {
+      lastActivityAt,
       form: {
         firstName: typeof parsed.form.firstName === 'string' ? parsed.form.firstName : '',
         lastName: typeof parsed.form.lastName === 'string' ? parsed.form.lastName : '',
@@ -66,7 +73,7 @@ export function loadRegistrationDraft(storage = getSessionStorage()) {
   }
 }
 
-export function saveRegistrationDraft({ form, emailStates }, storage = getSessionStorage()) {
+export function saveRegistrationDraft({ form, emailStates, lastActivityAt = Date.now() }, storage = getSessionStorage()) {
   if (!storage) return
   try {
     const safeEmailStates = Object.fromEntries(
@@ -79,6 +86,7 @@ export function saveRegistrationDraft({ form, emailStates }, storage = getSessio
     )
     storage.setItem(REGISTER_DRAFT_STORAGE_KEY, JSON.stringify({
       version: 2,
+      lastActivityAt,
       form: {
         firstName: form.firstName,
         lastName: form.lastName,

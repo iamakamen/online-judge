@@ -27,7 +27,7 @@ from backend.app.models.topic import Topic
 from backend.app.models.user import User, UserRole
 from backend.app.models.user_problem_progress import UserProblemProgress
 from backend.app.services.password import hash_password
-from backend.app.services.token import create_access_token
+from backend.app.services.authentication import create_authenticated_session
 
 
 TestSessionLocal = sessionmaker(
@@ -115,13 +115,15 @@ def normal_user(db: Session) -> User:
 
 
 @pytest.fixture()
-def admin_token(admin_user: User) -> str:
-    return create_access_token(admin_user.id)
+def admin_token(db: Session, admin_user: User) -> str:
+    access_token, _ = create_authenticated_session(db, admin_user)
+    return access_token
 
 
 @pytest.fixture()
-def user_token(normal_user: User) -> str:
-    return create_access_token(normal_user.id)
+def user_token(db: Session, normal_user: User) -> str:
+    access_token, _ = create_authenticated_session(db, normal_user)
+    return access_token
 
 
 @pytest.fixture()

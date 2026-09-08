@@ -14,7 +14,7 @@ import { ExecutionWorkspace } from '../components/ExecutionWorkspace'
 import { PrimarySidebar } from '../components/PrimarySidebar'
 import { resolveRunMode } from '../problem/runValidation'
 import { useProblemSession } from '../problem/useProblemSession'
-import { formatConstraints } from '../problem/constraintFormatting'
+import { normalizeConstraints } from '../problem/constraintFormatting'
 import './ProblemPage.css'
 
 const SUBMISSION_POLL_INTERVAL_MS = 500
@@ -104,9 +104,75 @@ function createExecutionId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
-export function ProblemPage({ slug, navigate }) {
+function ProblemDetails({ problem }) {
+  return (
+    <>
+      <header className="problem-header">
+        <h1 id="problem-title">{problem.title}</h1>
+        <div className="problem-meta">
+          {formatDifficulty(problem.difficulty) && (
+            <span className="problem-tag problem-difficulty" aria-label="Problem difficulty">
+              {formatDifficulty(problem.difficulty)}
+            </span>
+          )}
+          <div className="problem-tags" aria-label="Problem tags">
+            {problem.tags.map((tag) => <span key={tag} className="problem-tag">{tag}</span>)}
+          </div>
+        </div>
+      </header>
+
+      <section className="problem-section" aria-labelledby="problem-statement-title">
+        <h2 id="problem-statement-title">Description</h2>
+        <p>{problem.statement}</p>
+      </section>
+
+      <section className="problem-section" aria-labelledby="problem-examples-title">
+        <h2 id="problem-examples-title">Examples</h2>
+        <div className="problem-examples">
+          {problem.test_cases.map((testCase) => (
+            <article className="problem-example" key={testCase.id}>
+              <h3>Example {testCase.display_order}</h3>
+              <div className="problem-example-grid">
+                <div>
+                  <h4>Input</h4>
+                  <pre>{testCase.input}</pre>
+                </div>
+                <div>
+                  <h4>Expected output</h4>
+                  <pre>{testCase.expected_output}</pre>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="problem-section" aria-labelledby="problem-constraints-title">
+        <h2 id="problem-constraints-title">Constraints</h2>
+        <ul className="problem-constraints">
+          {normalizeConstraints(problem.constraints).map((constraint, index) => (
+            <li key={`${constraint}-${index}`}>{constraint}</li>
+          ))}
+        </ul>
+        <div className="problem-limits">
+          <div className="problem-limit">
+            <h3>Time Constraint</h3>
+            <p>{problem.time_limit_ms} ms</p>
+          </div>
+          <div className="problem-limit">
+            <h3>Memory Constraint</h3>
+            <p>{problem.memory_limit_mb} MB</p>
+          </div>
+        </div>
+      </section>
+    </>
+  )
+}
+
+export function ProblemPage({ slug, navigate, hash, historyEntryId, navigationType, registerProblemPane, getProblemPanePosition }) {
   const { requestAuthenticated, userId } = useAuth()
   const [problem, setProblem] = useState(null)
+  const [loadedProblemSlug, setLoadedProblemSlug] = useState(null)
   const [acceptedSolutions, setAcceptedSolutions] = useState(undefined)
   const [error, setError] = useState(null)
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
@@ -133,18 +199,21 @@ export function ProblemPage({ slug, navigate }) {
   const currentExecutionIdRef = useRef(null)
   const customExecutionIdRef = useRef(null)
   const restoredSessionKeyRef = useRef(null)
+  const problemPaneRef = useRef(null)
+  const displayedProblem = loadedProblemSlug === slug ? problem : null
   const { initialSession, hydrated, onEditorChange, persist } = useProblemSession({
     userId,
     problemSlug: slug,
-    starterCode: problem?.starter_code,
+    starterCode: displayedProblem?.starter_code,
     acceptedSolutions,
-    enabled: problem !== null && acceptedSolutions !== undefined,
+    enabled: displayedProblem !== null && acceptedSolutions !== undefined,
   })
 
   useEffect(() => {
     let active = true
 
     setProblem(null)
+    setLoadedProblemSlug(null)
     setAcceptedSolutions(undefined)
     setError(null)
     setExecutionView(null)
@@ -172,6 +241,7 @@ export function ProblemPage({ slug, navigate }) {
       .then(async (response) => {
         if (!active) return
         setProblem(response)
+        setLoadedProblemSlug(slug)
         try {
           const saved = await requestAuthenticated((accessToken) => (
             getAcceptedSolutions(accessToken, response.id)
@@ -197,7 +267,7 @@ export function ProblemPage({ slug, navigate }) {
   }, [requestAuthenticated, slug])
 
   useEffect(() => {
-    if (!problem || !hydrated || !initialSession) return
+    if (!displayedProblem || !hydrated || !initialSession) return
     const sessionKey = `${initialSession.userId}:${initialSession.problemSlug}`
     if (restoredSessionKeyRef.current === sessionKey) return
     restoredSessionKeyRef.current = sessionKey
@@ -220,15 +290,42 @@ export function ProblemPage({ slug, navigate }) {
       } else if (isFailedRunResult(storedExecution.result) || isFailedSubmitResult(storedExecution.result)) {
         const sourceCode = initialSession.editorContents[storedExecution.language]
         const request = restoredMode === 'run'
-          ? buildRunAiHelpPayload(problem.id, storedExecution.language, sourceCode, storedExecution.result)
-          : buildSubmitAiHelpPayload(problem.id, storedExecution.language, sourceCode, storedExecution.result)
+          ? buildRunAiHelpPayload(displayedProblem.id, storedExecution.language, sourceCode, storedExecution.result)
+          : buildSubmitAiHelpPayload(displayedProblem.id, storedExecution.language, sourceCode, storedExecution.result)
         setAiHelpRequest(request)
       }
     }
-  }, [hydrated, initialSession, problem])
+  }, [displayedProblem, hydrated, initialSession])
 
   useEffect(() => {
-    if (submissionId === null) return undefined
+    if (!problemPaneRef.current || !historyEntryId || !registerProblemPane) return undefined
+    return registerProblemPane(problemPaneRef.current, slug, historyEntryId)
+  }, [historyEntryId, registerProblemPane, slug])
+
+  useEffect(() => {
+    if (hash || !displayedProblem || !historyEntryId || !problemPaneRef.current || !getProblemPanePosition) return undefined
+
+    const pane = problemPaneRef.current
+    const targetTop = navigationType === 'pop'
+      ? getProblemPanePosition(historyEntryId, slug)
+      : 0
+    let frameId = 0
+    let attempts = 0
+
+    const restoreProblemPane = () => {
+      attempts += 1
+      pane.scrollTop = targetTop
+      const maxScrollTop = pane.scrollHeight - pane.clientHeight
+      if (targetTop <= maxScrollTop || attempts >= 60) return
+      frameId = requestAnimationFrame(restoreProblemPane)
+    }
+
+    frameId = requestAnimationFrame(restoreProblemPane)
+    return () => cancelAnimationFrame(frameId)
+  }, [displayedProblem, getProblemPanePosition, hash, historyEntryId, navigationType, slug])
+
+  useEffect(() => {
+    if (submissionId === null || !displayedProblem) return undefined
 
     let active = true
     let timerId = null
@@ -257,7 +354,7 @@ export function ProblemPage({ slug, navigate }) {
           }, true)
           if (isFailedSubmitResult(result) && submissionContext) {
             setAiHelpRequest(buildSubmitAiHelpPayload(
-              problem.id,
+              displayedProblem.id,
               submissionContext.language,
               submissionContext.sourceCode,
               result,
@@ -303,7 +400,7 @@ export function ProblemPage({ slug, navigate }) {
       active = false
       if (timerId !== null) window.clearTimeout(timerId)
     }
-  }, [problem?.id, persist, requestAuthenticated, submissionId])
+  }, [displayedProblem, persist, requestAuthenticated, submissionId])
 
   async function handleRun({ language, sourceCode }, requestedMode = 'run_tests') {
     if (executionBusyRef.current) return
@@ -323,7 +420,7 @@ export function ProblemPage({ slug, navigate }) {
       }, true)
     }
     const payload = {
-      problem_id: problem.id,
+      problem_id: displayedProblem.id,
       language,
       mode,
       source_code: sourceCode,
@@ -345,7 +442,7 @@ export function ProblemPage({ slug, navigate }) {
         if (generation !== executionGenerationRef.current) return
         setCustomExecutionState({ phase: 'completed', result, error: null })
         if (isFailedRunResult(result)) {
-          setCustomAiHelpRequest(buildRunAiHelpPayload(problem.id, language, sourceCode, result))
+          setCustomAiHelpRequest(buildRunAiHelpPayload(displayedProblem.id, language, sourceCode, result))
         } else {
           setCustomAiHelpRequest(null)
         }
@@ -381,7 +478,7 @@ export function ProblemPage({ slug, navigate }) {
         aiHelp: null,
       }, true)
       if (isFailedRunResult(result)) {
-        setAiHelpRequest(buildRunAiHelpPayload(problem.id, language, sourceCode, result))
+        setAiHelpRequest(buildRunAiHelpPayload(displayedProblem.id, language, sourceCode, result))
       } else {
         setAiHelpRequest(null)
       }
@@ -413,7 +510,7 @@ export function ProblemPage({ slug, navigate }) {
     try {
       const result = await requestAuthenticated((accessToken) => (
         createSubmission(accessToken, {
-          problem_id: problem.id,
+          problem_id: displayedProblem.id,
           language,
           source_code: sourceCode,
         })
@@ -508,8 +605,6 @@ export function ProblemPage({ slug, navigate }) {
     )
   }
 
-  if (!problem) return <main className="loading-page">Loading Problem…</main>
-
   const workspaceIsCustom = executionMode === 'custom'
   const workspaceExecutionState = workspaceIsCustom ? customExecutionState : executionState
   const workspaceAiHelpState = workspaceIsCustom ? customAiHelpState : aiHelpState
@@ -526,74 +621,25 @@ export function ProblemPage({ slug, navigate }) {
       />
 
       <main className="problem-main">
-        <section className="problem-pane" aria-labelledby="problem-title">
+        <section ref={problemPaneRef} className="problem-pane" aria-labelledby="problem-title">
           <div className="problem-navigation">
             <button type="button" className="problem-navigation-submissions" onClick={() => setIsSubmissionsOpen(true)}>
               Submissions
             </button>
           </div>
 
-          <header className="problem-header">
-            <h1 id="problem-title">{problem.title}</h1>
-            <div className="problem-meta">
-              {formatDifficulty(problem.difficulty) && (
-                <span className="problem-tag problem-difficulty" aria-label="Problem difficulty">
-                  {formatDifficulty(problem.difficulty)}
-                </span>
-              )}
-              <div className="problem-tags" aria-label="Problem tags">
-                {problem.tags.map((tag) => (
-                  <span key={tag} className="problem-tag">{tag}</span>
-                ))}
-              </div>
+          {displayedProblem ? (
+            <ProblemDetails problem={displayedProblem} />
+          ) : (
+            <div className="problem-loading-placeholder" role="status" aria-busy="true">
+              Loading problem details…
             </div>
-          </header>
-
-          <section className="problem-section" aria-labelledby="problem-statement-title">
-            <h2 id="problem-statement-title">Description</h2>
-            <p>{problem.statement}</p>
-          </section>
-
-          <section className="problem-section" aria-labelledby="problem-examples-title">
-            <h2 id="problem-examples-title">Examples</h2>
-            <div className="problem-examples">
-              {problem.test_cases.map((testCase) => (
-                <article className="problem-example" key={testCase.id}>
-                  <h3>Example {testCase.display_order}</h3>
-                  <div className="problem-example-grid">
-                    <div>
-                      <h4>Input</h4>
-                      <pre>{testCase.input}</pre>
-                    </div>
-                    <div>
-                      <h4>Expected output</h4>
-                      <pre>{testCase.expected_output}</pre>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="problem-section" aria-labelledby="problem-constraints-title">
-            <h2 id="problem-constraints-title">Constraints</h2>
-            <pre className="problem-constraints">{formatConstraints(problem.constraints)}</pre>
-            <div className="problem-limits">
-              <div className="problem-limit">
-                <h3>Time Constraint</h3>
-                <p>{problem.time_limit_ms} ms</p>
-              </div>
-              <div className="problem-limit">
-                <h3>Memory Constraint</h3>
-                <p>{problem.memory_limit_mb} MB</p>
-              </div>
-            </div>
-          </section>
+          )}
         </section>
 
         <section className="coding-pane" aria-label="Coding workspace">
-          <CodeEditor
-            starterCode={problem.starter_code}
+          {displayedProblem ? <CodeEditor
+            starterCode={displayedProblem.starter_code}
             initialSession={initialSession}
             isExpanded={isCodingPaneExpanded}
             onToggleExpansion={() => setIsCodingPaneExpanded((expanded) => !expanded)}
@@ -618,8 +664,8 @@ export function ProblemPage({ slug, navigate }) {
               onEditorChange(payload)
             }}
             executionDisabled={executionState.phase === 'running' || customExecutionState.phase === 'running'}
-          />
-          {executionMode !== null && (
+          /> : <div className="problem-editor-loading-placeholder" role="status" aria-busy="true">Preparing editor…</div>}
+          {displayedProblem && executionMode !== null && (
             <ExecutionWorkspace
               mode={executionMode}
               activeView={executionView}

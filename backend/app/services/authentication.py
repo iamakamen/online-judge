@@ -1,6 +1,6 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select, text, update
 from sqlalchemy.orm import Session
 
 from backend.app.models.refresh_session import RefreshSession
@@ -14,6 +14,33 @@ from backend.app.services.token import (
     hash_refresh_token,
     verify_refresh_token,
 )
+
+
+IDLE_SESSION_TIMEOUT = timedelta(hours=72)
+
+
+def record_authenticated_activity(
+    db: Session,
+    session_id: int,
+) -> int:
+    result = db.execute(
+        update(RefreshSession)
+        .where(
+            RefreshSession.id == session_id,
+            RefreshSession.revoked_at.is_(None),
+            RefreshSession.expires_at > func.current_timestamp(),
+            RefreshSession.last_activity_at
+            > func.current_timestamp() - text("INTERVAL '72 hours'"),
+        )
+        .values(
+            last_activity_at=func.greatest(
+                RefreshSession.last_activity_at,
+                func.current_timestamp(),
+            )
+        )
+    )
+    db.commit()
+    return result.rowcount
 
 
 def login(
@@ -68,7 +95,8 @@ def create_authenticated_session(
     db.add(refresh_session)
 
     try:
-        access_token = create_access_token(user.id)
+        db.flush()
+        access_token = create_access_token(user.id, refresh_session.id)
         db.commit()
     except Exception:
         db.rollback()
@@ -88,19 +116,27 @@ def refresh_access_token(
         raise ValueError("Refresh token is required")
 
     fingerprint = fingerprint_refresh_token(refresh_token)
-    now = datetime.now(timezone.utc)
 
     refresh_session = db.scalar(
         select(RefreshSession)
         .where(
             RefreshSession.token_fingerprint == fingerprint,
             RefreshSession.revoked_at.is_(None),
-            RefreshSession.expires_at > now,
         )
         .with_for_update()
     )
 
     if refresh_session is None:
+        raise ValueError("Invalid refresh token")
+
+    now = db.scalar(select(func.clock_timestamp()))
+
+    if refresh_session.expires_at <= now:
+        raise ValueError("Invalid refresh token")
+
+    if now >= refresh_session.last_activity_at + IDLE_SESSION_TIMEOUT:
+        refresh_session.revoked_at = now
+        db.commit()
         raise ValueError("Invalid refresh token")
 
     if not verify_refresh_token(
@@ -130,12 +166,14 @@ def refresh_access_token(
         ),
         token_hash=hash_refresh_token(new_refresh_token),
         expires_at=get_refresh_token_expiry(),
+        last_activity_at=refresh_session.last_activity_at,
     )
 
     db.add(new_refresh_session)
 
     try:
-        access_token = create_access_token(user.id)
+        db.flush()
+        access_token = create_access_token(user.id, new_refresh_session.id)
         db.commit()
     except Exception:
         db.rollback()

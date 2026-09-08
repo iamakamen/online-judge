@@ -61,7 +61,7 @@ def _get_refresh_token_expiry_days() -> int:
     return days
 
 
-def create_access_token(user_id: int) -> str:
+def create_access_token(user_id: int, session_id: int) -> str:
     now = datetime.now(timezone.utc)
     expires_at = now + timedelta(
         minutes=_get_access_token_expiry_minutes()
@@ -69,6 +69,7 @@ def create_access_token(user_id: int) -> str:
 
     payload = {
         "sub": str(user_id),
+        "sid": str(session_id),
         "type": "access",
         "iat": now,
         "exp": expires_at,
@@ -105,6 +106,17 @@ def decode_access_token(token: str) -> dict:
         raise ValueError("Invalid access token") from exc
 
     payload["sub"] = user_id
+
+    session_id = payload.get("sid")
+
+    if (
+        not isinstance(session_id, str)
+        or not session_id.isdecimal()
+        or int(session_id) <= 0
+    ):
+        raise ValueError("Invalid access token")
+
+    payload["sid"] = int(session_id)
 
     return payload
 

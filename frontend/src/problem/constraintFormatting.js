@@ -11,17 +11,8 @@ const SUPERSCRIPTS = {
   9: '⁹',
 }
 
-const SUBSCRIPTS = {
-  i: 'ᵢ',
-  j: 'ⱼ',
-  k: 'ₖ',
-}
-
 function normalizeConstraintText(text) {
   return text
-    .replace(/\b([A-Za-z]+)\[([ijk])\]/g, (_, name, index) => `${name}${SUBSCRIPTS[index]}`)
-    .replace(/\bai\b/g, 'aᵢ')
-    .replace(/\bpi\b/g, 'pᵢ')
     .replace(/(\d+)\^([0-9]+)/g, (_, number, exponent) => (
       `${number}${[...exponent].map((digit) => SUPERSCRIPTS[digit]).join('')}`
     ))
@@ -33,44 +24,67 @@ function normalizeConstraintText(text) {
     .trim()
 }
 
-function formatConstraintLine(text) {
-  if (!text || /^[.]+$/.test(text)) return ''
-  if (/(≤|≥|<|>|=)/.test(text)) return text.replace(/[.]+$/, '').trim()
-
-  const sentence = text.replace(/[.!?]+$/, '').trim()
-  if (!sentence) return ''
-  return `${sentence.charAt(0).toUpperCase()}${sentence.slice(1)}.`
+function removeSentenceTerminalPeriod(text) {
+  if (!text.endsWith('.')) return text
+  return text.slice(0, -1)
 }
 
-function expandSharedBounds(text) {
-  return text.replace(
-    /(-?\d+(?:[⁰¹²³⁴⁵⁶⁷⁸⁹]+)?)\s(≤|≥|<|>|=)\s([^,;]+?),\s*([^,;]+?)\s\2\s([^,;]+)/g,
-    (_, lower, operator, firstVariable, secondVariable, upper) => (
-      `${lower} ${operator} ${firstVariable} ${operator} ${upper}\n${lower} ${operator} ${secondVariable} ${operator} ${upper}`
-    ),
-  )
+function splitTopLevel(text, separator) {
+  const parts = []
+  let start = 0
+  let inCode = false
+
+  for (let index = 0; index < text.length; index += 1) {
+    if (text[index] === '`') {
+      inCode = !inCode
+    } else if (!inCode && text[index] === separator) {
+      parts.push(text.slice(start, index))
+      start = index + 1
+    }
+  }
+
+  parts.push(text.slice(start))
+  return parts
+}
+
+function splitLegacyLines(text) {
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+  if (lines.length <= 1) return lines
+
+  const items = []
+  for (const line of lines) {
+    const previous = items.at(-1)
+    const continuesPrevious = previous && (
+      /\b(?:and|are|be|by|contains|for|from|in|is|of|only|or|that|the|to|with|within)\s*$/i.test(previous)
+      || /[,：:]$/.test(previous)
+      || /^[+*/]/.test(line)
+    )
+
+    if (items.length === 0 || !continuesPrevious) {
+      items.push(line)
+    } else {
+      items[items.length - 1] = `${previous} ${line}`
+    }
+  }
+  return items
+}
+
+function cleanConstraintItem(item) {
+  return removeSentenceTerminalPeriod(normalizeConstraintText(item.replace(/`/g, '')))
+}
+
+export function normalizeConstraints(constraints) {
+  if (constraints == null) return []
+
+  const source = Array.isArray(constraints) ? constraints.join('\n') : String(constraints)
+  const withoutLabel = source.replace(/^\s*-\s*\*\*Constraints:\*\*\s*/i, '')
+
+  return splitTopLevel(withoutLabel, ';')
+    .flatMap(splitLegacyLines)
+    .map(cleanConstraintItem)
+    .filter((item) => item && !/^[.]+$/.test(item))
 }
 
 export function formatConstraints(constraints) {
-  if (!constraints) return ''
-
-  const withoutLabel = String(constraints)
-    .replace(/^\s*-\s*\*\*Constraints:\*\*\s*/i, '')
-    .replace(/`([^`]*)`/g, '\n$1\n')
-    .replace(/`/g, '')
-
-  return withoutLabel
-    .split(/[;\n]/)
-    .flatMap((part) => {
-      const normalized = normalizeConstraintText(part)
-      if (!normalized) return []
-      return [expandSharedBounds(normalized)]
-    })
-    .flatMap((part) => {
-      if (!part.includes(',')) return [part]
-      return part.split(',').map((item) => item.trim()).filter(Boolean)
-    })
-    .map(formatConstraintLine)
-    .filter(Boolean)
-    .join('\n')
+  return normalizeConstraints(constraints).join('\n')
 }

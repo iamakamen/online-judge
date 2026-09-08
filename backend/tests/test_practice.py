@@ -2,7 +2,7 @@ from backend.app.models.problem import Difficulty
 from backend.app.models.user import User, UserRole
 from backend.app.models.user_problem_progress import UserProblemProgress
 from backend.app.services.password import hash_password
-from backend.app.services.token import create_access_token
+from backend.app.services.authentication import create_authenticated_session
 
 
 def create_topic(client, admin_headers, name="Test Topic", slug="test-topic"):
@@ -168,8 +168,9 @@ def test_problem_list_does_not_leak_another_users_solved_state(
     )
     db.commit()
 
+    other_access_token, _ = create_authenticated_session(db, other_user)
     other_headers = {
-        "Authorization": f"Bearer {create_access_token(other_user.id)}",
+        "Authorization": f"Bearer {other_access_token}",
     }
 
     first_response = client.get(

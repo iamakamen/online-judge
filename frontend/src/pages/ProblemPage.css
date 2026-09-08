@@ -24,6 +24,8 @@
 .problem-page-v2 .problem-pane { padding: 12px 20px 40px; background: var(--problem-bg); }
 .problem-page-v2 .problem-navigation { min-height: 48px; margin: 0 0 24px; padding: 0 0 14px; border-bottom: 1px solid var(--problem-border); }
 .problem-page-v2 .problem-navigation-submissions { display: inline-flex; width: fit-content; height: 46px; min-height: 46px; box-sizing: border-box; align-items: center; justify-content: center; padding: 0 18px; border: 1px solid var(--problem-border-strong); border-radius: 8px; background: var(--problem-surface); color: #ffffff; font-size: .82rem; font-weight: var(--font-weight-semibold); line-height: 1; }
+.problem-page-v2 .problem-loading-placeholder, .problem-page-v2 .problem-editor-loading-placeholder { display: grid; min-height: 260px; box-sizing: border-box; place-items: center; border: 1px solid var(--problem-border); border-radius: 10px; background: var(--problem-surface); color: var(--problem-muted); }
+.problem-page-v2 .problem-editor-loading-placeholder { min-height: 100%; border: 0; border-radius: 0; background: transparent; }
 .problem-page-v2 .problem-navigation-submissions:hover { border-color: #3b638c; background: #0e1d30; color: #ffffff; }
 .problem-page-v2 .problem-navigation-submissions:focus-visible { border-color: var(--problem-blue); background: #0e1d30; color: #ffffff; outline: 2px solid rgb(97 169 255 / 38%); outline-offset: 2px; }
 .problem-page-v2 .problem-header { margin: 0; padding: 0 0 24px; border-bottom: 1px solid var(--problem-border); }
@@ -41,7 +43,7 @@
 .problem-page-v2 .problem-example h4, .problem-page-v2 .problem-limit h3 { margin: 0 0 8px; color: var(--problem-muted); font-size: .65rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
 .problem-page-v2 .problem-example pre, .problem-page-v2 .problem-constraints { margin: 0; border: 1px solid var(--problem-border); border-radius: 8px; background: var(--problem-surface); color: var(--problem-soft); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
 .problem-page-v2 .problem-example pre { min-height: 50px; box-sizing: border-box; padding: 12px; white-space: pre-wrap; }
-.problem-page-v2 .problem-constraints { padding: 14px; line-height: 1.65; white-space: pre-wrap; overflow-x: hidden; overflow-wrap: anywhere; word-break: break-word; }
+.problem-page-v2 .problem-constraints { display: grid; gap: 8px; padding: 14px 14px 14px 34px; line-height: 1.65; overflow-wrap: anywhere; word-break: break-word; }
 .problem-page-v2 .problem-limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
 .problem-page-v2 .problem-limit { padding: 14px; border: 1px solid var(--problem-border); border-radius: 12px; background: var(--problem-panel); }
 .problem-page-v2 .problem-limit p { margin: 0; color: var(--problem-text); font-size: 1.05rem; font-weight: var(--font-weight-semibold); }

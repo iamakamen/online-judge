@@ -15,7 +15,7 @@ import {
   formatOtpRequestMessage,
   OTP_STATES,
 } from './registerFlow'
-import { clearRegistrationDraft, loadRegistrationDraft, normalizeRegistrationEmail, saveRegistrationDraft } from './registerStorage'
+import { clearRegistrationDraft, loadRegistrationDraft, normalizeRegistrationEmail, REGISTER_DRAFT_INACTIVITY_MS, saveRegistrationDraft } from './registerStorage'
 
 function Field({ label, ...props }) {
   return (
@@ -74,16 +74,77 @@ export function RegisterPage({ navigate }) {
   const [usernameChecking, setUsernameChecking] = useState(false)
   const emailStatesRef = useRef({ ...(savedDraft?.emailStates || {}) })
   const switchingEmailRef = useRef(false)
+  const draftLastActivityAtRef = useRef(savedDraft?.lastActivityAt ?? Date.now())
+  const draftExpiryTimerRef = useRef(null)
+  const draftExpiredRef = useRef(false)
+
+  function clearDraftExpiryTimer() {
+    if (draftExpiryTimerRef.current !== null) {
+      window.clearTimeout(draftExpiryTimerRef.current)
+      draftExpiryTimerRef.current = null
+    }
+  }
+
+  function expireDraftIfInactive() {
+    if (Date.now() - draftLastActivityAtRef.current < REGISTER_DRAFT_INACTIVITY_MS) return false
+    clearDraftExpiryTimer()
+    clearRegistrationDraft()
+    draftExpiredRef.current = true
+    return true
+  }
+
+  function scheduleDraftExpiry() {
+    clearDraftExpiryTimer()
+    const remaining = REGISTER_DRAFT_INACTIVITY_MS - (Date.now() - draftLastActivityAtRef.current)
+    if (remaining <= 0) {
+      expireDraftIfInactive()
+      return
+    }
+    draftExpiryTimerRef.current = window.setTimeout(() => {
+      draftExpiryTimerRef.current = null
+      expireDraftIfInactive()
+    }, remaining)
+  }
+
+  function persistCurrentDraft() {
+    const email = normalizeRegistrationEmail(form.email)
+    if (!email || draftExpiredRef.current) return
+    emailStatesRef.current[email] = { otpRequested, cooldownUntil, remainingRequests, emailVerified }
+    saveRegistrationDraft({ form, emailStates: emailStatesRef.current, lastActivityAt: draftLastActivityAtRef.current })
+    scheduleDraftExpiry()
+  }
+
+  function recordActivity({ allowRecreate = false, persist = true } = {}) {
+    const expired = draftExpiredRef.current || expireDraftIfInactive()
+    if (expired && !allowRecreate) return
+    draftExpiredRef.current = false
+    draftLastActivityAtRef.current = Date.now()
+    if (persist) persistCurrentDraft()
+  }
+
+  useEffect(() => {
+    if (savedDraft) scheduleDraftExpiry()
+    const handleVisibilityChange = () => {
+      if (!document.hidden) expireDraftIfInactive()
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      clearDraftExpiryTimer()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [savedDraft])
 
   useEffect(() => {
     const email = normalizeRegistrationEmail(form.email)
     if (!email) return
+    if (draftExpiredRef.current) return
     if (switchingEmailRef.current) {
       switchingEmailRef.current = false
       return
     }
     emailStatesRef.current[email] = { otpRequested, cooldownUntil, remainingRequests, emailVerified }
-    saveRegistrationDraft({ form, emailStates: emailStatesRef.current })
+    saveRegistrationDraft({ form, emailStates: emailStatesRef.current, lastActivityAt: draftLastActivityAtRef.current })
+    scheduleDraftExpiry()
   }, [form, otpRequested, cooldownUntil, remainingRequests, emailVerified])
 
   useEffect(() => {
@@ -171,6 +232,7 @@ export function RegisterPage({ navigate }) {
   }, [emailVerified, form.username])
 
   function update(field, value) {
+    recordActivity({ allowRecreate: true, persist: false })
     setForm((current) => ({ ...current, [field]: value }))
     setError('')
     setNotice('')
@@ -295,7 +357,7 @@ export function RegisterPage({ navigate }) {
 
         <section className="signup-panel">
           <h1 id="signup-title">Sign up</h1>
-          <form className="signup-form" onSubmit={handleSignup}>
+          <form className="signup-form" onSubmit={handleSignup} onFocusCapture={recordActivity} onPointerDownCapture={recordActivity} onKeyDownCapture={recordActivity}>
             <div className="signup-row signup-row-two">
               <Field label="First Name" value={form.firstName} onChange={(event) => update('firstName', event.target.value)} autoComplete="given-name" />
               <Field label="Last Name" value={form.lastName} onChange={(event) => update('lastName', event.target.value)} autoComplete="family-name" />

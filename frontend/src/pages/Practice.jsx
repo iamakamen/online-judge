@@ -334,8 +334,6 @@ export function Practice({ navigate }) {
     ))
   }
 
-  if (isLoading) return <main className="loading-page">Loading Practice…</main>
-
   if (error) {
     return (
       <main className="error-page">
@@ -354,31 +352,37 @@ export function Practice({ navigate }) {
         navigate={navigate}
       />
       <main className="practice-main">
-        <header className="practice-header">
+        <header className="practice-header" aria-busy={isLoading}>
           <div className="practice-hero-content">
             <h1>Practice</h1>
             <p className="muted">Build consistency by working through problems topic by topic.</p>
           </div>
           <div className="practice-analytics-card" aria-label="Practice progress">
-            <div className="practice-analytics-summary">
-              <p><span>Completed</span><strong>{analytics.completed}</strong></p>
-              <p><span>Remaining</span><strong>{analytics.remaining}</strong></p>
-            </div>
-            <div
-              className="practice-analytics-progress"
-              role="img"
-              aria-label={`${analytics.percentage}% solved`}
-              style={{ '--practice-progress-offset': 194.78 - ((194.78 * analytics.percentage) / 100) }}
-            >
-              <svg viewBox="0 0 76 76" aria-hidden="true">
-                <circle className="practice-analytics-track" cx="38" cy="38" r="31" />
-                <circle className="practice-analytics-value" cx="38" cy="38" r="31" />
-              </svg>
-              <div className="practice-analytics-progress-label">
-                <strong>{analytics.percentage}%</strong>
-                <span>Solved</span>
-              </div>
-            </div>
+            {isLoading ? (
+              <div className="practice-loading-placeholder" role="status">Loading progress…</div>
+            ) : (
+              <>
+                <div className="practice-analytics-summary">
+                  <p><span>Completed</span><strong>{analytics.completed}</strong></p>
+                  <p><span>Remaining</span><strong>{analytics.remaining}</strong></p>
+                </div>
+                <div
+                  className="practice-analytics-progress"
+                  role="img"
+                  aria-label={`${analytics.percentage}% solved`}
+                  style={{ '--practice-progress-offset': 194.78 - ((194.78 * analytics.percentage) / 100) }}
+                >
+                  <svg viewBox="0 0 76 76" aria-hidden="true">
+                    <circle className="practice-analytics-track" cx="38" cy="38" r="31" />
+                    <circle className="practice-analytics-value" cx="38" cy="38" r="31" />
+                  </svg>
+                  <div className="practice-analytics-progress-label">
+                    <strong>{analytics.percentage}%</strong>
+                    <span>Solved</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </header>
 
@@ -394,20 +398,26 @@ export function Practice({ navigate }) {
           }}
         />
 
-        <section className="practice-catalog" aria-label="Practice topics">
-          {visibleTopics.map((topic) => (
-            <TopicSection
-              key={topic.id}
-              topic={topic}
-              problems={filteredProblemsByTopic.get(topic.id) || []}
-              actualProblems={actualProblemsByTopic.get(topic.id) || []}
-              isFiltered={isFiltered}
-              isExpanded={expandedTopics[topic.id] ?? true}
-              onToggle={() => setExpandedTopics((current) => ({ ...current, [topic.id]: !current[topic.id] }))}
-              navigate={navigate}
-            />
-          ))}
-        </section>
+        {isLoading ? (
+          <section className="practice-catalog practice-catalog-loading" aria-label="Practice topics" aria-busy="true">
+            <p role="status">Loading problem catalog…</p>
+          </section>
+        ) : (
+          <section className="practice-catalog" aria-label="Practice topics">
+            {visibleTopics.map((topic) => (
+              <TopicSection
+                key={topic.id}
+                topic={topic}
+                problems={filteredProblemsByTopic.get(topic.id) || []}
+                actualProblems={actualProblemsByTopic.get(topic.id) || []}
+                isFiltered={isFiltered}
+                isExpanded={expandedTopics[topic.id] ?? true}
+                onToggle={() => setExpandedTopics((current) => ({ ...current, [topic.id]: !current[topic.id] }))}
+                navigate={navigate}
+              />
+            ))}
+          </section>
+        )}
       </main>
     </div>
   )

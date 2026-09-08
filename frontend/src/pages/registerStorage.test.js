@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   REGISTER_DRAFT_STORAGE_KEY,
+  REGISTER_DRAFT_INACTIVITY_MS,
   clearRegistrationDraft,
   loadRegistrationDraft,
   normalizeRegistrationEmail,
@@ -49,6 +50,37 @@ test('registration draft restores safe form data and OTP request state', () => {
   assert.equal(restored.emailStates['jane@example.com'].emailVerified, false)
   assert.equal(restored.emailStates['jane@example.com'].remainingRequests, 3)
   assert.ok(restored.emailStates['jane@example.com'].cooldownUntil > Date.now())
+  assert.doesNotMatch(storage.getItem(REGISTER_DRAFT_STORAGE_KEY), /secret-password|123456/)
+})
+
+test('drafts include a last-activity timestamp and restore before inactivity expiry', () => {
+  const storage = createStorage()
+  const savedAt = 1_000_000
+  saveRegistrationDraft({ form, emailStates: {}, lastActivityAt: savedAt }, storage)
+
+  const restored = loadRegistrationDraft(storage, savedAt + REGISTER_DRAFT_INACTIVITY_MS - 1)
+  assert.equal(restored.lastActivityAt, savedAt)
+  assert.equal(restored.form.email, form.email)
+})
+
+test('expired drafts are removed and not restored', () => {
+  const storage = createStorage()
+  const savedAt = 1_000_000
+  saveRegistrationDraft({ form, emailStates: {}, lastActivityAt: savedAt }, storage)
+
+  assert.equal(loadRegistrationDraft(storage, savedAt + REGISTER_DRAFT_INACTIVITY_MS), null)
+  assert.equal(storage.getItem(REGISTER_DRAFT_STORAGE_KEY), null)
+})
+
+test('saving activity refreshes the inactivity window without persisting credentials', () => {
+  const storage = createStorage()
+  const firstActivity = 1_000_000
+  const secondActivity = firstActivity + 5_000
+  saveRegistrationDraft({ form, emailStates: {}, lastActivityAt: firstActivity }, storage)
+  saveRegistrationDraft({ form, emailStates: {}, lastActivityAt: secondActivity }, storage)
+
+  const restored = loadRegistrationDraft(storage, secondActivity + REGISTER_DRAFT_INACTIVITY_MS - 1)
+  assert.equal(restored.lastActivityAt, secondActivity)
   assert.doesNotMatch(storage.getItem(REGISTER_DRAFT_STORAGE_KEY), /secret-password|123456/)
 })
 
