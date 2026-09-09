@@ -12,6 +12,7 @@ import { useAuth } from '../auth/useAuth'
 import { CodeEditor } from '../components/CodeEditor'
 import { ExecutionWorkspace } from '../components/ExecutionWorkspace'
 import { PrimarySidebar } from '../components/PrimarySidebar'
+import { V2PlaceholderModal } from '../components/V2PlaceholderModal'
 import { resolveRunMode } from '../problem/runValidation'
 import { useProblemSession } from '../problem/useProblemSession'
 import { normalizeConstraints } from '../problem/constraintFormatting'
@@ -689,35 +690,14 @@ export function ProblemPage({ slug, navigate, hash, historyEntryId, navigationTy
       </main>
 
       {(isSubmissionsOpen || v2Feature) && (
-        <div
-          className="modal-backdrop"
-          role="presentation"
-          onClick={() => {
+        <V2PlaceholderModal
+          feature={v2Feature || 'Submissions'}
+          onClose={() => {
             setIsSubmissionsOpen(false)
             setV2Feature(null)
           }}
-        >
-          <section
-            className="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="problem-future-feature-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h2 id="problem-future-feature-title">{v2Feature || 'Submissions'}</h2>
-            <p className="muted">Arriving in V2</p>
-            <button
-              type="button"
-              className="primary-button"
-              onClick={() => {
-                setIsSubmissionsOpen(false)
-                setV2Feature(null)
-              }}
-            >
-              Close
-            </button>
-          </section>
-        </div>
+          titleId="problem-future-feature-title"
+        />
       )}
     </div>
   )
