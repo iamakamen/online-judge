@@ -10,7 +10,7 @@ services:
     environment:
       POSTGRES_DB: online_judge
       POSTGRES_USER: online_judge
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_password_change_me}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -42,7 +42,7 @@ services:
     working_dir: /app
     command: ["alembic", "upgrade", "head"]
     environment:
-      DATABASE_URL: postgresql+psycopg://online_judge:${POSTGRES_PASSWORD:-dev_password_change_me}@postgres:5432/online_judge
+      DATABASE_URL: postgresql+psycopg://online_judge:${POSTGRES_PASSWORD}@postgres:5432/online_judge
     depends_on:
       postgres:
         condition: service_healthy
@@ -62,7 +62,7 @@ services:
         "8000",
       ]
     environment:
-      DATABASE_URL: postgresql+psycopg://online_judge:${POSTGRES_PASSWORD:-dev_password_change_me}@postgres:5432/online_judge
+      DATABASE_URL: postgresql+psycopg://online_judge:${POSTGRES_PASSWORD}@postgres:5432/online_judge
       REDIS_URL: redis://redis:6379/0?decode_responses=true
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "15"
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: "30"
@@ -99,7 +99,7 @@ services:
         "backend.app.services.execution.submission_worker",
       ]
     environment:
-      DATABASE_URL: postgresql+psycopg://online_judge:${POSTGRES_PASSWORD:-dev_password_change_me}@postgres:5432/online_judge
+      DATABASE_URL: postgresql+psycopg://online_judge:${POSTGRES_PASSWORD}@postgres:5432/online_judge
       REDIS_URL: redis://redis:6379/0?decode_responses=true
       SUBMISSION_WORKER_NAME: submission-worker-1
       SUBMISSION_RECONCILIATION_INTERVAL_SECONDS: "5"
@@ -127,7 +127,7 @@ services:
         "backend.app.services.execution.run_worker",
       ]
     environment:
-      DATABASE_URL: postgresql+psycopg://online_judge:${POSTGRES_PASSWORD:-dev_password_change_me}@postgres:5432/online_judge
+      DATABASE_URL: postgresql+psycopg://online_judge:${POSTGRES_PASSWORD}@postgres:5432/online_judge
       REDIS_URL: redis://redis:6379/0?decode_responses=true
       TMPDIR: /opt/online-judge/runtime/workspaces
     volumes:
