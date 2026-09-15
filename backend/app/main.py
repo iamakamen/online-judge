@@ -1,6 +1,8 @@
 import logging
+import os
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.db.session import SessionLocal
 from backend.app.services.authentication import (
@@ -26,6 +28,21 @@ logging.basicConfig(
 app = FastAPI(
     title="Online Judge API",
     version="0.1.0",
+)
+
+
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 
