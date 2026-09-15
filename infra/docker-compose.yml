@@ -142,6 +142,20 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
 
+  caddy:
+    image: caddy:2.10.2
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
 volumes:
   postgres_data:
   redis_data:
+  caddy_data:
+  caddy_config:
