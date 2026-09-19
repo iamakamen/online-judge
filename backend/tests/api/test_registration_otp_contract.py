@@ -78,7 +78,7 @@ def test_successful_otp_verification_sets_secure_http_only_cookie(monkeypatch):
     assert "registration_verification=signed-proof" in cookie
     assert "HttpOnly" in cookie
     assert "Secure" in cookie
-    assert "SameSite=lax" in cookie
+    assert "SameSite=none" in cookie
     assert "Path=/auth/register" in cookie
     assert "Max-Age=600" in cookie
 

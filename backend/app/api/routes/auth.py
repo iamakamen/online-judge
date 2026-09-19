@@ -61,6 +61,15 @@ def registration_proof_cookie_secure() -> bool:
     return environment.strip().lower() in {"production", "prod"}
 
 
+def registration_proof_cookie_samesite() -> str:
+    environment = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development"))
+    return (
+        "none"
+        if environment.strip().lower() in {"production", "prod"}
+        else "lax"
+    )
+
+
 def set_registration_proof_cookie(response: Response, proof: str) -> None:
     response.set_cookie(
         key=REGISTRATION_PROOF_COOKIE,
@@ -68,7 +77,7 @@ def set_registration_proof_cookie(response: Response, proof: str) -> None:
         max_age=REGISTRATION_PROOF_COOKIE_MAX_AGE,
         httponly=True,
         secure=registration_proof_cookie_secure(),
-        samesite="lax",
+        samesite=registration_proof_cookie_samesite(),
         path=REGISTRATION_PROOF_COOKIE_PATH,
     )
 
